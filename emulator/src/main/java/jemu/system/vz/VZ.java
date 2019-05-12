@@ -4,11 +4,9 @@ import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -78,7 +76,7 @@ public class VZ extends Computer {
 	protected int cyclesToFlyback;
 	protected VZTapeDevice tapeDevice;
 	protected VZLoaderDevice loaderDevice;
-	
+
 	public VZ(JPanel applet, String name) {
 		super(applet, name);
 		vz200 = "VZ200".equalsIgnoreCase(name);
@@ -120,6 +118,10 @@ public class VZ extends Computer {
 
 	public String getKeyboardImage() {
 		return "/jemu/ui/vz/keyboard.png";
+	}
+
+	public VZTapeDevice getTapeDevice() {
+		return tapeDevice;
 	}
 
 	public Memory getMemory() {
@@ -327,6 +329,27 @@ public class VZ extends Computer {
 		for (int address = startOfBasicPointer; address < endOfBasicPointer; address++) {
 			os.write(memory.readByte(address));
 		}
+	}
+
+	public String disassemble(int startAdress, int endAdress) {
+		StringBuilder result = new StringBuilder();
+		DissZ80 da = new DissZ80();
+		int[] address = new int[] { startAdress };
+		while (address[0] <= endAdress) {
+			int a0 = address[0];
+			String asm = da.disassemble(memory, address);
+			int a1 = address[0];
+			String bytes = "";
+			for (int a = a0; a < a1; a++) {
+				bytes = bytes + String.format("%02x ", readByte(a));
+			}
+			while (bytes.length() < 12) {
+				bytes = bytes + " ";
+			}
+			result.append(String.format("%04x: ", address[0])).append(bytes).append(asm)
+					.append("\n");
+		}
+		return result.toString();
 	}
 
 	public List<String> flushPrinter() {

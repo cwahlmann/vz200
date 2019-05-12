@@ -1,14 +1,11 @@
 package jemu.rest;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jemu.system.vz.VZ;
+import jemu.system.vz.VZTapeDevice;
 import jemu.ui.JemuUi;
 
 @RestController
@@ -28,21 +27,29 @@ public class JemuRestController {
 	@Autowired
 	private JemuUi jemuUi;
 
-	@RequestMapping("/jemu")
-	public String sayHello() {
-		return "Hello JEMU";
+	private VZ computer() {
+		return (VZ) jemuUi.getComputer();
 	}
 
-	@RequestMapping("/jemu/reset")
+	private VZTapeDevice tape() {
+		return computer().getTapeDevice();
+	}
+
+	@RequestMapping("/vz200")
+	public String info() {
+		return "VZ200 Emulator (JEMU) - modified version";
+	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/reset")
 	public String reset() {
 		jemuUi.resetComputer();
 		return "reset done";
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/jemu/vz", consumes = "application/octet-stream;charset=UTF-8")
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/vz", consumes = "application/octet-stream;charset=UTF-8")
 	public String loadVZ(RequestEntity<InputStream> entity) {
 		try (InputStream is = entity.getBody()) {
-			jemuUi.loadBinaryFile(is);
+			computer().loadBinaryFile(is);
 		} catch (Exception e) {
 			log.error("Fehler beim Einspielen des VZ-Programms", e);
 			return "Fehler beim Einspielen des VZ-Programms: " + e.getMessage();
@@ -50,7 +57,7 @@ public class JemuRestController {
 		return "Daten eingespielt.";
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/jemu/vz", consumes = "application/octet-stream;charset=UTF-8")
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/vz", consumes = "application/octet-stream;charset=UTF-8")
 	public void readVz(HttpServletResponse response) {
 
 		// Set the content type and attachment header.
@@ -59,17 +66,17 @@ public class JemuRestController {
 
 		// Copy the stream to the response's output stream.
 		try {
-			jemuUi.getComputer().saveFile(response.getOutputStream());
+			computer().saveFile(response.getOutputStream());
 			response.flushBuffer();
 		} catch (Exception e) {
 			log.error("Fehler beim Schreiben", e);
 		}
 	}
-	
-	@RequestMapping(method = RequestMethod.POST, path = "/jemu/bas", consumes = "application/octet-stream;charset=UTF-8")
+
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/bas", consumes = "application/octet-stream;charset=UTF-8")
 	public String loadBas(RequestEntity<InputStream> entity) {
 		try (InputStream is = entity.getBody()) {
-			jemuUi.loadSourceFile(is);
+			computer().loadSourceFile(is);
 		} catch (Exception e) {
 			log.error("Fehler beim Einspielen des Basic-Programms", e);
 			return "Fehler beim Einspielen des Basic-Programms: " + e.getMessage();
@@ -77,10 +84,10 @@ public class JemuRestController {
 		return "Daten eingespielt.";
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/jemu/asm", consumes = "application/octet-stream;charset=UTF-8")
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/asm", consumes = "application/octet-strea	m;charset=UTF-8")
 	public String loadAsm(RequestEntity<InputStream> entity) {
 		try (InputStream is = entity.getBody()) {
-			jemuUi.loadAsmFile(is);
+			computer().loadAsmFile(is);
 		} catch (Exception e) {
 			log.error("Fehler beim Einspielen des Assembler-Programms", e);
 			return "Fehler beim Einspielen des Assembler-Programms: " + e.getMessage();
@@ -88,10 +95,10 @@ public class JemuRestController {
 		return "Daten eingespielt.";
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/jemu/hex", consumes = "application/octet-stream;charset=UTF-8")
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/hex", consumes = "application/octet-stream;charset=UTF-8")
 	public String loadHex(RequestEntity<InputStream> entity) {
 		try (InputStream is = entity.getBody()) {
-			jemuUi.loadHexFile(is);
+			computer().loadHexFile(is);
 		} catch (Exception e) {
 			log.error("Fehler beim Einspielen des HEX-Dumps", e);
 			return "Fehler beim Einspielen des HEX-Dumps: " + e.getMessage();
@@ -99,7 +106,7 @@ public class JemuRestController {
 		return "Daten eingespielt.";
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/jemu/hex/{address}")
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/hex/{address}")
 	public String readHex(@PathVariable(name = "address") String address,
 			@RequestParam(name = "width", defaultValue = "16", required = false) int width) {
 		String addressFrom = address;
@@ -111,7 +118,7 @@ public class JemuRestController {
 		int a = Integer.valueOf(addressFrom, 16);
 		int b = Integer.valueOf(addressTo, 16);
 		if (b == a) {
-			b++;
+			b = a + 1024;
 		}
 		StringBuilder result = new StringBuilder();
 		int n = 0;
@@ -119,7 +126,7 @@ public class JemuRestController {
 			if (n % width == 0) {
 				result.append(String.format("%04x: ", i));
 			}
-			int value = jemuUi.getComputer().getMemory().readByte(i);
+			int value = computer().getMemory().readByte(i);
 			result.append(String.format("%02x ", value));
 			n++;
 			if (n % width == 0) {
@@ -129,9 +136,64 @@ public class JemuRestController {
 		return result.toString();
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/jemu/printer/flush")
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/printer/flush")
 	public String flushPrinter() {
-		List<String> lines = jemuUi.flushPrinter();
+		List<String> lines = computer().flushPrinter();
 		return lines.stream().collect(Collectors.joining("\n"));
+	}
+
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/tape")
+	public String getTapeName() {
+		return tape().getTapeName();
+	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/tape/{tapename}")
+	public String setTapeName(@PathVariable(name = "tapename") String tapename) {
+		tape().changeTape(tapename);
+		return "Tape " + tapename + " eingelegt";
+	}
+
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/tape/slot")
+	public int getTapeSlot() {
+		return tape().slot();
+	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/tape/slot/{id}")
+	public void setTapeSlot(@PathVariable(name = "id") int id) {
+		tape().slot(id);
+	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/tape/play")
+	public int playTape() {
+		tape().play();
+		return tape().slot();
+	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/tape/record")
+	public int recordTape() {
+		tape().record();
+		return tape().slot();
+	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/tape/stop")
+	public int stopType() {
+		tape().stop();
+		return tape().slot();
+	}
+
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/asm/{address}")
+	public String readAsm(@PathVariable(name = "address") String address) {
+		String addressFrom = address;
+		String addressTo = address;
+		if (address.contains("-")) {
+			addressFrom = address.split("-")[0];
+			addressTo = address.split("-")[1];
+		}
+		int a = Integer.valueOf(addressFrom, 16);
+		int b = Integer.valueOf(addressTo, 16);
+		if (b == a) {
+			b = a + 1024;
+		}
+		return computer().disassemble(a, b);
 	}
 }

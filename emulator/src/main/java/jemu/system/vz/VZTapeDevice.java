@@ -46,14 +46,16 @@ public class VZTapeDevice extends Device {
 	private Mode mode;
 
 	private VZ vz;
-	private VZTape tape;
+	private VZTape tapeSlot;
+	private String tapeName;
 	private int slot;
 
 	public VZTapeDevice(VZ vz) {
 		super(DEVICE_ID);
 		this.vz = vz;
 		this.slot = 0;
-		loadTape();
+		this.tapeName = "default";
+		loadSlot();
 		this.mode = Mode.idle;
 	}
 
@@ -62,33 +64,33 @@ public class VZTapeDevice extends Device {
 		z80.addOutputDeviceMapping(new DeviceMapping(this, OUT_PORT_MASK, OUT_PORT_TEST));
 	}
 
-	private void loadTape() {
+	private void loadSlot() {
 		// path
 		Path path = getTapePath();
 		if (!path.toFile().exists()) {
-			this.tape = new VZTape();
+			this.tapeSlot = new VZTape();
 			return;
 		}
-		this.tape = new VZTape();
+		this.tapeSlot = new VZTape();
 		try (InputStream is = new FileInputStream(path.toFile())) {
-			this.tape.read(is);
+			this.tapeSlot.read(is);
 		} catch (Exception e) {
 			log.error("unable to read tape slot {} at path {}", slot, path.toString());
 		}
 	}
 	
-	private void saveTape() {
+	private void saveSlot() {
 		// path
 		Path path = getTapePath();
 		try (OutputStream os = new FileOutputStream(path.toFile())) {
-			this.tape.write(os);
+			this.tapeSlot.write(os);
 		} catch (Exception e) {
 			log.error("unable to read tape slot {} at path {}", slot, path.toString());
 		}
 	}
 
 	private Path getTapePath() {
-		Path path = Paths.get(System.getProperty("user.home"), "vz200", "tape");
+		Path path = Paths.get(System.getProperty("user.home"), "vz200", "tape", tapeName);
 		if (!path.toFile().exists()) {
 			path.toFile().mkdirs();
 		}
@@ -114,11 +116,7 @@ public class VZTapeDevice extends Device {
 			}
 			return;
 		}
-		stop();
-		slot = value;
-		log.info("rewind tape to slot {}", slot);
-		loadTape();
-		return;
+		slot(value);
 	}
 
 	@Override
@@ -132,25 +130,46 @@ public class VZTapeDevice extends Device {
 
 	//
 
-	public VZTapeDevice tape(VZTape tape) {
-		this.tape = tape;
+	public int slot() {
+		return slot;
+	}
+	
+	public void slot(int slot) {
+		stop();
+		this.slot = slot;
+		log.info("rewind tape to slot {}", slot);
+		loadSlot();
+	}
+	
+	public VZTapeDevice tapeSlot(VZTape tape) {
+		this.tapeSlot = tape;
 		return this;
 	}
 
-	public VZTape tape() {
-		return tape;
+	public VZTape tapeSlot() {
+		return tapeSlot;
 	}
 
-	// StringBuilder sb = new StringBuilder();
-
+	public void changeTape(String tapeName) {
+		stop();
+		log.info("change tape to [{}]", tapeName);
+		this.tapeName = tapeName;
+		this.slot = 0;
+		loadSlot();
+	}
+	
+	public String getTapeName() {
+		return this.tapeName;
+	}
+	
 	public void stop() {
 		if (this.mode == Mode.idle) {
 			return;
 		}
 		this.mode = Mode.idle;
-		saveTape();
+		saveSlot();
 		slot++;
-		loadTape();
+		loadSlot();
 		log.info("Stop tape at slot [{}]", slot);
 	}
 
@@ -165,7 +184,7 @@ public class VZTapeDevice extends Device {
 
 	public void record() {
 		stop();
-		this.tape = new VZTape();
+		this.tapeSlot = new VZTape();
 		this.mode = Mode.record;
 		this.count = 0;
 		this.recordingStarted = false;
@@ -173,7 +192,7 @@ public class VZTapeDevice extends Device {
 	}
 
 	public void cycle() {
-		if (tape == null) {
+		if (tapeSlot == null) {
 			return;
 		}
 		switch (mode) {
@@ -219,7 +238,7 @@ public class VZTapeDevice extends Device {
 			this.value = value;
 			this.count = 0;
 			if (recordingStarted) {
-				tape.write(Pair.of(upTime, downTime));
+				tapeSlot.write(Pair.of(upTime, downTime));
 			}
 		}
 	}
@@ -232,7 +251,7 @@ public class VZTapeDevice extends Device {
 		if (countPause > 0) {
 			countPause--;
 			if (countPause == 0) {
-				Pair<Integer, Integer> v = tape.read();
+				Pair<Integer, Integer> v = tapeSlot.read();
 				if (v == null) {
 					stop();
 					return;
@@ -255,7 +274,7 @@ public class VZTapeDevice extends Device {
 		if (countDownTime == 0) {
 			doUp();
 
-			Pair<Integer, Integer> v = tape.read();
+			Pair<Integer, Integer> v = tapeSlot.read();
 			if (v == null) {
 				stop();
 				return;

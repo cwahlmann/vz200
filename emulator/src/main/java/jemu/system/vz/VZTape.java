@@ -19,7 +19,7 @@ public class VZTape {
 
 	private List<Pair<Integer, Integer>> data; // -1 -> no data, 0-255 data
 	private int pos;
-
+	
 	public VZTape() {
 		this.data = new ArrayList<>();
 		clear();

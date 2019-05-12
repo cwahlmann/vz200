@@ -23,6 +23,7 @@ public class VZLoaderDevice extends Device {
 	public static final int OUT_PORT_TEST = 0b11111100; // 0xfa
 	public static final int COMMAND_LOAD = 0b11111100;
 	public static final int COMMAND_SAVE = 0b11111101;
+	public static final int FIRST_WRITABLE_VZ = 100; // 0x60;
 
 	private VZ vz;
 
@@ -50,6 +51,10 @@ public class VZLoaderDevice extends Device {
 			}
 			return;
 		} else if (p == COMMAND_SAVE) {
+			if (value < FIRST_WRITABLE_VZ) {
+				log.error("Pprogram slot [{}] is readonly", value);
+				return;
+			}
 			try {
 				String filename = getFilename(value);
 				log.info("Save program [{}] to [{}]", value, filename);
@@ -64,6 +69,6 @@ public class VZLoaderDevice extends Device {
 	private String getFilename(int value) throws IOException {
 		String dir = System.getProperty("user.home") + "/vz200/vz";
 		Files.createDirectories(Paths.get(dir));
-		return dir + "/" + String.format("vzfile_%02x.vz", value);
+		return dir + "/" + String.format("vzfile_%03d.vz", value);
 	}
 }
