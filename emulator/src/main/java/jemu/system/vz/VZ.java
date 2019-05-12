@@ -77,7 +77,8 @@ public class VZ extends Computer {
 	protected int cyclesPerFrame;
 	protected int cyclesToFlyback;
 	protected VZTapeDevice tapeDevice;
-
+	protected VZLoaderDevice loaderDevice;
+	
 	public VZ(JPanel applet, String name) {
 		super(applet, name);
 		vz200 = "VZ200".equalsIgnoreCase(name);
@@ -107,6 +108,8 @@ public class VZ extends Computer {
 		setBasePath("vz");
 		this.tapeDevice = new VZTapeDevice(this);
 		this.tapeDevice.register(z80);
+		this.loaderDevice = new VZLoaderDevice(this);
+		this.loaderDevice.register(z80);
 	}
 
 	public void initialise() {
@@ -170,12 +173,6 @@ public class VZ extends Computer {
 		return vdcLatch & 0x40; // cassette input
 	}
 
-	private String getFilename(int value) throws IOException {
-		String dir = System.getProperty("user.home") + "/vz200/vz";
-		Files.createDirectories(Paths.get(dir));
-		return dir + "/" + String.format("vzfile_%02x.vz", value);
-	}
-
 	public int getVdcLatch() {
 		return vdcLatch;
 	}
@@ -194,22 +191,6 @@ public class VZ extends Computer {
 
 			vdcLatch = value;
 			renderer.setVDCLatch(value);
-		} else if (address == 0) {
-			try {
-				String filename = getFilename(value);
-				log.info("Load program [{}] from [{}]", value, filename);
-				loadBinaryFile(filename);
-			} catch (Exception e) {
-				log.error("Unable to load program [{}]", value, e);
-			}
-		} else if (address == 1) {
-			try {
-				String filename = getFilename(value);
-				log.info("Save program [{}] to [{}]", value, filename);
-				saveFile(filename);
-			} catch (Exception e) {
-				log.error("Unable to save program [{}]", value, e);
-			}
 		}
 		return value & 0xff;
 	}
