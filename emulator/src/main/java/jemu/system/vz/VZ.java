@@ -1,0 +1,378 @@
+package jemu.system.vz;
+
+import java.awt.Dimension;
+import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+
+import javax.swing.JPanel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import jemu.core.cpu.Processor;
+import jemu.core.cpu.Z80;
+import jemu.core.device.Computer;
+import jemu.core.device.memory.Memory;
+import jemu.core.device.sound.SoundPlayer;
+import jemu.core.device.sound.SoundUtil;
+import jemu.ui.Display;
+import jemu.util.assembler.z80.Assembler;
+import jemu.util.diss.Disassembler;
+import jemu.util.diss.DissZ80;
+
+/**
+ * Title: JEMU Description: The Java Emulation Platform Copyright: Copyright (c)
+ * 2002 Company:
+ * 
+ * @author
+ * @version 1.0
+ */
+
+public class VZ extends Computer {
+	private static final Logger log = LoggerFactory.getLogger(VZ.class);
+
+	private static final int SYSTEM_BASIC_START = 0x78a4;
+	private static final int SYSTEM_BASIC_END = 0x78f9;
+	protected static final int CYCLES_PER_SEC_VZ200 = 3579500;
+	protected static final int CYCLES_PER_SEC_VZ300 = 3546900;
+	protected static final int CYCLES_PER_SCAN = 228;
+
+	protected static final int AUDIO_TEST = 0x40000000;
+	protected static final int AUDIO_RESYNC_FRAMES = 50;
+
+	// These values should be 127, -128, 0, 127, but this causes a clicking sound
+	// caused by a timing bug in sun.audio.AudioDevice so to set the VZ to a normal
+	// level of 127 these have been changed (they normally only toggle between 1 and
+	// 2,
+	// and are 2 when no sound is generated: i.e. VDCLatch = 0x20).
+	protected static final byte[] SOUND_LEVELS = { 127, -128, 0, 127 };
+	// protected static final byte[] SOUND_LEVELS = { -128, 0, 127, 127 };
+
+	protected boolean vz200;
+	protected int cyclesPerSecond = CYCLES_PER_SEC_VZ200;
+	protected Z80 z80 = new Z80(cyclesPerSecond); // This is different for VZ-200 and VZ-300
+	protected VZMemory memory = new VZMemory(this);
+	protected int cycles = 0;
+	protected int frameFlyback = 0x80;
+	protected int vdcLatch = 0x00;
+	protected SimpleRenderer renderer = new FullRenderer(memory); // new SimpleRenderer();
+	protected Keyboard keyboard = new Keyboard();
+	protected Disassembler disassembler = new DissZ80();
+	protected SoundPlayer player = SoundUtil.getSoundPlayer(false);
+	protected VzPrinterDevice printer = new VzPrinterDevice();
+	protected byte soundByte = 127;
+	protected int soundUpdate = 0;
+	protected int audioAdd;
+	protected int syncCnt = AUDIO_RESYNC_FRAMES;
+	protected int scansOfFlyback;
+	protected int scansPerFrame;
+	protected int cyclesPerFrame;
+	protected int cyclesToFlyback;
+	protected VZTapeDevice tapeDevice;
+
+	public VZ(JPanel applet, String name) {
+		super(applet, name);
+		vz200 = "VZ200".equalsIgnoreCase(name);
+		if (vz200) {
+			cyclesPerSecond = CYCLES_PER_SEC_VZ200;
+			scansPerFrame = 312;
+			scansOfFlyback = 57;
+			renderer.setVerticalAdjustment(0);
+		} else {
+			cyclesPerSecond = CYCLES_PER_SEC_VZ300;
+			scansPerFrame = 310;
+			scansOfFlyback = 56;
+			renderer.setVerticalAdjustment(1);
+		}
+		z80.setCyclesPerSecond(cyclesPerSecond);
+		cyclesPerFrame = CYCLES_PER_SCAN * scansPerFrame;
+		cyclesToFlyback = cyclesPerFrame - (CYCLES_PER_SCAN * scansOfFlyback);
+		audioAdd = player.getClockAdder(AUDIO_TEST, cyclesPerSecond);
+		z80.setMemoryDevice(this);
+		z80.setCycleDevice(this);
+		z80.setInterruptDevice(this);
+		// printer support
+		printer.register(z80);
+		//
+
+		player.setFormat(SoundUtil.ULAW);
+		setBasePath("vz");
+		this.tapeDevice = new VZTapeDevice(this);
+		this.tapeDevice.register(z80);
+	}
+
+	public void initialise() {
+		memory.setMemory(0, getFile(romPath + "VZBAS" + (vz200 ? "12" : "20") + ".ROM", 16384));
+		SimpleRenderer.setFontData(getFile(romPath + "VZ.CHR", 768));
+		super.initialise();
+	}
+
+	public String getKeyboardImage() {
+		return "/jemu/ui/vz/keyboard.png";
+	}
+
+	public Memory getMemory() {
+		return memory;
+	}
+
+	public Processor getProcessor() {
+		return z80;
+	}
+
+	public void cycle() {
+		if (++cycles == cyclesToFlyback) {
+			if (--syncCnt == 0) {
+				player.sync();
+				syncCnt = AUDIO_RESYNC_FRAMES;
+			}
+			frameFlyback = 0x00;
+			z80.setInterrupt(1);
+		} else if (cycles == cyclesPerFrame) {
+			cycles = 0;
+			frameFlyback = 0x80;
+			if (frameSkip == 0)
+				renderer.renderScreen(memory);
+			syncProcessor();
+		}
+		this.tapeDevice.cycle();
+		soundUpdate += audioAdd;
+		if ((soundUpdate & AUDIO_TEST) != 0) {
+			soundUpdate -= AUDIO_TEST;
+			// player.writeulaw(soundByte);
+			player.writeMono(soundByte);
+		}
+
+		if (frameSkip == 0)
+			renderer.cycle();
+	}
+
+	public void setInterrupt(int mask) {
+		z80.clearInterrupt(1);
+	}
+
+	public int readByte(int address) {
+		if (address >= 0x7000 || address < 0x6800) {
+			return memory.readByte(address);
+		}
+		int lsb = address & 0xff;
+		if (lsb == 0xfe || lsb == 0xfd || lsb == 0xfb || lsb == 0xf7 || lsb == 0xef || lsb == 0xdf || lsb == 0xbf
+				|| lsb == 0x7f) {
+			return frameFlyback | (keyboard.readByte(address) & 0x7f);
+		}
+		return vdcLatch & 0x40; // cassette input
+	}
+
+	private String getFilename(int value) throws IOException {
+		String dir = System.getProperty("user.home") + "/vz200/vz";
+		Files.createDirectories(Paths.get(dir));
+		return dir + "/" + String.format("vzfile_%02x.vz", value);
+	}
+
+	public int getVdcLatch() {
+		return vdcLatch;
+	}
+
+	public int writeByte(int address, int value) {
+		if (address >= 0x7800)
+			return memory.writeByte(address, value);
+		else if (address >= 0x7000)
+			return renderer.setData(memory.writeByte(address, value));
+		else if (address >= 0x6800) {
+
+			// check sound
+			if (((vdcLatch ^ value) & 0x21) != 0) {
+				soundByte = SOUND_LEVELS[(value & 0x01) | ((value >> 4) & 0x02)];
+			}
+
+			vdcLatch = value;
+			renderer.setVDCLatch(value);
+		} else if (address == 0) {
+			try {
+				String filename = getFilename(value);
+				log.info("Load program [{}] from [{}]", value, filename);
+				loadBinaryFile(filename);
+			} catch (Exception e) {
+				log.error("Unable to load program [{}]", value, e);
+			}
+		} else if (address == 1) {
+			try {
+				String filename = getFilename(value);
+				log.info("Save program [{}] to [{}]", value, filename);
+				saveFile(filename);
+			} catch (Exception e) {
+				log.error("Unable to save program [{}]", value, e);
+			}
+		}
+		return value & 0xff;
+	}
+
+	public void processKeyEvent(KeyEvent e) {
+		if (e.getID() == KeyEvent.KEY_PRESSED)
+			keyboard.keyPressed(e.getKeyCode());
+		else if (e.getID() == KeyEvent.KEY_RELEASED)
+			keyboard.keyReleased(e.getKeyCode());
+	}
+
+	protected void vzFileException(String error) throws Exception {
+		if (error == null)
+			error = "Bad VZ File format";
+		throw new Exception(error);
+	}
+
+	public void loadSourceFile(InputStream is) throws Exception {
+		VzBasicLoader loader = new VzBasicLoader(getMemory());
+		loader.loadBasFile(is);
+	}
+
+	public void loadBinaryFile(InputStream is) throws Exception {
+		try {
+			byte[] header = new byte[24];
+			int len = is.read(header);
+			if (len != 24) /* || !"VZF0".equals(new String(header,0,4))) - Doesn't test this */
+				vzFileException(null);
+
+			int type = header[21] & 0xff;
+			int start = (header[22] & 0xff) + 256 * (header[23] & 0xff);
+			int address = start;
+
+			int read;
+			do {
+				read = is.read();
+				if (read != -1) {
+					memory.writeByte(address, read);
+					address = (address + 1) & 0xffff;
+				}
+			} while (read != -1);
+			is.close();
+
+			if (type == 0xf0) {
+				memory.writeByte(0x78a4, header[22]);
+				memory.writeByte(0x78a5, header[23]);
+				memory.writeByte(0x78f9, address);
+				memory.writeByte(0x78fa, address >> 8);
+				// Insert RUN<RETURN> in keyboard
+			} else if (type == 0xf1)
+				z80.setPC(start);
+		} finally {
+			is.close();
+		}
+	}
+
+	class HexFileAddress {
+		int start;
+		int address;
+
+		HexFileAddress(int start, int address) {
+			this.start = start;
+			this.address = address;
+		}
+	}
+
+	public void loadHexFile(InputStream is) throws Exception {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+			HexFileAddress hfa = new HexFileAddress(-1, 0x7ae9);
+			reader.lines().forEach(line -> {
+				int indexAddress = line.indexOf(':');
+				String bytes = line.trim();
+				if (indexAddress > 0) {
+					String startString = line.substring(0, indexAddress).trim();
+					hfa.address = Integer.valueOf(startString, 16);
+					System.out.println(String.format("Adress = %04x", hfa.address));
+					if (hfa.start < 0) {
+						hfa.start = hfa.address;
+					}
+					bytes = line.substring(indexAddress + 1).trim();
+				}
+				for (String b : bytes.split(" ")) {
+					memory.writeByte(hfa.address, Integer.valueOf(b.trim(), 16).intValue());
+					System.out.println(b);
+					hfa.address = (hfa.address + 1) & 0xffff;
+				}
+			});
+			if (hfa.start < 0) {
+				hfa.start = hfa.address;
+			}
+			log.info(String.format("Start at %04x...", hfa.start));
+			z80.setPC(hfa.start);
+		}
+	}
+
+	public void loadAsmFile(String name) throws Exception {
+		Assembler asm = new Assembler(getMemory());
+		asm.assemble(Paths.get(name));
+		System.out.println(String.format("Start at %04x...", asm.getRunAddress()));
+		z80.setPC(asm.getRunAddress());
+	}
+
+	@Override
+	public void loadAsmFile(InputStream is) throws Exception {
+		Assembler asm = new Assembler(getMemory());
+		asm.assemble(is);
+		System.out.println(String.format("Start at %04x...", asm.getRunAddress()));
+		z80.setPC(asm.getRunAddress());
+	}
+
+	public void saveFile(String name) throws Exception {
+		try (FileOutputStream os = new FileOutputStream(name)) {
+			saveFile(os);
+			// files.addElement(new FileDescriptor(name, name, "none"));
+		}
+	}
+
+	public void saveFile(OutputStream os) throws Exception {
+		int type = 0xf0;
+		int endOfBasicPointer = memory.readWord(SYSTEM_BASIC_END);
+		int startOfBasicPointer = memory.readWord(SYSTEM_BASIC_START);
+		byte[] header = new byte[24];
+		header[21] = (byte) type;
+		header[22] = (byte) (startOfBasicPointer & 0xff);
+		header[23] = (byte) ((startOfBasicPointer >> 8) & 0xff);
+		header[0] = 'V';
+		header[1] = 'Z';
+		header[2] = 'F';
+		header[3] = '0';
+		for (int i = 4; i < 21; i++) {
+			header[i] = (i - 4 < name.length()) ? (byte) name.charAt(i - 4) : 0;
+		}
+		os.write(header);
+		for (int address = startOfBasicPointer; address < endOfBasicPointer; address++) {
+			os.write(memory.readByte(address));
+		}
+	}
+
+	public List<String> flushPrinter() {
+		return printer.flush();
+	}
+
+	public void setDisplay(Display value) {
+		super.setDisplay(value);
+		renderer.setDisplay(value);
+	}
+
+	public Dimension getDisplaySize(boolean large) {
+		return renderer.getDisplaySize();
+	}
+
+	public Disassembler getDisassembler() {
+		return disassembler;
+	}
+
+	public void emulate(int mode) {
+		player.play();
+		super.emulate(mode);
+		player.stop();
+	}
+
+	public void displayLostFocus() {
+		keyboard.reset();
+	}
+
+}
