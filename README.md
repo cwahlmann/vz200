@@ -11,3 +11,21 @@ Tastaturcontroller:
 ## Emulator
 Der genutzte Emulator ist eine angepasste Version des Java-Emulators 'jemu': http://jemu.winape.net/
 
+### Erweiterung laden / speichern von .vz:
+
+PORT | IN / OUT | Beschreibung
+-----|----------|-------------
+252  | OUT      | LOAD .vz program no. <n>
+253  | OUT      | SAVE .vz program no. <n>
+
+(werden in <home>/vz200/vz abgelegt)
+  
+### Erweiterung Tape-Control
+
+PORT | IN / OUT | Beschreibung
+-----|----------|-------------
+254  | OUT      | 0: STOP, 1: PLAY, 16: RECORD
+255  | OUT      | REWIND to position <n>
+254, 255  | IN  | get LSB / MSB of type position
+
+(werden in <home>/vz200/tape abgelegt)
