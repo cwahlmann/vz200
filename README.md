@@ -20,12 +20,12 @@ PORT | IN / OUT | Beschreibung
 
 (werden in [home]/vz200/vz abgelegt)
   
-### Erweiterung Tape-Control
+### Erweiterung Tape-Controle
 
 PORT | IN / OUT | Beschreibung
 -----|----------|-------------
 254  | OUT      | 0: STOP, 1: PLAY, 16: RECORD
 255  | OUT      | REWIND to position [n]
-254, 255  | IN  | get LSB / MSB of type position
+254, 255  | IN  | get LSB / MSB of tape position
 
 (werden in [home]/vz200/tape abgelegt)
