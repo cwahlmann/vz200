@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=VZ200
+Comment=VZ200 Emulator starten
+Type=Application
+Exec=./vz200.sh
+Terminal=true

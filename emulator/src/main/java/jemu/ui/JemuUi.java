@@ -75,13 +75,12 @@ public class JemuUi extends JPanel
 	protected boolean gotGames = false;
 	protected ImageComponent keyboardImagePanel;
 	protected JComboBox<ComputerDescriptor> computerSelectionBox;
+	protected boolean fullscreen;
 
 	private JemuConfiguration config;
 
 	public String getParameter(String key, String def) {
 		return System.getProperty(key, def);
-		// return isStandalone ? System.getProperty(key, def) : (getParameter(key) !=
-		// null ? getParameter(key) : def);
 	}
 
 	@Autowired
@@ -96,8 +95,9 @@ public class JemuUi extends JPanel
 	}
 
 	public void start(boolean fullscreen) {
+		this.fullscreen = fullscreen;
 		try {
-			System.out.println("init()");
+			log.info("init()");
 			removeAll();
 			background = getBackground();
 			setBackground(Color.black);
@@ -111,7 +111,7 @@ public class JemuUi extends JPanel
 			boolean debug = Util.getBoolean(getParameter("DEBUG", "false"));
 			boolean pause = Util.getBoolean(getParameter("PAUSE", "false"));
 			large = Util.getBoolean(getParameter("LARGE", "false"));
-			System.out.println("DEBUG=" + debug + ", PAUSE=" + pause + ", LARGE=" + large);
+			log.info("DEBUG=" + debug + ", PAUSE=" + pause + ", LARGE=" + large);
 			if (computer == null) {
 				setComputer(getParameter("COMPUTER", Computer.DEFAULT_COMPUTER), !(debug || pause));
 			} else if (!(debug || pause)) {
@@ -185,7 +185,7 @@ public class JemuUi extends JPanel
 							try {
 								computer.saveFile(filename);
 							} catch (Exception e) {
-								System.out.println("Error saving file " + filename);
+								log.info("Error saving file " + filename);
 								e.printStackTrace();
 							}
 						}
@@ -311,11 +311,6 @@ public class JemuUi extends JPanel
 	}
 
 	public void run() {
-		/*
-		 * for (int i = 0; i < 500 && !display.isFocused(); i++) try { Thread.sleep(10);
-		 * display.requestFocus(); } catch(Exception e) { e.printStackTrace(); }
-		 * focusThread = null;
-		 */
 	}
 
 	public void startComputer() {
@@ -323,7 +318,7 @@ public class JemuUi extends JPanel
 	}
 
 	public void stop() {
-		System.out.println("stop()");
+		log.info("stop()");
 		computer.stop();
 	}
 
@@ -354,7 +349,7 @@ public class JemuUi extends JPanel
 	}
 
 	public void mouseClicked(MouseEvent e) {
-		if (e.getClickCount() == 2)
+		if (e.getClickCount() == 2 && !fullscreen)
 			if ((e.getModifiers() & MouseEvent.BUTTON1_MASK) != 0) {
 				showDebugger();
 			}
@@ -375,13 +370,13 @@ public class JemuUi extends JPanel
 
 	public void showDebugger() {
 		try {
-			System.out.println("showDebugger");
+			log.info("showDebugger");
 			if (debug == null) {
 				debug = (Debugger) Util.secureConstructor(Debugger.class, new Class[] {}, new Object[] {});
 				debug.setBounds(0, 0, 500, 400);
 				debug.setComputer(computer);
 			}
-			System.out.println("Showing Debugger");
+			log.info("Showing Debugger");
 			debug.setVisible(true);
 			debug.toFront();
 		} catch (Exception e) {
@@ -479,7 +474,7 @@ public class JemuUi extends JPanel
 				runtime.gc();
 				runtime.runFinalization();
 				runtime.gc();
-				System.out.println("Computer Disposed");
+				log.info("Computer Disposed");
 			}
 			computer = newComputer;
 			setFullSize(large);
