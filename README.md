@@ -8,6 +8,8 @@ STL-Dateien aus Fusion werden mit Makerbot Cura 4.0 druckfertig gemacht -> gcode
 Typische Auflösung: x/y 0.4mm (abhängig von der Düse), z 0.05-3mm (Schrittmotor, Extrusion)
 Düsen von 0.2, 0.3, 0.5 und 0.6 stehen demnächst auch zur Verfügung, wobei die Gefahr der Verstopfung mit kleineren Durchmessern steigt. Holz besser mit 0.5 oder 0.6 drucken.
 
+Wichtige Druckparameter: Wandstärke, Füllung (Stärke, Muster), Geschwindigkeit, Schichtendicke und abhängig vom Filament Düsen- und Betttemperatur sowie ggf. Anpassungen an der Fließgeschwindigkeit.
+
 Gedruckt wird mit PLA (Gehäuse) und TPA-Filament (Tastatur). 
 
 PLA entspricht hartem Plastik, bis ca. 60 Grad Celsius verformungssteif, danach wird es weich. Große Auswahl an Farben. 
