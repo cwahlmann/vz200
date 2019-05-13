@@ -84,7 +84,7 @@ public class JemuRestController {
 		return "Daten eingespielt.";
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/vz200/asm", consumes = "application/octet-strea	m;charset=UTF-8")
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/asm", consumes = "application/octet-stream;charset=UTF-8")
 	public String loadAsm(RequestEntity<InputStream> entity) {
 		try (InputStream is = entity.getBody()) {
 			computer().loadAsmFile(is);
