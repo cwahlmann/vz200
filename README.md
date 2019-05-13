@@ -8,8 +8,46 @@ eigenes Platinenlayout mit Dip-Schaltern, dir über eine Gummi-Tastaturmappe bet
 Tastaturcontroller: 
 ## Display
 ## Rechner
+
+- Raspbian
+- openjdk-8
+- alsa-Treiber
+- Umstellen audio auf headphone
+```
+sudo raspi-config
+```
+
+- jar kopieren nach `~/vz200`
+- Start-Skript erstellen `~/vz200.sh`:
+
+```bash
+#!/bin/bash
+cd vz200
+java -jar vz200-all.jar
+```
+
+- .desktop erstellen für autostart `~/.config/autostart/vz200.desktop`:
+
+```
+[Desktop Entry]
+Name=VZ200
+Comment=VZ200 Emulator starten
+Type=Application
+Exec=./vz200.sh
+Terminal=true
+```
+
+
 ## Emulator
 Der genutzte Emulator ist eine angepasste Version des Java-Emulators 'jemu': http://jemu.winape.net/
+
+### Port Konfiguration
+
+application.properties (Default 8080):
+
+```
+server.port = 10101
+```
 
 ### Erweiterung laden / speichern von .vz:
 
@@ -44,11 +82,11 @@ PORT | IN / OUT | Beschreibung
 ### REST-Interface
 
 ```bash
-curl -X POST http://localhost:10101/vz200/vz 
+curl -X POST http://localhost:8080/vz200/vz 
      -H "Content-Type:application/octet-stream" 
      --data-binary @/D/Downloads/8bit/vz200/jvz_021/vz_files/games_autostart/CRASH.vz
 ```
-Basis-Pfad: [HOST]:10101/vz200
+Basis-Pfad: [HOST]:[PORT]/vz200
 
 Endpunkt | Method | Request | Response | Beschreibung
 ---------|--------|---------|----------|-------------
