@@ -3,6 +3,23 @@ Nachbau eines VZ200-Color-Computers (1983)
 
 ## 3d-Modell
 erstellt mit Autodesk Fusion (Lizenz nur für private Nutzung)
+### Drucke
+STL-Dateien aus Fusion werden mit Makerbot Cura 4.0 druckfertig gemacht -> gcode für Creality Ender 3.
+Typische Auflösung: x/y 0.4mm (abhängig von der Düse), z 0.05-3mm (Schrittmotor, Extrusion)
+Düsen von 0.2, 0.3, 0.5 und 0.6 stehen demnächst auch zur Verfügung, wobei die Gefahr der Verstopfung mit kleineren Durchmessern steigt. Holz besser mit 0.5 oder 0.6 drucken.
+
+Gedruckt wird mit PLA (Gehäuse) und TPA-Filament (Tastatur). 
+
+PLA entspricht hartem Plastik, bis ca. 60 Grad Celsius verformungssteif, danach wird es weich. Große Auswahl an Farben. 
+
+TPU ist ein flexibles Filament, das sich gut für Handyhüllen oder Gummitastaturen eignet. Die Farbauswahl ist jedoch sehr beschränkt, so dass wir das karamellbraun der Originaltasten nicht direkt drucken können. Aktuell verfügbar ist ein mitteldunkles Blau. 
+
+Für den VZ 200 nehmen wir Weiß (Gehäuse), schokoladenbraun (Tastaturabdeckung) und holzbraun für die Tastatur (holzartig) oder eben blau (gummiartig).
+
+Auch möglich ist PET-G, eine Abwandlung des in der Industrie üblichen PET mit denselben Eigenschaften.
+
+Sonder-Filamente sind möglich (schwach leitend, fluoreszierend, transparent).
+
 ## Tastatur
 eigenes Platinenlayout mit Dip-Schaltern, dir über eine Gummi-Tastaturmappe betätigt werden.
 Tastaturcontroller: 
