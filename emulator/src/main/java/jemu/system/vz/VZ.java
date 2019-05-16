@@ -346,7 +346,7 @@ public class VZ extends Computer {
 			while (bytes.length() < 12) {
 				bytes = bytes + " ";
 			}
-			result.append(String.format("%04x: ", address[0])).append(bytes).append(asm)
+			result.append(String.format("%04x: ", a0)).append(bytes).append(asm)
 					.append("\n");
 		}
 		return result.toString();
