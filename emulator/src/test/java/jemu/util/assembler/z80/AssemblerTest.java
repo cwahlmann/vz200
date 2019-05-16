@@ -59,7 +59,25 @@ public class AssemblerTest {
 		assertParse(0x0100, expected, source);
 		assertEquals(0x0101, assembler.getRunAddress());
 	}
-	
+
+	@Test
+	public void parseStatementTest2() {
+		//@formatter:off
+		String[] source = { 
+				".org 0x1234", 
+				".run 0x1235", 
+				"count: defb 0x01", 
+				"LD A, (count:)",
+				"DEC A",
+				"LD (count:), A",
+				"defw count:"
+				};
+		//@formatter:on
+		int[] expected = { 0x01, 0x3a, 0x34, 0x12, 0x3d, 0x32, 0x34, 0x12, 0x34, 0x12 };
+		assertParse(0x1234, expected, source);
+		assertEquals(0x1235, assembler.getRunAddress());
+	}
+
 	@Test
 	public void parseFileTest1() throws Exception {
 		Path path = Paths.get(AssemblerTest.class.getResource("message.asm").toURI());

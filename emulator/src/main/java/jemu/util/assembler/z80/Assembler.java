@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -37,6 +39,8 @@ public class Assembler {
 
 	private int runAddress = 0;
 	private int cursorAddress = 0;
+	private int minCursorAddress = 0x10000;
+	private int maxCursorAddress = 0;
 	private Map<String, Integer> labelMap = new HashMap<>();
 	private List<Path> visitedPaths = new ArrayList<>();
 	private List<Integer> currentLineNo = new ArrayList<>();
@@ -109,7 +113,7 @@ public class Assembler {
 			if (labelMap.containsKey(label)) {
 				log.warn("label {} will be overwritten", label);
 			}
-			labelMap.put(label, cursorAddress);
+			labelMap.put(label, getCursorAddress());
 		}
 
 		// parse command
@@ -118,12 +122,12 @@ public class Assembler {
 		int nextCursorAddress = cursorAddress + tokens.size() % 0xffff;
 		tokens.forEach(t -> {
 			if (t.value().isPresent()) {
-				memory.writeByte(cursorAddress, t.value().get());
+				memory.writeByte(getCursorAddress(), t.value().get());
 			} else {
-				memory.writeByte(cursorAddress, 0);
-				tokensToBeResolved.add(Pair.of(cursorAddress, t.nextCursorAddress(nextCursorAddress)));
+				memory.writeByte(getCursorAddress(), 0);
+				tokensToBeResolved.add(Pair.of(getCursorAddress(), t.nextCursorAddress(nextCursorAddress)));
 			}
-			cursorAddress++;
+			addCursorAddress(1);
 		});
 	}
 
@@ -170,10 +174,10 @@ public class Assembler {
 			labelMap.put(label, value);
 			break;
 		case ORG:
-			cursorAddress = parseValue(s[1]);
+			setCursorAddress(parseValue(s[1]));
 			break;
 		case RUN:
-			runAddress = parseValue(s[1]);
+			setRunAddress(parseValue(s[1]));
 			break;
 		case INCLUDE:
 			Path newPath = visitedPaths.get(visitedPaths.size() - 1).getParent().resolve(s[1]);
@@ -203,6 +207,16 @@ public class Assembler {
 
 	public void setCursorAddress(int cursorAddress) {
 		this.cursorAddress = cursorAddress;
+		if (cursorAddress < minCursorAddress) {
+			minCursorAddress = cursorAddress;
+		}
+		if (cursorAddress > maxCursorAddress) {
+			maxCursorAddress = cursorAddress;
+		}
+	}
+
+	public void addCursorAddress(int n) {
+		setCursorAddress(this.cursorAddress + n);
 	}
 
 	public Map<String, Integer> getLabelMap() {
