@@ -22,6 +22,8 @@ Auch möglich ist PET-G, eine Abwandlung des in der Industrie üblichen PET mit 
 
 Sonder-Filamente sind möglich (schwach leitend, fluoreszierend, transparent).
 
+Hinweis: Löten auf den schwach leitenden Filamenten ist nicht möglich.
+
 ## Tastatur
 eigenes Platinenlayout mit Dip-Schaltern, dir über eine Gummi-Tastaturmappe betätigt werden.
 Tastaturcontroller: 
