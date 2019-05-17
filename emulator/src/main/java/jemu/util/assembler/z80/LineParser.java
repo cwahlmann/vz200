@@ -76,18 +76,36 @@ public class LineParser {
 	}
 
 	private static List<Token> parseBytes(String line) {
-		return Stream.of(line.split(",")).map(s -> Constants.NumToken.parse(s.trim()))
-				.map(o -> new Token(o, Optional.of(0), "", false, "", false, (a, b) -> a)).collect(Collectors.toList());
+		return Stream.of(line.split(","))
+				.map(s -> new Token(parseConst(s.trim()), Optional.of(0), s, false, "", false, (a, b) -> a))
+				.collect(Collectors.toList());
 	}
 
 	private static List<Token> parseWords(String line) {
 		List<Token> result = new ArrayList<>();
 		for (String s : line.split(",")) {
-			int i = Constants.NumToken.parse(s.trim()).orElse(0);
-			result.add(new Token(Optional.of(i & 0xff), Optional.of(0), "", false, "", false, (a, b) -> a));
-			result.add(new Token(Optional.of(i >> 8), Optional.of(0), "", false, "", false, (a, b) -> a));
+			Optional<Integer> i = parseConst(s);
+			if (i.isPresent()) {
+				result.add(new Token(Optional.of(i.get() & 0xff), Optional.of(0), s, false, "", false,
+						(a, b) -> a & 0xff));
+				result.add(new Token(Optional.of(i.get() >> 8), Optional.of(0), s, false, "", false, (a, b) -> a >> 8));
+			} else {
+				result.add(new Token(i, Optional.of(0), s, false, "", false, (a, b) -> a & 0xff));
+				result.add(new Token(i, Optional.of(0), s, false, "", false, (a, b) -> a >> 8));
+			}
 		}
 		return result;
+	}
+
+	private static Optional<Integer> parseConst(String s) {
+		if (s.endsWith(":")) {
+			return Optional.empty();
+		}
+		Optional<Integer> arg = Constants.NumToken.parse(s);
+		if (arg.isPresent()) {
+			return arg;
+		}
+		return Optional.of(new Integer(0));
 	}
 
 	private static AsciiMapper asciiMapper = new AsciiMapper();
