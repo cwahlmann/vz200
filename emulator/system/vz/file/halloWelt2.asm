@@ -74,7 +74,7 @@ move_n2: LD A, (y:)
 		 LD (y:), A
 		 OR A
 		 JR Z, move_n3:
-		 CP 0x3f
+		 CP 0x3c
 		 JR C, move_n4:
 move_n3: LD A, (dy:)
 		 XOR 0xff
@@ -86,12 +86,24 @@ move_n4: RET
 // undraw
 undraw:  CALL pos:
 		 LD A, 0x55
+		 LD DE, 0x0020
+		 LD (HL), A
+		 ADD HL, DE
+		 LD (HL), A
+		 ADD HL, DE
 		 LD (HL), A
 		 RET
 
 // draw
 draw:    CALL pos:
-		 LD A, 0xaa
+		 LD A, 0x7d
+		 LD DE, 0x0020
+		 LD (HL), A
+		 LD A, 0xf3
+		 ADD HL, DE
+		 LD (HL), A
+		 LD A, 0x7d
+		 ADD HL, DE
 		 LD (HL), A
 		 RET
 
