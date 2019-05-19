@@ -129,4 +129,8 @@ Endpunkt | Method | Request | Response | Beschreibung
 /tape/record | POST | | Integer | Aufnahme starten; gibt Slot zurück
 /tape/stop | POST | | Integer | Tape stoppen; gibt Slot zurück
 
+## Nützliche Links
+
+Raspi-Emulator für Windows (leider schon 7 Jahre alt)
+https://sourceforge.net/projects/rpiqemuwindows/
 
