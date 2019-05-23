@@ -2,7 +2,8 @@
 Nachbau eines VZ200-Color-Computers (1983)
 
 ## 3d-Modell
-erstellt mit Autodesk Fusion (Lizenz nur für private Nutzung)
+erstellt mit Autodesk Fusion (Startup-Lizenz nur für private Nutzung)
+
 ### Drucke
 STL-Dateien aus Fusion werden mit Makerbot Cura 4.0 druckfertig gemacht -> gcode für Creality Ender 3.
 Typische Auflösung: x/y 0.4mm (abhängig von der Düse), z 0.05-3mm (Schrittmotor, Extrusion)
@@ -25,9 +26,14 @@ Sonder-Filamente sind möglich (schwach leitend, fluoreszierend, transparent).
 Hinweis: Löten auf den schwach leitenden Filamenten ist nicht möglich.
 
 ## Tastatur
+
 eigenes Platinenlayout mit Dip-Schaltern, dir über eine Gummi-Tastaturmappe betätigt werden.
-Tastaturcontroller: 
+Tastaturcontroller: KEYWARRIOR24_8_MODUL_KW24_8_MOD 
+
 ## Display
+
+JOY-iT 5“ HDMI Touchscreen Display
+
 ## Rechner
 
 - Raspbian
@@ -60,6 +66,7 @@ Terminal=true
 
 
 ## Emulator
+
 Der genutzte Emulator ist eine angepasste Version des Java-Emulators 'jemu': http://jemu.winape.net/
 
 ### Port Konfiguration
