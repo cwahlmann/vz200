@@ -107,6 +107,32 @@ public class AssemblerTest {
 		assembler.assemble(path);
 		assertMem(0x8000, expected);
 	}
+	
+	@Test
+	public void parseRegisterTest() {
+		//@formatter:off
+		String[] source = {  
+				"LD A, A", 
+				"LD A, B", 
+				"LD A, C", 
+				"LD A, D", 
+				"LD A, E", 
+				"LD A, H", 
+				"LD A, L", 
+				"LD A, (HL)", 
+				"LD A, IXh", 
+				"LD A, IXl", 
+				"LD A, IYh", 
+				"LD A, IYl", 
+				};
+		//@formatter:on
+		int[] expected = { 
+				0x7f, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 
+				0xdd, 0x7c, 0xdd, 0x7d, 
+				0xfd, 0x7c, 0xfd, 0x7d};
+		assertParse(0x0000, expected, source);
+		assertEquals(0x0000, assembler.getRunAddress());
+	}
 
 	private void assertParse(int org, int[] expected, String[] source) {
 		assembler.setCursorAddress(0);
