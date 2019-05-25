@@ -17,7 +17,7 @@ PLA entspricht hartem Plastik, bis ca. 60 Grad Celsius verformungssteif, danach 
 
 TPU ist ein flexibles Filament, das sich gut für Handyhüllen oder Gummitastaturen eignet. Die Farbauswahl ist jedoch sehr beschränkt, so dass wir das karamellbraun der Originaltasten nicht direkt drucken können. Aktuell verfügbar ist ein mitteldunkles Blau. 
 
-Für den VZ 200 nehmen wir Weiß (Gehäuse), schokoladenbraun (Tastaturabdeckung) und holzbraun für die Tastatur (holzartig) oder eben blau (gummiartig).
+Für den VZ 200 nehmen wir Weiß (Gehäuse), schokoladenbraun (Tastaturabdeckung) [Weiß, da die Tastaturabdeckung noch mit einer transparenten bedruckten Folie beklebt wird, und weiß beim Druck transparent gedruckt wird] und holzbraun für die Tastatur (holzartig) oder eben blau (gummiartig).
 
 Auch möglich ist PET-G, eine Abwandlung des in der Industrie üblichen PET mit denselben Eigenschaften.
 
