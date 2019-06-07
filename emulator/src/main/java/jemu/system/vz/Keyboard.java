@@ -1,8 +1,8 @@
 package jemu.system.vz;
 
-import java.awt.event.*;
-import jemu.core.*;
-import jemu.core.device.keyboard.*;
+import java.awt.event.KeyEvent;
+
+import jemu.core.device.keyboard.MatrixKeyboard;
 
 /**
  * Title:        JEMU

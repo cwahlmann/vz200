@@ -198,10 +198,19 @@ public class VZ extends Computer {
 	}
 
 	public void processKeyEvent(KeyEvent e) {
+		int keyCode = e.getKeyCode();
+		if (e.getExtendedKeyCode() == 0x010000d6) { // ö
+			keyCode = KeyEvent.VK_PLUS;
+		} else if (e.getExtendedKeyCode() == 0x010000c4) { // ä
+			keyCode = KeyEvent.VK_NUMBER_SIGN;
+		} else if (e.getExtendedKeyCode() == 0x010000df) { // ß
+			keyCode = KeyEvent.VK_MINUS; 
+		}
+//		log.info("KEY EVENT {}", String.format("%8x / %08x", e.getKeyCode(), e.getExtendedKeyCode()));
 		if (e.getID() == KeyEvent.KEY_PRESSED)
-			keyboard.keyPressed(e.getKeyCode());
+			keyboard.keyPressed(keyCode);
 		else if (e.getID() == KeyEvent.KEY_RELEASED)
-			keyboard.keyReleased(e.getKeyCode());
+			keyboard.keyReleased(keyCode);
 	}
 
 	protected void vzFileException(String error) throws Exception {

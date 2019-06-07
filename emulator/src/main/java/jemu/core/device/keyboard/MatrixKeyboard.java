@@ -1,8 +1,9 @@
 package jemu.core.device.keyboard;
 
-import java.util.*;
-import jemu.core.*;
-import jemu.core.device.*;
+import java.util.Hashtable;
+
+import jemu.core.Util;
+import jemu.core.device.Device;
 
 /**
  * Title:        JEMU
