@@ -2,12 +2,12 @@
 Nachbau eines VZ200-Color-Computers (1983)
 
 ## 3d-Modell
-erstellt mit Autodesk Fusion (Startup-Lizenz nur für private Nutzung)
+erstellt mit Autodesk Fusion (Startup-Lizenz nur für private Nutzung). Bei Aussparungen für Fußleisten oder andere Elemente, die eingepasst werden müssen bitte beachten, dass die Drucke meist mit ca. 0.1mm zusätzlicher Stärke gedruckt werden, damit die Schichten gut aneinander haften. Hinzu kommt, dass die erste Schicht zwecks besserer Haftung am Druckbett etwas plattgedrückt wird. Entsprechende Toleranzen bitte mit einplanen.
 
 ### Drucke
-STL-Dateien aus Fusion werden mit Makerbot Cura 4.0 druckfertig gemacht -> gcode für Creality Ender 3.
+STL-Dateien aus Fusion werden mit Makerbot Cura 4.1 druckfertig gemacht -> gcode für Creality Ender 3.
 Typische Auflösung: x/y 0.4mm (abhängig von der Düse), z 0.05-3mm (Schrittmotor, Extrusion)
-Düsen von 0.2, 0.3, 0.5 und 0.6 stehen demnächst auch zur Verfügung, wobei die Gefahr der Verstopfung mit kleineren Durchmessern steigt. Holz besser mit 0.5 oder 0.6 drucken.
+Düsen von 0.2, 0.3, 0.5 und 0.6 stehen auch zur Verfügung, wobei die Gefahr der Verstopfung mit kleineren Durchmessern steigt. Holz besser mit 0.5 oder 0.6 drucken.
 
 Wichtige Druckparameter: Wandstärke, Füllung (Stärke, Muster), Geschwindigkeit, Schichtendicke und abhängig vom Filament Düsen- und Betttemperatur sowie ggf. Anpassungen an der Fließgeschwindigkeit.
 
@@ -17,9 +17,9 @@ PLA entspricht hartem Plastik, bis ca. 60 Grad Celsius verformungssteif, danach 
 
 TPU ist ein flexibles Filament, das sich gut für Handyhüllen oder Gummitastaturen eignet. Die Farbauswahl ist jedoch sehr beschränkt, so dass wir das karamellbraun der Originaltasten nicht direkt drucken können. Aktuell verfügbar ist ein mitteldunkles Blau. 
 
-Für den VZ 200 nehmen wir Weiß (Gehäuse), schokoladenbraun (Tastaturabdeckung) [Weiß, da die Tastaturabdeckung noch mit einer transparenten bedruckten Folie beklebt wird, und weiß beim Druck transparent gedruckt wird] und holzbraun für die Tastatur (holzartig) oder eben blau (gummiartig).
+Für den VZ 200 nehmen wir Weiß (Gehäuse), schokoladenbraun (Tastaturabdeckung) und holzbraun für die Tastatur (holzartig) oder eben blau (gummiartig).
 
-Auch möglich ist PET-G, eine Abwandlung des in der Industrie üblichen PET mit denselben Eigenschaften.
+Auch möglich ist PET-G, eine Abwandlung des in der Industrie üblichen PET mit denselben Eigenschaften. Liegt aktuell nur in HellGrau vor.
 
 Sonder-Filamente sind möglich (schwach leitend, fluoreszierend, transparent).
 
