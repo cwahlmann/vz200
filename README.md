@@ -27,7 +27,7 @@ Hinweis: Löten auf den schwach leitenden Filamenten ist nicht möglich.
 
 ## Tastatur
 
-eigenes Platinenlayout mit Dip-Schaltern, dir über eine Gummi-Tastaturmappe betätigt werden.
+eigenes Platinenlayout mit Dip-Schaltern (6mm; Höhe über Platine: 4,5mm; 4 Füße), die über eine Gummi-Tastaturmappe betätigt werden.
 Tastaturcontroller: KEYWARRIOR24_8_MODUL_KW24_8_MOD 
 
 ## Display
