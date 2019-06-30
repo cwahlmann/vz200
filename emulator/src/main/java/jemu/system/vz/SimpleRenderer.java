@@ -1,8 +1,8 @@
 package jemu.system.vz;
 
-import java.awt.*;
-import jemu.core.device.*;
-import jemu.core.renderer.*;
+import java.awt.Dimension;
+
+import jemu.core.renderer.Renderer;
 
 /**
  * Title:        JEMU
@@ -79,8 +79,8 @@ public class SimpleRenderer extends Renderer {
         int value;
         if (i >= 128) {
           int bits = (y < 6 ? i >> 2 : i) & 0x03;
-          value = (bits & 0x02) != 0 ? 0x0f : 0x00;
-          if ((bits & 0x01) != 0)
+          value = (bits & 0x01) != 0 ? 0x0f : 0x00;
+          if ((bits & 0x02) != 0)
             value |= 0xf0;
         }
         else if (i < 64)
