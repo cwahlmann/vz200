@@ -9,8 +9,7 @@
 
 package jemu.system.vz;
 
-import java.awt.*;
-import jemu.ui.*;
+import java.awt.Dimension;
 
 /**
  *
@@ -19,7 +18,7 @@ import jemu.ui.*;
 public class FullRenderer extends SimpleRenderer {
   
 //  protected static final int BORDER  = 16;  // Must be divisible by 8
-  protected static final int BORDER  = 8;  // Must be divisible by 8
+  protected static final int BORDER  = 16;  // Must be divisible by 8
   protected static final int WIDTH   = 256 + BORDER * 2;
   protected static final int HEIGHT  = 192 + BORDER * 2;
   protected static final int CWIDTH  = WIDTH / 8;  // Width in chars  (2)
