@@ -631,7 +631,7 @@ Wire Wire Line
 Wire Wire Line
 	6700 1450 6700 5350
 Wire Wire Line
-	6250 1550 6250 5000
+	6250 1550 6250 5500
 Wire Wire Line
 	6250 1550 3150 1550
 Wire Wire Line
@@ -860,24 +860,58 @@ $EndComp
 $Comp
 L CONN_01X02 P1
 U 1 1 5CE1B266
-P 7800 2100
-F 0 "P1" H 7800 2250 50  0000 C CNN
-F 1 "PWR-LED" V 7900 2100 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x02_Pitch2.54mm" H 7800 2100 50  0001 C CNN
-F 3 "" H 7800 2100 50  0000 C CNN
-	1    7800 2100
+P 7800 1800
+F 0 "P1" H 7800 1950 50  0000 C CNN
+F 1 "PWR-LED" V 7900 1800 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x02_Pitch2.54mm" H 7800 1800 50  0001 C CNN
+F 3 "" H 7800 1800 50  0000 C CNN
+	1    7800 1800
 	0    -1   -1   0   
 $EndComp
-Wire Wire Line
-	7750 2300 7600 2500
 Wire Wire Line
 	7600 2500 7600 2700
 Wire Wire Line
 	7600 2700 7700 2700
 Wire Wire Line
-	7850 2300 8000 2500
-Wire Wire Line
-	8000 2500 8000 2700
+	8000 2200 8000 2700
 Wire Wire Line
 	8000 2700 7900 2700
+Connection ~ 6050 5150
+Connection ~ 6250 5000
+$Comp
+L R R1
+U 1 1 5D1AA86C
+P 7600 2350
+F 0 "R1" V 7680 2350 50  0000 C CNN
+F 1 "110" V 7600 2350 50  0000 C CNN
+F 2 "Resistors_ThroughHole:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal" V 7530 2350 50  0001 C CNN
+F 3 "" H 7600 2350 50  0000 C CNN
+	1    7600 2350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7600 2200 7750 2000
+Wire Wire Line
+	7850 2000 8000 2200
+$Comp
+L CONN_01X02 P2
+U 1 1 5D1AD3BE
+P 7950 4550
+F 0 "P2" H 7950 4700 50  0000 C CNN
+F 1 "Reset-Button" V 8050 4550 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x02_Pitch2.54mm" H 7950 4550 50  0001 C CNN
+F 3 "" H 7950 4550 50  0000 C CNN
+	1    7950 4550
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6250 5500 7900 5500
+Wire Wire Line
+	7900 5500 7900 4750
+Wire Wire Line
+	6050 5150 6050 5600
+Wire Wire Line
+	6050 5600 8000 5600
+Wire Wire Line
+	8000 5600 8000 4750
 $EndSCHEMATC
