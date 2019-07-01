@@ -23,6 +23,10 @@ public class DeviceMapping {
     this.test = test;
   }
 
+  public void reset() {
+	  this.device.reset();
+  }
+  
   public int readPort(int port) {
     return (port & mask) == test ? device.readPort(port) : -1;
   }

@@ -58,6 +58,9 @@ public abstract class Processor extends Device {
   }
 
   public void reset() {
+	  for (DeviceMapping mapping: outputDevice) {
+		  mapping.reset();
+	  }
     cycles = 0;
   }
 

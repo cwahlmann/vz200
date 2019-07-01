@@ -43,7 +43,7 @@ public class VZTapeDevice extends Device {
 	private int value = 0;
 	private static final int maxCount = Integer.MAX_VALUE - 1;
 	private int count = 1;
-	private Mode mode;
+	private Mode mode = Mode.idle;
 
 	private VZ vz;
 	private VZTape tapeSlot;
@@ -53,12 +53,20 @@ public class VZTapeDevice extends Device {
 	public VZTapeDevice(VZ vz) {
 		super(DEVICE_ID);
 		this.vz = vz;
+		reset();
+	}
+
+	@Override
+	public void reset() {
+		if (this.mode == Mode.record) {
+			saveSlot();
+		}
 		this.slot = 0;
 		this.tapeName = "default";
 		loadSlot();
 		this.mode = Mode.idle;
 	}
-
+	
 	public void register(Z80 z80) {
 		z80.addInputDeviceMapping(new DeviceMapping(this, IN_PORT_MASK, IN_PORT_TEST));
 		z80.addOutputDeviceMapping(new DeviceMapping(this, OUT_PORT_MASK, OUT_PORT_TEST));
@@ -105,17 +113,21 @@ public class VZTapeDevice extends Device {
 			switch (value) {
 			case COMMAND_STOP:
 				stop();
+				vz.alert(String.format("stopped tape at #%05d", slot));
 				break;
 			case COMMAND_PLAY:
+				vz.alert(String.format("play tape at #%05d", slot));
 				play();
 				break;
 			case COMMAND_RECORD:
+				vz.alert(String.format("record tape at #%05d", slot));
 				record();
 				break;
 			default:
 			}
 			return;
 		}
+		vz.alert(String.format("rewind to #%05d", value));
 		slot(value);
 	}
 
