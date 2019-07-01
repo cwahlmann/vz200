@@ -89,8 +89,10 @@ PORT | IN / OUT | Beschreibung
 252  | OUT      | LOAD .vz program no. [n]
 253  | OUT      | SAVE .vz program no. [n]
 
+Alle Programme n <= 100 sind readonly.
+
 (werden in [home]/vz200/vz abgelegt)
-  
+
 ### Erweiterung Tape-Controle
 
 ```basic
