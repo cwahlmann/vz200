@@ -77,7 +77,7 @@ application.properties (Default 8080):
 server.port = 10101
 ```
 
-Reset-Taste: [F7]
+Reset-Taste: [ESC]
 
 ### Erweiterung laden / speichern von .vz:
 
