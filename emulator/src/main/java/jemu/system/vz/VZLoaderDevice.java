@@ -13,7 +13,7 @@ import jemu.core.device.DeviceMapping;
 
 public class VZLoaderDevice extends Device {
 	private static final Logger log = LoggerFactory.getLogger(VZLoaderDevice.class);
-	private static final String DEVICE_ID = "VZ Tape Device";
+	private static final String DEVICE_ID = "VZ Loader Device";
 
 	public static enum Mode {
 		idle, record, play
@@ -46,20 +46,25 @@ public class VZLoaderDevice extends Device {
 				String filename = getFilename(value);
 				log.info("Load program [{}] from [{}]", value, filename);
 				vz.loadBinaryFile(filename);
+				vz.alert(String.format("vz-program #%03d loaded", value));
 			} catch (Exception e) {
+				vz.alert(String.format("error loading vz-program #%03d", value));
 				log.error("Unable to load program [{}]", value, e);
 			}
 			return;
 		} else if (p == COMMAND_SAVE) {
 			if (value < FIRST_WRITABLE_VZ) {
-				log.error("Pprogram slot [{}] is readonly", value);
+				vz.alert(String.format("vz-program #%03d is readonly", value));
+				log.error("Program slot [{}] is readonly", value);
 				return;
 			}
 			try {
 				String filename = getFilename(value);
 				log.info("Save program [{}] to [{}]", value, filename);
 				vz.saveFile(filename);
+				vz.alert(String.format("vz-program #%03d saved", value));
 			} catch (Exception e) {
+				vz.alert(String.format("error saving vz-program #%03d", value));
 				log.error("Unable to save program [{}]", value, e);
 			}
 		}

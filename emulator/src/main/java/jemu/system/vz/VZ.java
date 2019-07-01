@@ -199,14 +199,19 @@ public class VZ extends Computer {
 
 	public void processKeyEvent(KeyEvent e) {
 		int keyCode = e.getKeyCode();
+		if (keyCode == KeyEvent.VK_F7) {
+			reset();
+			return;
+		}
 		if (e.getExtendedKeyCode() == 0x010000d6) { // ö
 			keyCode = KeyEvent.VK_PLUS;
 		} else if (e.getExtendedKeyCode() == 0x010000c4) { // ä
 			keyCode = KeyEvent.VK_NUMBER_SIGN;
 		} else if (e.getExtendedKeyCode() == 0x010000df) { // ß
-			keyCode = KeyEvent.VK_MINUS; 
+			keyCode = KeyEvent.VK_MINUS;
 		}
-//		log.info("KEY EVENT {}", String.format("%8x / %08x", e.getKeyCode(), e.getExtendedKeyCode()));
+		// log.info("KEY EVENT {}", String.format("%8x / %08x", e.getKeyCode(),
+		// e.getExtendedKeyCode()));
 		if (e.getID() == KeyEvent.KEY_PRESSED)
 			keyboard.keyPressed(keyCode);
 		else if (e.getID() == KeyEvent.KEY_RELEASED)
@@ -355,8 +360,7 @@ public class VZ extends Computer {
 			while (bytes.length() < 12) {
 				bytes = bytes + " ";
 			}
-			result.append(String.format("%04x: ", a0)).append(bytes).append(asm)
-					.append("\n");
+			result.append(String.format("%04x: ", a0)).append(bytes).append(asm).append("\n");
 		}
 		return result.toString();
 	}
@@ -388,4 +392,20 @@ public class VZ extends Computer {
 		keyboard.reset();
 	}
 
+	public void alert(String s) {
+		for (int i=0; i<32; i++) {
+			writeByte(0x71e0+i, 0x60);
+		}
+		printAt(16-s.length()/2,15, s, true);
+	}
+	public void printAt(int x, int y, String s, boolean inverse) {
+		int adr = 0x7000 + x + y * 32;
+		for (int i=0; i<s.length(); i++) {
+			int c=s.toUpperCase().charAt(i);
+			if (c >=0x40 && c<0x60) {
+				c = c - 0x40;
+			}
+			writeByte(adr + i, inverse ? c | 0x40 : c);
+		}
+	}
 }
