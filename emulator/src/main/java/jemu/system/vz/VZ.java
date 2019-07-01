@@ -199,7 +199,7 @@ public class VZ extends Computer {
 
 	public void processKeyEvent(KeyEvent e) {
 		int keyCode = e.getKeyCode();
-		if (keyCode == KeyEvent.VK_F7) {
+		if (keyCode == KeyEvent.VK_ESCAPE) {
 			reset();
 			return;
 		}
