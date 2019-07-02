@@ -6,6 +6,9 @@ Nachbau eines VZ200-Color-Computers (1983)
 ## 3d-Modell
 erstellt mit Autodesk Fusion (Startup-Lizenz nur für private Nutzung). Bei Aussparungen für Fußleisten oder andere Elemente, die eingepasst werden müssen bitte beachten, dass die Drucke meist mit ca. 0.1mm zusätzlicher Stärke gedruckt werden, damit die Schichten gut aneinander haften. Hinzu kommt, dass die erste Schicht zwecks besserer Haftung am Druckbett etwas plattgedrückt wird. Entsprechende Toleranzen bitte mit einplanen.
 
+![3d-Layout Boden](3d-model/screenshots/VZ-Fusion-v3-Boden.png "3d-Layout Boden")
+![3d-Layout Monitor](3d-model/screenshots/monitor-v2_1.png "3d-Layout Monitor")
+
 ### Drucke
 STL-Dateien aus Fusion werden mit Ultimaker Cura 4.1 druckfertig gemacht -> gcode für Creality Ender 3.
 Typische Auflösung: x/y 0.4mm (abhängig von der Düse), z 0.05-3mm (Schrittmotor, Extrusion)
@@ -31,6 +34,10 @@ Hinweis: Löten auf den schwach leitenden Filamenten ist nicht möglich.
 
 eigenes Platinenlayout mit Dip-Schaltern (6mm; Höhe über Platine: 4,5mm; 4 Füße), die über eine Gummi-Tastaturmappe betätigt werden.
 Tastaturcontroller: KEYWARRIOR24_8_MODUL_KW24_8_MOD 
+
+![Platinenlayout Keyboard](tastatur/screenshots/vz200-keyboard-laypout-v1.0.png "Platinenlayout Keyboard")
+![Platinenlayout Keyboard](tastatur/screenshots/vz200-keyboard-laypout-3d-v1.0.png "Platinenlayout Keyboard")
+
 
 ## Display
 
@@ -149,8 +156,7 @@ https://sourceforge.net/projects/rpiqemuwindows/
 
 ## Screenshots
 
-![Prototyp](3d-model/screenshots/Prototyp-01.jpg "Prototyp")
-![Prototyp](3d-model/screenshots/Prototyp-02.jpg "Prototyp")
+![Prototyp](3d-model/screenshots/Prototyp_01.jpg "Prototyp")
 ![Prototyp](3d-model/screenshots/Prototyp-03.jpg "Prototyp")
 ![Prototyp](3d-model/screenshots/Prototyp-04.jpg "Prototyp")
 ![Prototyp](3d-model/screenshots/Prototyp-05.jpg "Prototyp")
