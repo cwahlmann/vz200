@@ -1,7 +1,7 @@
 # vz200
 Nachbau eines VZ200-Color-Computers (1983)
 
-image:3d-model/screenshots/Prototyp-02.jpg[Prototyp,800,480]
+![Prototyp](3d-model/screenshots/Prototyp-02.jpg "Prototyp")
 
 ## 3d-Modell
 erstellt mit Autodesk Fusion (Startup-Lizenz nur für private Nutzung). Bei Aussparungen für Fußleisten oder andere Elemente, die eingepasst werden müssen bitte beachten, dass die Drucke meist mit ca. 0.1mm zusätzlicher Stärke gedruckt werden, damit die Schichten gut aneinander haften. Hinzu kommt, dass die erste Schicht zwecks besserer Haftung am Druckbett etwas plattgedrückt wird. Entsprechende Toleranzen bitte mit einplanen.
