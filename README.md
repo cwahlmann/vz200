@@ -147,3 +147,10 @@ Endpunkt | Method | Request | Response | Beschreibung
 Raspi-Emulator für Windows (leider schon 7 Jahre alt)
 https://sourceforge.net/projects/rpiqemuwindows/
 
+## Screenshots
+
+![Prototyp](3d-model/screenshots/Prototyp-01.jpg "Prototyp")
+![Prototyp](3d-model/screenshots/Prototyp-02.jpg "Prototyp")
+![Prototyp](3d-model/screenshots/Prototyp-03.jpg "Prototyp")
+![Prototyp](3d-model/screenshots/Prototyp-04.jpg "Prototyp")
+![Prototyp](3d-model/screenshots/Prototyp-05.jpg "Prototyp")
