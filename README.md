@@ -7,7 +7,7 @@ Nachbau eines VZ200-Color-Computers (1983)
 erstellt mit Autodesk Fusion (Startup-Lizenz nur für private Nutzung). Bei Aussparungen für Fußleisten oder andere Elemente, die eingepasst werden müssen bitte beachten, dass die Drucke meist mit ca. 0.1mm zusätzlicher Stärke gedruckt werden, damit die Schichten gut aneinander haften. Hinzu kommt, dass die erste Schicht zwecks besserer Haftung am Druckbett etwas plattgedrückt wird. Entsprechende Toleranzen bitte mit einplanen.
 
 ![3d-Layout Boden](3d-model/screenshots/VZ-Fusion-v3-Boden.png "3d-Layout Boden")
-![3d-Layout Monitor](3d-model/screenshots/monitor-v2_1.png "3d-Layout Monitor")
+![3d-Layout Monitor](3d-model/screenshots/monitor-v2_2.png "3d-Layout Monitor")
 
 ### Drucke
 STL-Dateien aus Fusion werden mit Ultimaker Cura 4.1 druckfertig gemacht -> gcode für Creality Ender 3.
