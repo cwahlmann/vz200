@@ -148,6 +148,7 @@ Endpunkt | Method | Request | Response | Beschreibung
 /tape/play | POST | | Integer | Tape starten; gibt Slot zurück
 /tape/record | POST | | Integer | Aufnahme starten; gibt Slot zurück
 /tape/stop | POST | | Integer | Tape stoppen; gibt Slot zurück
+/sound/{volume} | POST | Integer | | Audio-Lautstärke von 0 (=Stumm) bis 255 (=+6 DB)
 
 ## Nützliche Links
 
