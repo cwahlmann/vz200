@@ -23,6 +23,8 @@ public abstract class SoundPlayer {     // Probably should be an interface, but 
 
   public abstract int getSampleRate();
 
+  public abstract void setVolume(float vol);
+
   public abstract void writeMono(int value);
   
   public abstract void writeStereo(int a, int b);
