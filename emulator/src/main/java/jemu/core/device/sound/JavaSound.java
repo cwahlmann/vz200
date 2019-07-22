@@ -9,15 +9,20 @@
 
 package jemu.core.device.sound;
 
-import javax.sound.sampled.*;
-import jemu.core.device.*;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.SourceDataLine;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Richard
  */
 public class JavaSound extends SunAudio {
-
+	private static final Logger log = LoggerFactory.getLogger(JavaSound.class);
 	public static final int SAMPLE_RATE = 22050;
 
 	protected static AudioFormat STEREO_FORMAT = new AudioFormat(SAMPLE_RATE, 8, 2, false, false);
@@ -58,11 +63,6 @@ public class JavaSound extends SunAudio {
 	}
 
 	public void sync() {
-	}
-
-	public void setVolume(float vol) {
-		FloatControl gainControl = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
-		gainControl.setValue(vol);
 	}
 
 	public void play() {

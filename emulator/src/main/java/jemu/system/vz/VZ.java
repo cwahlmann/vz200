@@ -51,8 +51,9 @@ public class VZ extends Computer {
 	// level of 127 these have been changed (they normally only toggle between 1 and
 	// 2,
 	// and are 2 when no sound is generated: i.e. VDCLatch = 0x20).
-	protected static final byte[] SOUND_LEVELS = { 127, -128, 0, 127 };
+	// protected static final byte[] SOUND_LEVELS = { 127, -128, 0, 127 };
 	// protected static final byte[] SOUND_LEVELS = { -128, 0, 127, 127 };
+	protected static final byte[] SOUND_LEVELS = { 1, -1, 0, 1 };
 
 	protected boolean vz200;
 	protected int cyclesPerSecond = CYCLES_PER_SEC_VZ200;
@@ -66,7 +67,8 @@ public class VZ extends Computer {
 	protected Disassembler disassembler = new DissZ80();
 	protected SoundPlayer player = SoundUtil.getSoundPlayer(false);
 	protected VzPrinterDevice printer = new VzPrinterDevice();
-	protected byte soundByte = 127;
+	protected int soundBit = 1;
+	protected int volume = 127;
 	protected int soundUpdate = 0;
 	protected int audioAdd;
 	protected int syncCnt = AUDIO_RESYNC_FRAMES;
@@ -108,13 +110,13 @@ public class VZ extends Computer {
 		this.tapeDevice.register(z80);
 		this.loaderDevice = new VZLoaderDevice(this);
 		this.loaderDevice.register(z80);
-		this.setVolume(100);
 	}
 
 	public void initialise() {
 		memory.setMemory(0, getFile(romPath + "VZBAS" + (vz200 ? "12" : "20") + ".ROM", 16384));
 		SimpleRenderer.setFontData(getFile(romPath + "VZ.CHR", 768));
 		super.initialise();
+		this.setVolume(50);
 	}
 
 	public String getKeyboardImage() {
@@ -153,7 +155,7 @@ public class VZ extends Computer {
 		if ((soundUpdate & AUDIO_TEST) != 0) {
 			soundUpdate -= AUDIO_TEST;
 			// player.writeulaw(soundByte);
-			player.writeMono(soundByte);
+			player.writeMono(soundBit * volume);
 		}
 
 		if (frameSkip == 0)
@@ -185,11 +187,13 @@ public class VZ extends Computer {
 			return memory.writeByte(address, value);
 		else if (address >= 0x7000)
 			return renderer.setData(memory.writeByte(address, value));
-		else if (address >= 0x6800) {
+		else if (address == 0x6fff) {
+			setVolume(value);
+		} else if (address >= 0x6800) {
 
 			// check sound
 			if (((vdcLatch ^ value) & 0x21) != 0) {
-				soundByte = SOUND_LEVELS[(value & 0x01) | ((value >> 4) & 0x02)];
+				soundBit = SOUND_LEVELS[(value & 0x01) | ((value >> 4) & 0x02)];
 			}
 
 			vdcLatch = value;
@@ -198,28 +202,13 @@ public class VZ extends Computer {
 		return value & 0xff;
 	}
 
-	private static final float OFF_DB = -80f;
-	private static final float MIN_DB = -15f;
-	private static final float MAX_DB = 6f;
-	
 	private static final int MIN_VOL = 0;
-	private static final int MAX_VOL = 255;
+	private static final int MAX_VOL = 127;
 
 	public void setVolume(int volume) {
-		int v = volume;
-		if (v < MIN_VOL) {
-			v = MIN_VOL;
-		} else if (v > MAX_VOL) {
-			v = MAX_VOL;
-		}
-		float vol = OFF_DB;
-		if (v > MIN_VOL) {
-			vol = ((float)v) /255.0f * (MAX_DB-MIN_DB) + MIN_DB;
-		}
-		log.info("set sound volume to [{} = {} db]", v, vol);
-		player.setVolume(vol);
+		this.volume = volume;
 	}
-	
+
 	public void processKeyEvent(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 		if (keyCode == KeyEvent.VK_ESCAPE) {
@@ -416,16 +405,17 @@ public class VZ extends Computer {
 	}
 
 	public void alert(String s) {
-		for (int i=0; i<32; i++) {
-			writeByte(0x71e0+i, 0x60);
+		for (int i = 0; i < 32; i++) {
+			writeByte(0x71e0 + i, 0x60);
 		}
-		printAt(16-s.length()/2,15, s, true);
+		printAt(16 - s.length() / 2, 15, s, true);
 	}
+
 	public void printAt(int x, int y, String s, boolean inverse) {
 		int adr = 0x7000 + x + y * 32;
-		for (int i=0; i<s.length(); i++) {
-			int c=s.toUpperCase().charAt(i);
-			if (c >=0x40 && c<0x60) {
+		for (int i = 0; i < s.length(); i++) {
+			int c = s.toUpperCase().charAt(i);
+			if (c >= 0x40 && c < 0x60) {
 				c = c - 0x40;
 			}
 			writeByte(adr + i, inverse ? c | 0x40 : c);

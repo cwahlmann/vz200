@@ -36,10 +36,6 @@ public class SunAudio extends SoundPlayer implements Runnable {
 		return 8000;
 	}
 
-	public void setVolume(float vol) {
-		// nothing to do
-	}
-
 	public void play() {
 		if (!playing) {
 			// sync();
