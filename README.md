@@ -120,6 +120,12 @@ PORT | IN / OUT | Beschreibung
 
 (werden in [home]/vz200/tape abgelegt)
 
+### Erweiterung Volume-Controle
+
+ADRESS | R / W | Beschreibung
+-------|-------|-------------
+0x6fff / 28671 | W | Setzt die Lautstärke (0-127)
+
 ### REST-Interface
 
 ```bash
