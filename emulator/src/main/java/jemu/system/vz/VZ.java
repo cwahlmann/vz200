@@ -108,6 +108,7 @@ public class VZ extends Computer {
 		this.tapeDevice.register(z80);
 		this.loaderDevice = new VZLoaderDevice(this);
 		this.loaderDevice.register(z80);
+		this.setVolume(100);
 	}
 
 	public void initialise() {
@@ -197,6 +198,28 @@ public class VZ extends Computer {
 		return value & 0xff;
 	}
 
+	private static final float OFF_DB = -80f;
+	private static final float MIN_DB = -15f;
+	private static final float MAX_DB = 6f;
+	
+	private static final int MIN_VOL = 0;
+	private static final int MAX_VOL = 255;
+
+	public void setVolume(int volume) {
+		int v = volume;
+		if (v < MIN_VOL) {
+			v = MIN_VOL;
+		} else if (v > MAX_VOL) {
+			v = MAX_VOL;
+		}
+		float vol = OFF_DB;
+		if (v > MIN_VOL) {
+			vol = ((float)v) /255.0f * (MAX_DB-MIN_DB) + MIN_DB;
+		}
+		log.info("set sound volume to [{} = {} db]", v, vol);
+		player.setVolume(vol);
+	}
+	
 	public void processKeyEvent(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 		if (keyCode == KeyEvent.VK_ESCAPE) {

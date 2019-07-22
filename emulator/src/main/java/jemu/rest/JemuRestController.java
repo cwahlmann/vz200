@@ -196,4 +196,9 @@ public class JemuRestController {
 		}
 		return computer().disassemble(a, b);
 	}
+	
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/sound/{volume}")
+	public void setVolume(@PathVariable(name = "volume") int volume) {
+		computer().setVolume(volume);
+	}
 }
