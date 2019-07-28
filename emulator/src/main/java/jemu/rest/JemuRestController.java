@@ -122,15 +122,18 @@ public class JemuRestController {
 		}
 		StringBuilder result = new StringBuilder();
 		int n = 0;
+		StringBuilder ascii = new StringBuilder();
 		for (int i = a; i < b; i++) {
 			if (n % width == 0) {
 				result.append(String.format("%04x: ", i));
 			}
 			int value = computer().getMemory().readByte(i);
+			ascii.append(value >=32 && value < 127 ? (char)value : ".");
 			result.append(String.format("%02x ", value));
 			n++;
 			if (n % width == 0) {
-				result.append("\n");
+				result.append(" ").append(ascii).append("\n");
+				ascii = new StringBuilder();
 			}
 		}
 		return result.toString();

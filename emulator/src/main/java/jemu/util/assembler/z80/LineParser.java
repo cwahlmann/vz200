@@ -88,7 +88,8 @@ public class LineParser {
 			if (i.isPresent()) {
 				result.add(new Token(Optional.of(i.get() & 0xff), Optional.of(0), s, false, "", false,
 						(a, b) -> a & 0xff));
-				result.add(new Token(Optional.of(i.get() >> 8), Optional.of(0), s, false, "", false, (a, b) -> a >> 8));
+				result.add(new Token(Optional.of(i.get() >> 8), Optional.of(0), s, false, "", false, (a, b) -> a));
+				System.out.println("");
 			} else {
 				result.add(new Token(i, Optional.of(0), s, false, "", false, (a, b) -> a & 0xff));
 				result.add(new Token(i, Optional.of(0), s, false, "", false, (a, b) -> a >> 8));
