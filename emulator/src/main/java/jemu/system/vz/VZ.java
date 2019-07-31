@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -314,32 +315,44 @@ public class VZ extends Computer {
 		}
 	}
 
-	public void loadAsmFile(String name) throws Exception {
+	public String loadAsmFile(String name, Boolean autorun) throws Exception {
 		Assembler asm = new Assembler(getMemory());
-		asm.assemble(Paths.get(name));
-		System.out.println(String.format("Start at %04x...", asm.getRunAddress()));
-		z80.setPC(asm.getRunAddress());
+		String result = asm.assemble(Paths.get(name));
+		log.info(String.format("Start at %04x...", asm.getRunAddress()));
+		if (autorun) {
+			z80.setPC(asm.getRunAddress());
+		}
+		return result;
 	}
 
 	@Override
-	public void loadAsmFile(InputStream is) throws Exception {
+	public String loadAsmFile(InputStream is, Boolean autorun) throws Exception {
 		Assembler asm = new Assembler(getMemory());
-		asm.assemble(is);
-		System.out.println(String.format("Start at %04x...", asm.getRunAddress()));
-		z80.setPC(asm.getRunAddress());
+		String result = asm.assemble(is);
+		log.info(String.format("Start at %04x...", asm.getRunAddress()));
+		if (autorun) {
+			z80.setPC(asm.getRunAddress());
+		}
+		return result;
 	}
 
-	public void saveFile(String name) throws Exception {
+	public void saveFile(String name, String range, Boolean autorun) throws Exception {
 		try (FileOutputStream os = new FileOutputStream(name)) {
-			saveFile(os);
-			// files.addElement(new FileDescriptor(name, name, "none"));
+			saveFile(os, range, autorun);
 		}
 	}
 
-	public void saveFile(OutputStream os) throws Exception {
-		int type = 0xf0;
-		int endOfBasicPointer = memory.readWord(SYSTEM_BASIC_END);
-		int startOfBasicPointer = memory.readWord(SYSTEM_BASIC_START);
+	public void saveFile(OutputStream os, String range, Boolean autorun) throws Exception {
+		int type = autorun ? 0xf1 : 0xf0;
+		int endOfBasicPointer;
+		int startOfBasicPointer;
+		if (StringUtils.isEmpty(range)) {
+			endOfBasicPointer = memory.readWord(SYSTEM_BASIC_END);
+			startOfBasicPointer = memory.readWord(SYSTEM_BASIC_START);
+		} else {
+			startOfBasicPointer = Integer.valueOf(range.split("-")[0], 16);
+			endOfBasicPointer = Integer.valueOf(range.split("-")[1], 16);
+		}
 		byte[] header = new byte[24];
 		header[21] = (byte) type;
 		header[22] = (byte) (startOfBasicPointer & 0xff);

@@ -50,14 +50,16 @@ public class Assembler {
 		this.memory = memory;
 	}
 
-	public void assemble(Path path) {
+	public String assemble(Path path) {
 		parseFile(path);
 		resolveOpenTokens();
+		return String.format("%04x-%04x", runAddress, maxCursorAddress);
 	}
 
-	public void assemble(InputStream is) {
+	public String assemble(InputStream is) {
 		parseStream(is);
 		resolveOpenTokens();
+		return String.format("%04x-%04x", runAddress, maxCursorAddress);
 	}
 
 	private void parseFile(Path path) {
