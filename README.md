@@ -140,9 +140,9 @@ Endpunkt | Method | Request | Response | Beschreibung
 /        | GET    |         | String   | Info
 /reset   | POST   |         | String   | Reset Computer
 /vz      | POST   | application/octet-stream | String | .vz-Programm einspielen
-/vz[?autorun={True|False}][&range={start-end}]      | GET    |         | application/octet-stream | .vz-Programm auslesen; autorun: mit Autostart-Flag speichern; range: Speicherbereich (default: Basic-Pointer)
+/vz[?autorun={True/False}][&range={start-end}]      | GET    |         | application/octet-stream | .vz-Programm auslesen; autorun: mit Autostart-Flag speichern; range: Speicherbereich (default: Basic-Pointer)
 /bas     | POST   | application/octet-stream | String | Basic-Programm-Source einspielen
-/asm[?autorun={True|False}]     | POST   | application/octet-stream | Range: {von-bis} | Assembler-Programm-Source einspielen und ggf. starten (default True)
+/asm[?autorun={True/False}]     | POST   | application/octet-stream | Range: {von-bis} | Assembler-Programm-Source einspielen und ggf. starten (default True)
 /asm/{von[-bis]} | GET    | | String | Speicherbereich als Maschinenprogramm auslesen
 /hex     | POST   | application/octet-stream | String | Hexadezimalen Source einspielen und starten
 /hex/{von[-bis]} | GET    | | String | Speicherbereich in hexadezimalem Format auslesen
