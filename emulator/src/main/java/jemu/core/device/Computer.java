@@ -229,11 +229,12 @@ public abstract class Computer extends Device implements Runnable {
 	public void loadHexFile(InputStream is) throws Exception {
 	}
 
-	public void loadAsmFile(String name) throws Exception {
-		loadAsmFile(new FileInputStream(name));
+	public String loadAsmFile(String name, Boolean autorun) throws Exception {
+		return loadAsmFile(new FileInputStream(name), autorun);
 	}
 
-	public void loadAsmFile(InputStream is) throws Exception {
+	public String loadAsmFile(InputStream is, Boolean autorun) throws Exception {
+		return "";
 	}
 
 	public void loadBinaryFile(String name) throws Exception {
@@ -253,7 +254,7 @@ public abstract class Computer extends Device implements Runnable {
 	public void saveFile(String name) throws Exception {
 	}
 
-	public void saveFile(OutputStream os) throws Exception {
+	public void saveFile(OutputStream os, String range, Boolean autorun) throws Exception {
 	}
 
 	public List<String> flushPrinter() {

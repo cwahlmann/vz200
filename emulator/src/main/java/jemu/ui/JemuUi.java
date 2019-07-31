@@ -406,7 +406,7 @@ public class JemuUi extends JPanel
 
 	public String loadAsmFile(String name) throws Exception {
 		String result = null;
-		computer.loadAsmFile(name);
+		computer.loadAsmFile(name, true);
 		result = computer.getFileInfo(name);
 		return result;
 	}
@@ -440,7 +440,7 @@ public class JemuUi extends JPanel
 	}
 
 	public void loadAsmFile(InputStream is) throws Exception {
-		computer.loadAsmFile(is);
+		computer.loadAsmFile(is, true);
 	}
 
 	public void loadBinaryFile(InputStream is) throws Exception {
