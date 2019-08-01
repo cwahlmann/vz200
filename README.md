@@ -120,6 +120,12 @@ PORT | IN / OUT | Beschreibung
 
 (werden in [home]/vz200/tape abgelegt)
 
+### Erweiterung Volume-Controle
+
+ADRESS | R / W | Beschreibung
+-------|-------|-------------
+0x6fff / 28671 | W | Setzt die Lautstärke (0-127)
+
 ### REST-Interface
 
 ```bash
@@ -134,9 +140,9 @@ Endpunkt | Method | Request | Response | Beschreibung
 /        | GET    |         | String   | Info
 /reset   | POST   |         | String   | Reset Computer
 /vz      | POST   | application/octet-stream | String | .vz-Programm einspielen
-/vz      | GET    |         | application/octet-stream | .vz-Programm auslesen
+/vz[?autorun={True/False}][&range={start-end}]      | GET    |         | application/octet-stream | .vz-Programm auslesen; autorun: mit Autostart-Flag speichern; range: Speicherbereich (default: Basic-Pointer)
 /bas     | POST   | application/octet-stream | String | Basic-Programm-Source einspielen
-/asm     | POST   | application/octet-stream | String | Assembler-Programm-Source einspielen und starten
+/asm[?autorun={True/False}]     | POST   | application/octet-stream | Range: {von-bis} | Assembler-Programm-Source einspielen und ggf. starten (default True)
 /asm/{von[-bis]} | GET    | | String | Speicherbereich als Maschinenprogramm auslesen
 /hex     | POST   | application/octet-stream | String | Hexadezimalen Source einspielen und starten
 /hex/{von[-bis]} | GET    | | String | Speicherbereich in hexadezimalem Format auslesen
@@ -148,6 +154,7 @@ Endpunkt | Method | Request | Response | Beschreibung
 /tape/play | POST | | Integer | Tape starten; gibt Slot zurück
 /tape/record | POST | | Integer | Aufnahme starten; gibt Slot zurück
 /tape/stop | POST | | Integer | Tape stoppen; gibt Slot zurück
+/sound/{volume} | POST | Integer | | Audio-Lautstärke von 0 (=Stumm) bis 255 (=+6 DB)
 
 ## Nützliche Links
 

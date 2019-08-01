@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,15 +59,15 @@ public class JemuRestController {
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/vz200/vz", consumes = "application/octet-stream;charset=UTF-8")
-	public void readVz(HttpServletResponse response) {
-
+	public void readVz(@RequestParam(defaultValue = "") String range,
+			@RequestParam(defaultValue = "false") Boolean autorun, HttpServletResponse response) {
 		// Set the content type and attachment header.
 		response.addHeader("Content-disposition", "attachment;filename=myprogram.vz");
 		response.setContentType("application/octet-stream");
 
 		// Copy the stream to the response's output stream.
 		try {
-			computer().saveFile(response.getOutputStream());
+			computer().saveFile(response.getOutputStream(), range, autorun);
 			response.flushBuffer();
 		} catch (Exception e) {
 			log.error("Fehler beim Schreiben", e);
@@ -85,14 +86,13 @@ public class JemuRestController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST, path = "/vz200/asm", consumes = "application/octet-stream;charset=UTF-8")
-	public String loadAsm(RequestEntity<InputStream> entity) {
+	public String loadAsm(@RequestParam(defaultValue = "True") Boolean autorun, RequestEntity<InputStream> entity) {
 		try (InputStream is = entity.getBody()) {
-			computer().loadAsmFile(is);
+			return computer().loadAsmFile(is, autorun);
 		} catch (Exception e) {
 			log.error("Fehler beim Einspielen des Assembler-Programms", e);
 			return "Fehler beim Einspielen des Assembler-Programms: " + e.getMessage();
 		}
-		return "Daten eingespielt.";
 	}
 
 	@RequestMapping(method = RequestMethod.POST, path = "/vz200/hex", consumes = "application/octet-stream;charset=UTF-8")
@@ -122,15 +122,18 @@ public class JemuRestController {
 		}
 		StringBuilder result = new StringBuilder();
 		int n = 0;
+		StringBuilder ascii = new StringBuilder();
 		for (int i = a; i < b; i++) {
 			if (n % width == 0) {
 				result.append(String.format("%04x: ", i));
 			}
 			int value = computer().getMemory().readByte(i);
+			ascii.append(value >= 32 && value < 127 ? (char) value : ".");
 			result.append(String.format("%02x ", value));
 			n++;
 			if (n % width == 0) {
-				result.append("\n");
+				result.append(" ").append(ascii).append("\n");
+				ascii = new StringBuilder();
 			}
 		}
 		return result.toString();
@@ -195,5 +198,10 @@ public class JemuRestController {
 			b = a + 1024;
 		}
 		return computer().disassemble(a, b);
+	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/sound/{volume}")
+	public void setVolume(@PathVariable(name = "volume") int volume) {
+		computer().setVolume(volume);
 	}
 }

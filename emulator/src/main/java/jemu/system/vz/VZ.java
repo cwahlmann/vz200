@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +52,9 @@ public class VZ extends Computer {
 	// level of 127 these have been changed (they normally only toggle between 1 and
 	// 2,
 	// and are 2 when no sound is generated: i.e. VDCLatch = 0x20).
-	protected static final byte[] SOUND_LEVELS = { 127, -128, 0, 127 };
+	// protected static final byte[] SOUND_LEVELS = { 127, -128, 0, 127 };
 	// protected static final byte[] SOUND_LEVELS = { -128, 0, 127, 127 };
+	protected static final byte[] SOUND_LEVELS = { 1, -1, 0, 1 };
 
 	protected boolean vz200;
 	protected int cyclesPerSecond = CYCLES_PER_SEC_VZ200;
@@ -66,7 +68,8 @@ public class VZ extends Computer {
 	protected Disassembler disassembler = new DissZ80();
 	protected SoundPlayer player = SoundUtil.getSoundPlayer(false);
 	protected VzPrinterDevice printer = new VzPrinterDevice();
-	protected byte soundByte = 127;
+	protected int soundBit = 1;
+	protected int volume = 127;
 	protected int soundUpdate = 0;
 	protected int audioAdd;
 	protected int syncCnt = AUDIO_RESYNC_FRAMES;
@@ -114,6 +117,7 @@ public class VZ extends Computer {
 		memory.setMemory(0, getFile(romPath + "VZBAS" + (vz200 ? "12" : "20") + ".ROM", 16384));
 		SimpleRenderer.setFontData(getFile(romPath + "VZ.CHR", 768));
 		super.initialise();
+		this.setVolume(50);
 	}
 
 	public String getKeyboardImage() {
@@ -152,7 +156,7 @@ public class VZ extends Computer {
 		if ((soundUpdate & AUDIO_TEST) != 0) {
 			soundUpdate -= AUDIO_TEST;
 			// player.writeulaw(soundByte);
-			player.writeMono(soundByte);
+			player.writeMono(soundBit * volume);
 		}
 
 		if (frameSkip == 0)
@@ -184,17 +188,26 @@ public class VZ extends Computer {
 			return memory.writeByte(address, value);
 		else if (address >= 0x7000)
 			return renderer.setData(memory.writeByte(address, value));
-		else if (address >= 0x6800) {
+		else if (address == 0x6fff) {
+			setVolume(value);
+		} else if (address >= 0x6800) {
 
 			// check sound
 			if (((vdcLatch ^ value) & 0x21) != 0) {
-				soundByte = SOUND_LEVELS[(value & 0x01) | ((value >> 4) & 0x02)];
+				soundBit = SOUND_LEVELS[(value & 0x01) | ((value >> 4) & 0x02)];
 			}
 
 			vdcLatch = value;
 			renderer.setVDCLatch(value);
 		}
 		return value & 0xff;
+	}
+
+	private static final int MIN_VOL = 0;
+	private static final int MAX_VOL = 127;
+
+	public void setVolume(int volume) {
+		this.volume = volume;
 	}
 
 	public void processKeyEvent(KeyEvent e) {
@@ -302,32 +315,44 @@ public class VZ extends Computer {
 		}
 	}
 
-	public void loadAsmFile(String name) throws Exception {
+	public String loadAsmFile(String name, Boolean autorun) throws Exception {
 		Assembler asm = new Assembler(getMemory());
-		asm.assemble(Paths.get(name));
-		System.out.println(String.format("Start at %04x...", asm.getRunAddress()));
-		z80.setPC(asm.getRunAddress());
+		String result = asm.assemble(Paths.get(name));
+		log.info(String.format("Start at %04x...", asm.getRunAddress()));
+		if (autorun) {
+			z80.setPC(asm.getRunAddress());
+		}
+		return result;
 	}
 
 	@Override
-	public void loadAsmFile(InputStream is) throws Exception {
+	public String loadAsmFile(InputStream is, Boolean autorun) throws Exception {
 		Assembler asm = new Assembler(getMemory());
-		asm.assemble(is);
-		System.out.println(String.format("Start at %04x...", asm.getRunAddress()));
-		z80.setPC(asm.getRunAddress());
+		String result = asm.assemble(is);
+		log.info(String.format("Start at %04x...", asm.getRunAddress()));
+		if (autorun) {
+			z80.setPC(asm.getRunAddress());
+		}
+		return result;
 	}
 
-	public void saveFile(String name) throws Exception {
+	public void saveFile(String name, String range, Boolean autorun) throws Exception {
 		try (FileOutputStream os = new FileOutputStream(name)) {
-			saveFile(os);
-			// files.addElement(new FileDescriptor(name, name, "none"));
+			saveFile(os, range, autorun);
 		}
 	}
 
-	public void saveFile(OutputStream os) throws Exception {
-		int type = 0xf0;
-		int endOfBasicPointer = memory.readWord(SYSTEM_BASIC_END);
-		int startOfBasicPointer = memory.readWord(SYSTEM_BASIC_START);
+	public void saveFile(OutputStream os, String range, Boolean autorun) throws Exception {
+		int type = autorun ? 0xf1 : 0xf0;
+		int endOfBasicPointer;
+		int startOfBasicPointer;
+		if (StringUtils.isEmpty(range)) {
+			endOfBasicPointer = memory.readWord(SYSTEM_BASIC_END);
+			startOfBasicPointer = memory.readWord(SYSTEM_BASIC_START);
+		} else {
+			startOfBasicPointer = Integer.valueOf(range.split("-")[0], 16);
+			endOfBasicPointer = Integer.valueOf(range.split("-")[1], 16);
+		}
 		byte[] header = new byte[24];
 		header[21] = (byte) type;
 		header[22] = (byte) (startOfBasicPointer & 0xff);
@@ -393,16 +418,17 @@ public class VZ extends Computer {
 	}
 
 	public void alert(String s) {
-		for (int i=0; i<32; i++) {
-			writeByte(0x71e0+i, 0x60);
+		for (int i = 0; i < 32; i++) {
+			writeByte(0x71e0 + i, 0x60);
 		}
-		printAt(16-s.length()/2,15, s, true);
+		printAt(16 - s.length() / 2, 15, s, true);
 	}
+
 	public void printAt(int x, int y, String s, boolean inverse) {
 		int adr = 0x7000 + x + y * 32;
-		for (int i=0; i<s.length(); i++) {
-			int c=s.toUpperCase().charAt(i);
-			if (c >=0x40 && c<0x60) {
+		for (int i = 0; i < s.length(); i++) {
+			int c = s.toUpperCase().charAt(i);
+			if (c >= 0x40 && c < 0x60) {
 				c = c - 0x40;
 			}
 			writeByte(adr + i, inverse ? c | 0x40 : c);
