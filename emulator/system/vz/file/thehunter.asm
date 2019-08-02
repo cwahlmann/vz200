@@ -7,8 +7,6 @@
 
 // install screen interrupt hook
         DI
-        CALL intro:
-        CALL init0:
         
         LD HL, intadr:
         LD (HL), 0xc3
@@ -21,11 +19,53 @@
         LD A, 0x01
         LD (0x78dd), A
         
+        XOR A
+        LD (game_state:), A
         EI
-    	// and then: do nothing ;-)
-wait:   JR wait:
+
+    	// outer game loop
+run_intro: 	CALL intro:
+
+run_new_game: CALL init0:
+
+resume_game: LD A, 0x01
+			LD (game_state:), A
+			
+loop1: 		LD A, (game_state:)
+			CP 0x01
+			JR Z, loop1:
+		
+			OR A
+			JR Z, run_intro:
+		
+			CP 0x02
+			JR Z, hit_message_loop:
+			
+			CP 0x03
+			JR Z, run_game_over:
+		
+			JR loop1:
+
+// wait for "s"-Key
+hit_message_loop: LD A, (0x68fd)
+			AND 0x02
+			JR NZ, hit_message_loop: 
+			
+			CALL init:
+			JR resume_game:
+
+			JR loop1:
+			
+run_game_over: CALL game_over:
+			JR run_new_game:
+
+// game state: 0 = intro, 1 = running, 2 = hit_message; 3 = game_over
+
+game_state: defb 0x00
+
 
 score:     defw 0x000f
+highscore: defw 0x0000
 lives:     defb 0x05
 
 x:         defb 0x0e
@@ -109,6 +149,10 @@ main: 	DI
         PUSH BC
         PUSH AF
 
+		LD A, (game_state:)
+		CP 0x01
+		JR NZ, exit:
+
 		CALL clear_screen:
         CALL draw:
         CALL draw_arr:
@@ -124,9 +168,9 @@ main: 	DI
 		OR A
 		JR NZ, exit:
 		
-		CALL game_over:
-		CALL init0:
-				
+		LD A, 0x03
+		LD (game_state:), A
+						
 exit:   POP AF
         POP BC
         POP DE
@@ -473,15 +517,10 @@ draw_duck_nxb1: LD (IX+2), 0xff
 		CALL print_at: 
 		LD BC, 0x0126
 		CALL print_at:
-		
-// wait for "s"-Key
-draw_duck_lp1b: LD A, (0x68fd)
-		AND 0x02
-		JR NZ, draw_duck_lp1b:
-		
-		CALL init:
+		LD A, 0x02
+		LD (game_state:), A
 		RET
-		        
+				        
 // hit arr
 draw_duck_nx1: LD (IX+2), 0xff
 		LD A, 0xff
@@ -592,10 +631,16 @@ zufall: PUSH HL
 		POP HL
 		RET
 		
-// inputs: DE - screen pos
-draw_score: LD DE, 0x01e8
-draw_score_at: LD HL, screen:
-		ADD HL, DE
+score_msg: defs "SCORE: "
+		defb 0x00
+
+// inputs: BC - screen pos
+draw_score: LD BC, 0x01e2
+draw_score_at: LD DE, score_msg:
+		CALL print_at:
+		
+		LD HL, screen:
+		ADD HL, BC
 		LD D, H
 		LD E, L 
 		LD HL, (score:)
@@ -609,6 +654,38 @@ draw_score_at: LD HL, screen:
 		LD (DE), A
 		DEC DE
 draw_score_lp1: PUSH DE
+		PUSH BC
+		CALL div_10:
+		POP BC
+		POP DE
+ 	    ADD A, 0x30
+        LD (DE), A
+        DEC DE
+        DJNZ draw_score_lp1:
+        RET
+
+highscore_msg: defs "HIGHSCORE: "
+		defb 0x00
+		
+// inputs: BC - screen pos
+draw_highscore_at: LD DE, highscore_msg:
+		CALL print_at:
+		
+		LD HL, screen:
+		ADD HL, BC
+		LD D, H
+		LD E, L 
+		LD HL, (highscore:)
+		LD B, 0x05
+		INC DE
+		INC DE
+		INC DE
+		INC DE
+		INC DE
+		LD A, 0x30
+		LD (DE), A
+		DEC DE
+draw_highscore_lp1: PUSH DE
 		PUSH BC
 		CALL div_10:
 		POP BC
@@ -704,11 +781,15 @@ intro_lp3: LD A, (DE)
 intro_nx1: LD A, (0x68fd)
 		AND 0x02
 		JR NZ, intro_nx1:
+		LD (0x7000), A
 		RET
 		
 game_over_logo:	defb 0x4e, 0x4c, 0x48, 0x4e, 0x4c, 0x4a, 0x4e, 0x4e, 0x4a, 0x4e, 0x4c, 0x48, 0x40, 0x4e, 0x4c, 0x4a, 0x4a, 0x40, 0x4a, 0x4e, 0x4c, 0x48, 0x4e, 0x4d, 0x40
 				defb 0x4a, 0x44, 0x4a, 0x4b, 0x43, 0x4a, 0x4a, 0x48, 0x4a, 0x4e, 0x48, 0x40, 0x40, 0x4a, 0x40, 0x4a, 0x4a, 0x45, 0x48, 0x4e, 0x48, 0x40, 0x4e, 0x4c, 0x4a
 				defb 0x4c, 0x4c, 0x48, 0x48, 0x40, 0x48, 0x48, 0x40, 0x48, 0x4c, 0x4c, 0x48, 0x40, 0x4c, 0x4c, 0x48, 0x4c, 0x4c, 0x40, 0x4c, 0x4c, 0x48, 0x48, 0x40, 0x48
+
+beat_highscore_msg: defs "!!! NEW HIGHSCORE !!!"
+					defb 0x00
 				
 game_over_text: defs "PRESS <S> FOR START"
 				defb 0x00
@@ -725,7 +806,7 @@ game_over_lp1: LD (HL), 0x80
 		JR NZ, game_over_lp1:
 		
 		LD HL, screen:
-		LD DE, 0x0084
+		LD DE, 0x0044
 		ADD HL, DE
 		LD DE, game_over_logo:
 		LD B, 0x03
@@ -744,9 +825,29 @@ game_over_lp3: LD A, (DE)
 		DEC B
 		JR NZ, game_over_lp2:
 
-		LD DE, 0x012d
+		LD HL, (score:)
+		LD D, H
+		LD E, L
+		LD HL, (highscore:)
+		CCF
+		SBC HL, DE
+		JR NC, game_over_nx1:
+		
+// new highscore!
+		LD H, D
+		LD L, E
+		LD (highscore:), HL
+		// show text
+		LD BC, 0x00e5
+		LD DE, beat_highscore_msg:
+		CALL print_at: 
+
+game_over_nx1: LD BC, 0x0129
 		CALL draw_score_at:
 				
+		LD BC, 0x0147
+		CALL draw_highscore_at:
+
 		LD BC, 0x01a6
 		LD DE, game_over_text:
 		CALL print_at: 
@@ -772,5 +873,6 @@ print_at_lp4: LD A, (DE)
 		RET Z
 		LD (HL), A
 		INC HL
+		INC BC
 		JR print_at_lp4:
 		
