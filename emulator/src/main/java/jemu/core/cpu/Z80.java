@@ -247,7 +247,8 @@ public class Z80 extends Processor {
       reg[i] = 0;
     SP = PC = IX = IY = 0;
     I = R = R7 = IM = 0;
-    IFF1 = IFF2 = false;
+//    IFF1 = IFF2 = false;
+    IFF1 = IFF2 = true;
     interruptPending = 0;
     interruptExecute = inHalt = noWait = false;
   }

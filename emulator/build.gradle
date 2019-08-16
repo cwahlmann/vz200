@@ -21,7 +21,6 @@ repositories {
 
 dependencies {
 	compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.4.RELEASE'
-	//compile group: 'org.springframework.boot', name: 'spring-boot-starter-json', version: '2.1.4.RELEASE'
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
 	compile group: 'org.apache.commons', name: 'commons-text', version: '1.6'
 
@@ -36,3 +35,26 @@ dependencies {
 	}
 }
 
+task createVZ200Zip(type: Zip) {
+	dependsOn shadowJar
+	group = 'build'
+	description = "build and pack the VZ200-Emulator and all neccessary files into one ZIP-File"
+	
+	into ('/vz200/system', { 
+   		from 'system'
+	   	include '*'
+	   	include '*/*'
+	   	include '*/*/*'
+	})
+   	into ('/vz200', { 
+   		from 'build/libs'
+	   	include 'vz200-all.jar'
+	})
+	into ('/', {
+	   	from '.'
+	   	include 'vz200.sh'
+	   	include 'vz200.desktop'
+	   	include 'desktop-wallpaper.png'
+	})
+	archiveName 'JemuVZ200.zip'
+}
