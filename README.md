@@ -47,23 +47,13 @@ JOY-iT 5“ HDMI Touchscreen Display
 
 ## Rechner
 
-Installieren der Desktop-Version des Betriebssystems Raspbian: siehe Raspbian-Dokumentation.
-
-Installieren der OpenJDK-8 Runtime und des ALSA-Treibers mit `apt-get`:
-```
-sudo apt-get install openjdk-8-jre
-sudo apt-get install alsa-base alsa-utils
-```
-
-Umstellen audio auf headphone mit `raspi-config`:
-```
-sudo raspi-config
-```
-
 Projekt bauen mit Gradle:
 ```
 gradle createVZ200Zip
 ```
+Es entsteht ein Zip mit allen benötigten Dateien unter `build\distributions\JemuVZ200.zip`
+
+Installieren der Desktop-Version des Betriebssystems Raspbian: siehe Raspbian-Dokumentation unter www.raspbian.org
 
 Zip ins Home-Verzeichnis des Raspberry kopieren und entpacken.
 Danach sollte folgende Verzeichnisstruktur entstanden sein:
@@ -100,8 +90,20 @@ Die Datei `vz200.desktop` in den Autostart-Ordner kopieren:
 ```
 cp vz200.desktop ~/.config/autostart
 ```
+Installieren der OpenJDK-8 Runtime und des ALSA-Treibers mit `apt-get`:
+```
+sudo apt-get install openjdk-8-jre
+sudo apt-get install alsa-base alsa-utils
+```
 
-Zum Schluss noch mit `raspi-config` den Slash-Screen unterdrücken und in der Desktop-Umgebung das Hintergrundbild `desktop-wallpaper.png" einstellen.
+Raspi-Configuration starten und folgende Einstellungen vornehmen:
+- Umstellen audio auf headphone
+- Splash-Screen unterdrücken
+```
+sudo raspi-config
+```
+
+Zum Schluss Desktop-Umgebung das Hintergrundbild `desktop-wallpaper.png" einstellen.
 
 ## Emulator
 
