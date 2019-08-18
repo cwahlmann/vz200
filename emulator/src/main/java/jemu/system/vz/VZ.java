@@ -317,23 +317,35 @@ public class VZ extends Computer {
 
 	public String loadAsmFile(String name, Boolean autorun) throws Exception {
 		Assembler asm = new Assembler(getMemory());
-		String result = asm.assemble(Paths.get(name));
-		log.info(String.format("Start at %04x...", asm.getRunAddress()));
-		if (autorun) {
-			z80.setPC(asm.getRunAddress());
+		try {
+			z80.stop();
+			String result = asm.assemble(Paths.get(name));
+			log.info(String.format("Start at %04x...", asm.getRunAddress()));
+			if (autorun) {
+//				memory.writeByte(0x78dd, 0x00);
+				z80.setPC(asm.getRunAddress());
+			}
+			return result;
+		} finally {
+			z80.run();
 		}
-		return result;
 	}
 
 	@Override
 	public String loadAsmFile(InputStream is, Boolean autorun) throws Exception {
 		Assembler asm = new Assembler(getMemory());
-		String result = asm.assemble(is);
-		log.info(String.format("Start at %04x...", asm.getRunAddress()));
-		if (autorun) {
-			z80.setPC(asm.getRunAddress());
+		try {
+			z80.stop();
+			String result = asm.assemble(is);
+			log.info(String.format("Start at %04x...", asm.getRunAddress()));
+			if (autorun) {
+//				memory.writeByte(0x78dd, 0x00);
+				z80.setPC(asm.getRunAddress());
+			}
+			return result;
+		} finally {
+			z80.run();
 		}
-		return result;
 	}
 
 	public void saveFile(String name, String range, Boolean autorun) throws Exception {

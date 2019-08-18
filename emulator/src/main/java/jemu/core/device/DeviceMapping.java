@@ -1,7 +1,5 @@
 package jemu.core.device;
 
-import jemu.core.*;
-
 /**
  * Title:        JEMU
  * Description:  The Java Emulation Platform
