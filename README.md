@@ -47,34 +47,61 @@ JOY-iT 5“ HDMI Touchscreen Display
 
 ## Rechner
 
-- Raspbian
-- openjdk-8
-- alsa-Treiber
-- Umstellen audio auf headphone
+Installieren der Desktop-Version des Betriebssystems Raspbian: siehe Raspbian-Dokumentation.
+
+Installieren der OpenJDK-8 Runtime und des ALSA-Treibers mit `apt-get`:
+```
+sudo apt-get install openjdk-8-jre
+sudo apt-get install alsa-base alsa-utils
+```
+
+Umstellen audio auf headphone mit `raspi-config`:
 ```
 sudo raspi-config
 ```
 
-- jar kopieren nach `~/vz200`
-- Start-Skript erstellen `~/vz200.sh`:
-
-```bash
-#!/bin/bash
-cd vz200
-java -jar vz200-all.jar
+Projekt bauen mit Gradle:
+```
+gradle createVZ200Zip
 ```
 
-- .desktop erstellen für autostart `~/.config/autostart/vz200.desktop`:
+Zip ins Home-Verzeichnis des Raspberry kopieren und entpacken.
+Danach sollte folgende Verzeichnisstruktur entstanden sein:
 
 ```
-[Desktop Entry]
-Name=VZ200
-Comment=VZ200 Emulator starten
-Type=Application
-Exec=./vz200.sh
-Terminal=true
+pi@raspberrypi:~ $ unzip JemuVZ200.zip
+Archive:  JemuVZ200.zip
+   creating: vz200/
+   creating: vz200/system/
+   creating: vz200/system/vz/
+   creating: vz200/system/vz/rom/
+  inflating: vz200/system/vz/rom/VZ.CHR
+  inflating: vz200/system/vz/rom/VZBAS12.ROM
+  inflating: vz200/system/vz/rom/README.txt
+   creating: vz200/tape/
+  inflating: vz200/tape/README.txt
+   creating: vz200/tape/default/
+  inflating: vz200/tape/default/README.txt
+   creating: vz200/vz/
+  inflating: vz200/vz/README.txt
+  inflating: vz200/vz200-all.jar
+  inflating: desktop-wallpaper.png
+  inflating: vz200.desktop
+  inflating: vz200.sh
 ```
 
+Das Start-Skript `vz200.sh` ausführbar machen:
+```
+chmod +x vz200.sh
+```
+
+Die Datei `vz200.desktop` in den Autostart-Ordner kopieren:
+
+```
+cp vz200.desktop ~/.config/autostart
+```
+
+Zum Schluss noch mit `raspi-config` den Slash-Screen unterdrücken und in der Desktop-Umgebung das Hintergrundbild `desktop-wallpaper.png" einstellen.
 
 ## Emulator
 
