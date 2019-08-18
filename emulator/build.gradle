@@ -40,11 +40,20 @@ task createVZ200Zip(type: Zip) {
 	group = 'build'
 	description = "build and pack the VZ200-Emulator and all neccessary files into one ZIP-File"
 	
-	into ('/vz200/system', { 
-   		from 'system'
-	   	include '*'
-	   	include '*/*'
-	   	include '*/*/*'
+	into ('/vz200/system/vz/rom', { 
+   		from 'system/vz/rom'
+	   	include 'README.txt'
+	   	include 'VZ.CHR'
+	   	include 'VZBAS12.ROM'
+	})
+	into ('/vz200/tape', { 
+   		from 'tape'
+	   	include 'README.txt'
+   		include 'default/README.txt'
+	})
+	into ('/vz200/vz', { 
+   		from 'vz'
+	   	include 'README.txt'
 	})
    	into ('/vz200', { 
    		from 'build/libs'
