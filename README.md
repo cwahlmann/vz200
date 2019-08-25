@@ -54,6 +54,8 @@ gradle createVZ200Zip
 Es entsteht ein Zip mit allen benötigten Dateien unter `build\distributions\JemuVZ200.zip`
 
 Installieren der Desktop-Version des Betriebssystems Raspbian: siehe Raspbian-Dokumentation unter www.raspbian.org
+(Raspbian Buster Desktop Lite)
+
 
 Zip ins Home-Verzeichnis des Raspberry kopieren und entpacken.
 Danach sollte folgende Verzeichnisstruktur entstanden sein:
