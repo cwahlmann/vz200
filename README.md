@@ -80,6 +80,17 @@ Archive:  JemuVZ200.zip
   inflating: vz200.sh
 ```
 
+`dos2unix` installieren:
+```
+sudo apt-get install dos2unix
+```
+
+Zeilenumbrüche nach Unix konvertieren:
+```
+dos2unix vz200.desktop
+dos2unix vz200.sh
+```
+
 Das Start-Skript `vz200.sh` ausführbar machen:
 ```
 chmod +x vz200.sh
@@ -88,6 +99,7 @@ chmod +x vz200.sh
 Die Datei `vz200.desktop` in den Autostart-Ordner kopieren:
 
 ```
+mkdir ~/.config/autostart
 cp vz200.desktop ~/.config/autostart
 ```
 Installieren der OpenJDK-8 Runtime und des ALSA-Treibers mit `apt-get`:
@@ -95,7 +107,19 @@ Installieren der OpenJDK-8 Runtime und des ALSA-Treibers mit `apt-get`:
 sudo apt-get install openjdk-8-jre
 sudo apt-get install alsa-base alsa-utils
 ```
+Die Java-Sound-Konfiguration anpassen (PulseAudio auskommentieren, DirectAudioDevice einkommentieren):
+```
+sudo joe /etc/java-8-openjdk/sound.properties
+#javax.sound.sampled.Clip=org.classpath.icedtea.pulseaudio.PulseAudioMixerProvider`
+#javax.sound.sampled.Port=org.classpath.icedtea.pulseaudio.PulseAudioMixerProvider
+#javax.sound.sampled.SourceDataLine=org.classpath.icedtea.pulseaudio.PulseAudioMixerProvider
+#javax.sound.sampled.TargetDataLine=org.classpath.icedtea.pulseaudio.PulseAudioMixerProvider
 
+javax.sound.sampled.Clip=com.sun.media.sound.DirectAudioDeviceProvider
+javax.sound.sampled.Port=com.sun.media.sound.PortMixerProvider
+javax.sound.sampled.SourceDataLine=com.sun.media.sound.DirectAudioDeviceProvider
+javax.sound.sampled.TargetDataLine=com.sun.media.sound.DirectAudioDeviceProvider
+```
 Raspi-Configuration starten und folgende Einstellungen vornehmen:
 - Umstellen audio auf headphone
 - Splash-Screen unterdrücken
@@ -103,7 +127,17 @@ Raspi-Configuration starten und folgende Einstellungen vornehmen:
 sudo raspi-config
 ```
 
+Lautstärke auf Maximum stellen:
+```
+amixer sset 'Master' 65536
+```
+Taskleiste ausblenden: Rechtsklick auf Taskleite - Leisteneinstellungen - Erweitert: Leiste bei Nichtbenutzung minimieren + Größe bei minimiertem Zustand: 0 Pixel
+
+HDMI-Settings in /boot/config.txt anpassen: `disable-overscan=1`, `hdmi_group=1`, `hdmi_mode=3`
+
 Zum Schluss Desktop-Umgebung das Hintergrundbild `desktop-wallpaper.png" einstellen.
+
+Nach einem Reboot sollte der Emulator im Vollbildmodus starten.
 
 ## Emulator
 
