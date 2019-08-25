@@ -36,6 +36,7 @@ public class JemuConfiguration {
 					Files.createDirectories(propertiesPath.getParent());
 				}
 				Files.createFile(propertiesPath);
+				log.info("new properties file '{}' created", propertiesPath);
 				return;
 			} catch (IOException e) {
 				log.error("Unable to create properties file '{}'", propertiesPath, e);
@@ -44,6 +45,7 @@ public class JemuConfiguration {
 		}
 		try {
 			properties.load(Files.newInputStream(propertiesPath));
+			log.info("properties file '{}' loaded", propertiesPath);
 		} catch (IOException e) {
 			log.error("Unable to read properties file '{}'", propertiesPath, e);
 		}
@@ -56,6 +58,7 @@ public class JemuConfiguration {
 		try {
 			properties.store(Files.newOutputStream(propertiesPath), "JEMU properties file");
 			changed = false;
+			log.info("properties file '{}' updated", propertiesPath);
 		} catch (IOException e) {
 			log.error("Unable to write properties file '{}'", propertiesPath, e);
 		}
