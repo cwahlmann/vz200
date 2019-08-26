@@ -122,6 +122,8 @@ javax.sound.sampled.Port=com.sun.media.sound.PortMixerProvider
 javax.sound.sampled.SourceDataLine=com.sun.media.sound.DirectAudioDeviceProvider
 javax.sound.sampled.TargetDataLine=com.sun.media.sound.DirectAudioDeviceProvider
 ```
+Editor verlassen mit <ctrl>-K X
+   
 Raspi-Configuration starten und folgende Einstellungen vornehmen:
 - Umstellen audio auf headphone
 - Splash-Screen unterdrücken
