@@ -171,7 +171,7 @@ Jetzt wird die Tastaturplatine mit Tastern, der Power-LED und dem Vorwiderstand 
 
 ![Platine Taster](images/resized/img_chassis_28_platine_taster.jpg "Platine Taster")
 
-Der Minus-Pol der LED (kurzes Bein) muss in den weißumrandeten Lötkontakt der Platine gelötet werden, der Plut-Pol in den Quadratischen Kontakt.
+Der Plus-Pol der LED (langes Bein) muss in den quadratischen Lötkontakt der Platine gelötet.
 
 ![Platine Power-LED](images/resized/img_chassis_29_platine_powerled.jpg "Platine Power-LED")
 
@@ -201,11 +201,16 @@ Nun wird der Tastaturcontroller mit drei kurzen Schrauben in das Gehäuse geschr
 Auf den Reset-Taster wird etwas Isolierband geklebt, damit die Schraube unter der Tastaturplatine keinen Kurzschluss verursachen kann.
 
 ![Platine Einbau 2](images/resized/img_chassis_37_platine_einbau.jpg "Platine Einbau 2")
+
+Die Platine wird mit vier kurzen Schrauben im Gehäuse befestigt.
+
 ![Platine Einbau 3](images/resized/img_chassis_38_platine_einbau.jpg "Platine Einbau 3")
+
+Nun werden der Tastaturrahmen und das hintere Gehäuseteil aufgesetzt und auf der Rückseite mit zwei langen und zwei kurzen Schrauben befestigt.
+
 ![Zusammenbau Chassis](images/resized/img_chassis_39.jpg "Zusammenbau Chassis")
 ![Zusammenbau Chassis 2](images/resized/img_chassis_41.jpg "Zusammenbau Chassis 2")
 ![Zusammenbau Chassis 3](images/resized/img_chassis_40.jpg "Zusammenbau Chassis 3")
-
 
 ## Display
 
