@@ -84,7 +84,7 @@ public class JavaSound extends SunAudio {
 			break;
 		}
 		// line.write(data,offset,1);
-		if (++offset == data.length) {
+		if (++offset >= data.length) {
 			line.write(data, 0, data.length);
 			offset = 0;
 		}
@@ -103,7 +103,7 @@ public class JavaSound extends SunAudio {
 			data[offset + 1] = (byte) b;
 			break;
 		}
-		if ((offset += 2) == data.length) {
+		if ((offset += 2) >= data.length) {
 			line.write(data, 0, data.length);
 			offset = 0;
 		}
