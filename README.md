@@ -47,34 +47,101 @@ JOY-iT 5“ HDMI Touchscreen Display
 
 ## Rechner
 
-- Raspbian
-- openjdk-8
-- alsa-Treiber
+Projekt bauen mit Gradle:
+```
+gradle createVZ200Zip
+```
+Es entsteht ein Zip mit allen benötigten Dateien unter `build\distributions\JemuVZ200.zip`
+
+Installieren der Desktop-Version des Betriebssystems Raspbian: siehe Raspbian-Dokumentation unter www.raspbian.org
+(Raspbian Buster Desktop Lite)
+
+
+Zip ins Home-Verzeichnis des Raspberry kopieren und entpacken.
+Danach sollte folgende Verzeichnisstruktur entstanden sein:
+
+```
+pi@raspberrypi:~ $ unzip JemuVZ200.zip
+Archive:  JemuVZ200.zip
+   creating: vz200/
+   creating: vz200/system/
+   creating: vz200/system/vz/
+   creating: vz200/system/vz/rom/
+  inflating: vz200/system/vz/rom/VZ.CHR
+  inflating: vz200/system/vz/rom/VZBAS12.ROM
+  inflating: vz200/system/vz/rom/README.txt
+   creating: vz200/tape/
+  inflating: vz200/tape/README.txt
+   creating: vz200/tape/default/
+  inflating: vz200/tape/default/README.txt
+   creating: vz200/vz/
+  inflating: vz200/vz/README.txt
+  inflating: vz200/vz200-all.jar
+  inflating: desktop-wallpaper.png
+  inflating: vz200.desktop
+  inflating: vz200.sh
+```
+
+`dos2unix` installieren:
+```
+sudo apt-get install dos2unix
+```
+
+Zeilenumbrüche nach Unix konvertieren:
+```
+dos2unix vz200.desktop
+dos2unix vz200.sh
+```
+
+Das Start-Skript `vz200.sh` ausführbar machen:
+```
+chmod +x vz200.sh
+```
+
+Die Datei `vz200.desktop` in den Autostart-Ordner kopieren:
+
+```
+mkdir ~/.config/autostart
+cp vz200.desktop ~/.config/autostart
+```
+Installieren der OpenJDK-8 Runtime und des ALSA-Treibers mit `apt-get`:
+```
+sudo apt-get install openjdk-8-jre
+sudo apt-get install alsa-base alsa-utils
+```
+Die Java-Sound-Konfiguration anpassen (PulseAudio auskommentieren, DirectAudioDevice einkommentieren):
+```
+sudo joe /etc/java-8-openjdk/sound.properties
+#javax.sound.sampled.Clip=org.classpath.icedtea.pulseaudio.PulseAudioMixerProvider`
+#javax.sound.sampled.Port=org.classpath.icedtea.pulseaudio.PulseAudioMixerProvider
+#javax.sound.sampled.SourceDataLine=org.classpath.icedtea.pulseaudio.PulseAudioMixerProvider
+#javax.sound.sampled.TargetDataLine=org.classpath.icedtea.pulseaudio.PulseAudioMixerProvider
+
+javax.sound.sampled.Clip=com.sun.media.sound.DirectAudioDeviceProvider
+javax.sound.sampled.Port=com.sun.media.sound.PortMixerProvider
+javax.sound.sampled.SourceDataLine=com.sun.media.sound.DirectAudioDeviceProvider
+javax.sound.sampled.TargetDataLine=com.sun.media.sound.DirectAudioDeviceProvider
+```
+Editor verlassen mit STRG-K und X.
+   
+Raspi-Configuration starten und folgende Einstellungen vornehmen:
 - Umstellen audio auf headphone
+- Splash-Screen unterdrücken
 ```
 sudo raspi-config
 ```
 
-- jar kopieren nach `~/vz200`
-- Start-Skript erstellen `~/vz200.sh`:
-
-```bash
-#!/bin/bash
-cd vz200
-java -jar vz200-all.jar
+Lautstärke auf Maximum stellen:
 ```
-
-- .desktop erstellen für autostart `~/.config/autostart/vz200.desktop`:
-
+amixer sset 'Master' 65536
 ```
-[Desktop Entry]
-Name=VZ200
-Comment=VZ200 Emulator starten
-Type=Application
-Exec=./vz200.sh
-Terminal=true
-```
+Taskleiste ausblenden: Rechtsklick auf Taskleite - Leisteneinstellungen - Erweitert: Leiste bei Nichtbenutzung minimieren + Größe bei minimiertem Zustand: 0 Pixel
 
+HDMI-Settings in /boot/config.txt anpassen: `disable-overscan=1`, `hdmi_group=1`, `hdmi_mode=3`
+
+Zum Schluss Desktop-Umgebung das Hintergrundbild `desktop-wallpaper.png" einstellen.
+
+Nach einem Reboot sollte der Emulator im Vollbildmodus starten.
 
 ## Emulator
 
