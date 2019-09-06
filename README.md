@@ -206,11 +206,13 @@ Die Platine wird mit vier kurzen Schrauben im Gehäuse befestigt.
 
 ![Platine Einbau 3](images/resized/img_chassis_38_platine_einbau.jpg "Platine Einbau 3")
 
-Nun werden der Tastaturrahmen und das hintere Gehäuseteil aufgesetzt und auf der Rückseite mit zwei langen und zwei kurzen Schrauben befestigt.
+Zuletzt werden der Tastaturrahmen und das hintere Gehäuseteil aufgesetzt und auf der Rückseite mit zwei langen und zwei kurzen Schrauben befestigt.
 
 ![Zusammenbau Chassis](images/resized/img_chassis_39.jpg "Zusammenbau Chassis")
 ![Zusammenbau Chassis 2](images/resized/img_chassis_41.jpg "Zusammenbau Chassis 2")
 ![Zusammenbau Chassis 3](images/resized/img_chassis_40.jpg "Zusammenbau Chassis 3")
+
+Damit ist der VZ200 fertig. Der Emulator "JEmu" kann übrigens sowohl auf einem Raspberry PI als auch auf einem PC betrieben werden. Der VZ200 fungiert dabei als USB-Tastatur.
 
 ## Display
 
