@@ -3,8 +3,14 @@ Nachbau eines VZ200-Color-Computers (1983)
 
 ![Prototyp](3d-model/screenshots/Prototyp-02.jpg "Prototyp")
 
-## Design und Druck der Bauteile
-### 3d-Modell
+* [Design und Druck der Bauteile](#druck)
+* [Platinendesign und -produktion](#platinendesign)
+* [Zusammenbau des VZ200](#zusammenbau)
+* [Zusammenbau des Monitors mit TFT-Display, Raspberry-Pi und Lautsprecher](#monitor)
+* [Installation des Raspberry Pi](#installation)
+
+# <a name="druck">Design und Druck der Bauteile</a>
+## 3d-Modell
 erstellt mit Autodesk Fusion (Startup-Lizenz nur für private Nutzung). Bei Aussparungen für Fußleisten oder andere Elemente, die eingepasst werden müssen bitte beachten, dass die Drucke meist mit ca. 0.1mm zusätzlicher Stärke gedruckt werden, damit die Schichten gut aneinander haften. Hinzu kommt, dass die erste Schicht zwecks besserer Haftung am Druckbett etwas plattgedrückt wird. Entsprechende Toleranzen bitte mit einplanen.
 
 **Bitte beachten**: Das Modell des Computergehäuses und die darin verbaute Elektronik sind dafür 70% der Originalgröße ausgelegt. Die STL-Dateien geben das bereits wieder; in den Fusion-Dateien (.3mf) hat das Gehäuse noch die Originalgröße. Wer das Modell in Originalgröße nachbauen möchte, muss die Pfosten für den Tastaturcontroller anpassen und die Tastaturplatine entsprechend skalieren, bevor sie geätzt wird. Außerdem muss gegebenenfalls die Position der Resetschalter-Halterung angepasst werden.
@@ -12,7 +18,7 @@ erstellt mit Autodesk Fusion (Startup-Lizenz nur für private Nutzung). Bei Auss
 ![3d-Layout Boden](3d-model/screenshots/VZ-Fusion-v3-Boden.png "3d-Layout Boden")
 ![3d-Layout Monitor](3d-model/screenshots/monitor-v2_2.png "3d-Layout Monitor")
 
-### Drucke
+## Drucke
 STL-Dateien aus Fusion werden mit Ultimaker Cura 4.1 druckfertig gemacht -> gcode für Creality Ender 3.
 Typische Auflösung: x/y 0.4mm (abhängig von der Düse), z 0.05-3mm (Schrittmotor, Extrusion)
 Düsen von 0.2, 0.3, 0.5 und 0.6 stehen auch zur Verfügung, wobei die Gefahr der Verstopfung mit kleineren Durchmessern steigt. Holz besser mit 0.5 oder 0.6 drucken.
@@ -33,16 +39,20 @@ Sonder-Filamente sind möglich (schwach leitend, fluoreszierend, transparent).
 
 Hinweis: Löten auf den schwach leitenden Filamenten ist nicht möglich.
 
-## Platinendesign
+# <a name="platinendesign">Platinendesign und -produktion</a>
 
 eigenes Platinenlayout mit Dip-Schaltern (6mm; Höhe über Platine: 4,5mm; 4 Füße), die über eine Gummi-Tastaturmappe betätigt werden.
-Tastaturcontroller: KEYWARRIOR24_8_MODUL_KW24_8_MOD 
+Tastaturcontroller: KEYWARRIOR24_8_MODUL_KW24_8_MOD
+
+Das Layout kann, als Zip mit GBR-Dateien, über diverse Anbieter in kleiner Stückzahl (meist >= 3) produziert werden. 
+
+Gute Erfahrungen habe ich gemacht mit [Aisler](https://aisler.net). 
 
 ![Platinenlayout Keyboard](tastatur/screenshots/vz200-keyboard-laypout-v1.0.png "Platinenlayout Keyboard")
 ![Platinenlayout Keyboard](tastatur/screenshots/vz200-keyboard-laypout-3d-v1.0.png "Platinenlayout Keyboard")
 
 
-## VZ200 Chassis
+# <a name="zusammenbau">Zusammenbau des VZ200</a>
 
 Das Chassis beherbergt eine funktionierende Tastatur mit Power-LED und Reset-Taster.
 
@@ -51,7 +61,7 @@ den Monitor integriert. Der VZ200 wird als USB-Tastatur an den Raspberry angesch
 
 (Ein Raspberry-Zero würde in das Gehäuse passen, es muss jedoch getestet werden, ob dieser für den Emulator genügend Rechenpower liefert.)
 
-### benötigte Bauelemente
+## benötigte Bauelemente
 
 | Bauteil | Beschreibung |
 | ------- | ------------ |
@@ -74,16 +84,14 @@ den Monitor integriert. Der VZ200 wird als USB-Tastatur an den Raspberry angesch
 | 2 kurze Schrauben | Befestigung der Reset-Schalter-Platine |
 | 2 kurze und 2 lange Schrauben | Zusammenbau des Gehäuses |
 
-### Zusammenbau
-
-#### hintere Gehäuseabdeckung mit Logo versehen
+## hintere Gehäuseabdeckung mit Logo versehen
 ![Aufkleber Logo](images/resized/img_chassis_01_aufkleber_logo.jpg "Aufkleber Logo")
 
 Das gedruckt Logo muss wir abgebildet auf der hinteren Gehäuseabdeckung angebracht werden.
 
 ![Abdeckung hinten](images/resized/img_chassis_02_abdeckung_hinten.jpg "Abdeckung hinten")
 
-#### Gummitastatur
+## Tastatur zusammenbauen
 Benötigt werden die gedruckte Tastaturmatte und die gedruckten Tastenaufkleber.
 Die Matte muss mit Sprühlack Matt-Orange besprüht werden.
 
@@ -124,7 +132,7 @@ Nun wird die Tastenmatte von hinten in die Schablone gesteckt, und die Schablone
 ![Tastaturschablone an Rahmen anbringen](images/resized/img_chassis_17_abdeckung_vorne_komplett.jpg "Tastaturschablone an Rahmen anbringen")
 ![Tastaturschablone im Rahmen unten](images/resized/img_chassis_18_abdeckung_vorne_unten.jpg "Tastaturschablone im Rahmen unten")
 
-#### Verlöten und Einbau der Elektronik
+## Verlöten und Einbau der Elektronik
 
 Im Bild eine Übersicht der benötigten Einzelteile:
 
@@ -214,11 +222,25 @@ Zuletzt werden der Tastaturrahmen und das hintere Gehäuseteil aufgesetzt und au
 
 Damit ist der VZ200 fertig. Der Emulator "JEmu" kann übrigens sowohl auf einem Raspberry PI als auch auf einem PC betrieben werden. Der VZ200 fungiert dabei als USB-Tastatur.
 
-## Display
+# <a name="monitor">Zusammenbau des Monitors mit TFT-Display, Raspberry-Pi und Lautsprecher</a>
 
-JOY-iT 5“ HDMI Touchscreen Display
+## benötigte Bauelemente
 
-## Rechner
+| Bauteil | Beschreibung |
+| ------- | ------------ |
+| Gedruckte Teile | Vorderseite, Front, Rückseite, Befestigungsring für Lautsprecher, 4 Gummifüße |
+| Audio-Verstärker | ... |
+| 3,5er Stereo Klinkenstecker | gerne gebraucht, da dieser sowieso "entkernt" werden muss |
+| Lautsprecher | 4 Ohm, ... Watt |
+| Raspberry Pi | Modell >= 3b |
+| TFT-Display | JOY-iT 5“ HDMI Touchscreen Display |
+| 4 Schrauben | Befestigung des Lautsprechers im Gehäuse |
+| 4 Schrauben | Verschrauben des Gehäuses |
+| 4 Schrauben | Befestigung des Displays
+
+## TODO
+
+# <a name="installation">Installation des Raspberry Pi</a>
 
 Projekt bauen mit Gradle:
 ```
@@ -316,11 +338,11 @@ Zum Schluss Desktop-Umgebung das Hintergrundbild `desktop-wallpaper.png" einstel
 
 Nach einem Reboot sollte der Emulator im Vollbildmodus starten.
 
-## Emulator
+# VZ200-Emulator Jemu
 
 Der genutzte Emulator ist eine angepasste Version des Java-Emulators 'jemu': http://jemu.winape.net/
 
-### Port Konfiguration
+## Port Konfiguration
 
 application.properties (Default 8080):
 
@@ -330,7 +352,7 @@ server.port = 10101
 
 Reset-Taste: [ESC]
 
-### Erweiterung laden / speichern von .vz:
+## Erweiterung laden / speichern von .vz:
 
 ```basic
 OUT 252,1
@@ -346,7 +368,7 @@ Alle Programme n <= 100 sind readonly.
 
 (werden in [home]/vz200/vz abgelegt)
 
-### Erweiterung Tape-Controle
+## Erweiterung Tape-Controle
 
 ```basic
 PRINT INP(254)
@@ -362,13 +384,13 @@ PORT | IN / OUT | Beschreibung
 
 (werden in [home]/vz200/tape abgelegt)
 
-### Erweiterung Volume-Controle
+## Erweiterung Volume-Controle
 
 ADRESS | R / W | Beschreibung
 -------|-------|-------------
 0x6fff / 28671 | W | Setzt die Lautstärke (0-127)
 
-### REST-Interface
+## REST-Interface
 
 ```bash
 curl -X POST http://localhost:8080/vz200/vz 
@@ -398,12 +420,12 @@ Endpunkt | Method | Request | Response | Beschreibung
 /tape/stop | POST | | Integer | Tape stoppen; gibt Slot zurück
 /sound/{volume} | POST | Integer | | Audio-Lautstärke von 0 (=Stumm) bis 255 (=+6 DB)
 
-## Nützliche Links
+# Nützliche Links
 
 Raspi-Emulator für Windows (leider schon 7 Jahre alt)
 https://sourceforge.net/projects/rpiqemuwindows/
 
-## Screenshots
+# Screenshots
 
 ![Prototyp](3d-model/screenshots/Prototyp_01.jpg "Prototyp")
 ![Prototyp](3d-model/screenshots/Prototyp-03.jpg "Prototyp")
