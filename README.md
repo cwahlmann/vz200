@@ -61,28 +61,28 @@ den Monitor integriert. Der VZ200 wird als USB-Tastatur an den Raspberry angesch
 
 (Ein Raspberry-Zero würde in das Gehäuse passen, es muss jedoch getestet werden, ob dieser für den Emulator genügend Rechenpower liefert.)
 
-## benötigte Bauelemente
+## benötigte Bauteile
 
 | Bauteil | Beschreibung |
 | ------- | ------------ |
 | Gedruckte Teile | Boden, Abdeckung hinten, Tastatur (Rahmen, Schablone, Tastenmatte), Resetschalter + Klammer |
-| Gedrucktes Logo | auf Transparenter selbstklebender Folie gedruckt |
-| Gedruckte Tasten | auf selbstklebenem weißem Papier gedruckt |
-| Gedruckte Tastaturschablone | auf selbstklebenem weißem Papier gedruckt |
+| Gedrucktes Logo | klare, selbstklebende, transparente A4 Polyesterfolie für Tintenstrahldrucker (z.B. von Photo Paper Direct PPD-39-20) |
+| Gedruckte Tasten auf Vinylfolie | weiße, matte, selbstklebende A4 Vinylfolie für Tintenstrahldrucker (z.B. von Photo Paper Direct PPD-38-10) |
+| Gedruckte Tastaturschablone auf Vinylfolie | weiße, matte, selbstklebende A4 Vinylfolie für Tintenstrahldrucker (z.B. von Photo Paper Direct PPD-38-10) |
 | Tastaturplatine | mit Hilfe des Platinendesigns kann die Platine über diverse Anbieter gefertigt werden |
 | Tastaturcontroller | ein USB-Keyboard-Controller mit vordefinierter Belegung: KEYWARRIOR24_8_MODUL_KW24_8_MOD |
 | USB-Kabel | USB-Kabel mit Stecker und Litzen zum Einlöten |
 | 45 Drucktaster | Bestückung der Tastaturplatine, 6x6 mm |
 | 1 rote LED | die Power-LED, 3mm |
 | 1 Widerstand | 150 Ohm (braun / grün / braun) |
-| ein Stück Lochplatine | für den Drucktaster des Resetschalters, Lochabstand 2.56 mm |
+| ein Stück Lochplatine | für den Drucktaster des Resetschalters, Lochabstand 2.54 mm |
 | 1 Drucktaster | für den Resetschalter, 6x6 mm |
-| Rot-Weiße Litze | für den Resetschalter und die Power-LED |
-| 8-adriges Flachbandkabel | z.B. aus alten IDE-Flachbandkabeln, für die Verbindung Tastaturcontroler -> Tastaturplating |
+| 2 x Rot-Weiße Litze ca. 10 cm | für den Resetschalter und die Power-LED |
+| 2 x 8-adriges Flachbandkabel ca. 10 cm | z.B. aus alten IDE-Flachbandkabeln, für die Verbindung Tastaturcontroler -> Tastaturplatine |
 | ein Stück Isolierband | Abschirmung von Reset-Schalter und Tastaturplatine | 
-| 7 kurze Schrauben | Befestigung von Tastaturplatine und -Controller |
-| 2 kurze Schrauben | Befestigung der Reset-Schalter-Platine |
-| 2 kurze und 2 lange Schrauben | Zusammenbau des Gehäuses |
+| 7 kurze Schrauben M2 5mm | Befestigung von Tastaturplatine und -Controller |
+| 2 kurze Schrauben M2 8mm | Befestigung der Reset-Schalter-Platine |
+| 2 kurze M2 5mm und 2 lange M2 20mm Schrauben | Zusammenbau des Gehäuses |
 
 ## hintere Gehäuseabdeckung mit Logo versehen
 ![Aufkleber Logo](images/resized/img_chassis_01_aufkleber_logo.jpg "Aufkleber Logo")
@@ -224,19 +224,19 @@ Damit ist der VZ200 fertig. Der Emulator "JEmu" kann übrigens sowohl auf einem 
 
 # <a name="monitor">Zusammenbau des Monitors mit TFT-Display, Raspberry-Pi und Lautsprecher</a>
 
-## benötigte Bauelemente
+## benötigte Bauteile
 
 | Bauteil | Beschreibung |
 | ------- | ------------ |
 | Gedruckte Teile | Vorderseite, Front, Rückseite, Befestigungsring für Lautsprecher, 4 Gummifüße |
-| Audio-Verstärker | ... |
+| Audio-Verstärker | Mini Audio Verstärkerplatine PAM8403 DC 5V (z.B. über https://www.roboter-bausatz.de) |
 | 3,5er Stereo Klinkenstecker | gerne gebraucht, da dieser sowieso "entkernt" werden muss |
-| Lautsprecher | 4 Ohm, ... Watt |
+| Lautsprecher | 2 Zoll / 5 cm Miniaturlautsprecher 3 W 4 Ohm |
 | Raspberry Pi | Modell >= 3b |
 | TFT-Display | JOY-iT 5“ HDMI Touchscreen Display |
-| 4 Schrauben | Befestigung des Lautsprechers im Gehäuse |
-| 4 Schrauben | Verschrauben des Gehäuses |
-| 4 Schrauben | Befestigung des Displays
+| 4 Schrauben M2 6mm | Befestigung des Lautsprechers im Gehäuse |
+| 4 Schrauben M2 8mm | Verschrauben des Gehäuses |
+| 4 Schrauben M2 6mm| Befestigung des Displays |
 
 ## TODO
 
