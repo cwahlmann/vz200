@@ -1,4 +1,4 @@
-# vz200
+# VZ200
 Nachbau eines VZ200-Color-Computers (1983)
 
 ![Prototyp](images/resized/VZ200-komplett-5Zoll-Monitor-TheHunter.jpg "VZ200 - 70%")
