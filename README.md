@@ -1,7 +1,7 @@
-# vz200
+# VZ200
 Nachbau eines VZ200-Color-Computers (1983)
 
-![Prototyp](3d-model/screenshots/Prototyp-02.jpg "Prototyp")
+![Prototyp](images/resized/VZ200-komplett-5Zoll-Monitor-TheHunter.jpg "VZ200 - 70%")
 
 * [Design und Druck der Bauteile](#druck)
 * [Platinendesign und -produktion](#platinendesign)
