@@ -1,8 +1,9 @@
 # VZ200 Companion App
 
-This App supports the retro enthusiast while dealing with the VZ200 - Emulator. It allows for doing file transfers and operations on the emulated device
- as well as organizing files made available to the emulation. 
- 
+This App supports the retro enthusiast while dealing with the VZ200 - Emulator. It allows for doing file transfers and operations on the emulated device as well as organizing files made available to the emulation. 
+
+![alt text](Screenshot.PNG)
+
 ## Installation / prerequisites
 
 ### Install NPM
