@@ -8,6 +8,7 @@ Nachbau eines VZ200-Color-Computers (1983)
 * [Zusammenbau des VZ200](#zusammenbau)
 * [Zusammenbau des Monitors mit TFT-Display, Raspberry-Pi und Lautsprecher](#monitor)
 * [Installation des Raspberry Pi](#installation)
+* [VZ200 Companion App](apps/README.md)
 
 # <a name="druck">Design und Druck der Bauteile</a>
 ## 3d-Modell
