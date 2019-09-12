@@ -4,7 +4,7 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>
-      VZ 200 Companion
+      VZ200 Companion
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -14,10 +14,14 @@
     <img src="/assets/Logo.png" class="vz-logo" alt="" />
     <ion-card-header>
       <ion-card-subtitle>Get Started</ion-card-subtitle>
-      <ion-card-title>Welcome to VZ 200</ion-card-title>
+      <ion-card-title>Welcome to VZ200</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <p>Use this app to control your VZ 200 emulator by uploading files, get info, change sound volume and more. </p>
+      <p>Use this app to control your VZ200 emulator by uploading files, get info, change sound volume and more. </p>
+      <ion-button color="danger" id="reset" #reset (click)="onReset()">
+          <ion-icon slot="start" name="power"></ion-icon>
+          Reset
+        </ion-button>
     </ion-card-content>
   </ion-card>
   <ion-list lines="none">

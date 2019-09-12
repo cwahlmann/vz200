@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
+import { RESTserviceService } from '../services/restservice.service';
 
 @Component({
   selector: 'app-home',
@@ -7,6 +8,20 @@ import { Component } from '@angular/core';
 })
 export class HomePage {
 
-  constructor() {}
+  @ViewChild('reset', {static: false})
+  buttonReset: HTMLButtonElement;
 
+  constructor(public restService: RESTserviceService) {}
+
+  public async onReset(){
+    this.buttonReset.disabled = true;
+    try {
+      const result = await this.restService.doReset();
+      console.log('onReset: result = ' + result);
+    } catch (error) {
+      console.error('onReset error: ' + JSON.stringify(error));
+    } finally {
+      this.buttonReset.disabled = false;
+    }
+  }
 }
