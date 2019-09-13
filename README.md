@@ -70,6 +70,7 @@ den Monitor integriert. Der VZ200 wird als USB-Tastatur an den Raspberry angesch
 | Gedrucktes Logo | klare, selbstklebende, transparente A4 Polyesterfolie für Tintenstrahldrucker (z.B. von Photo Paper Direct PPD-39-20) |
 | Gedruckte Tasten auf Vinylfolie | weiße, matte, selbstklebende A4 Vinylfolie für Tintenstrahldrucker (z.B. von Photo Paper Direct PPD-38-10) |
 | Gedruckte Tastaturschablone auf Vinylfolie | weiße, matte, selbstklebende A4 Vinylfolie für Tintenstrahldrucker (z.B. von Photo Paper Direct PPD-38-10) |
+| Modellfarbe für Tasten | EMAIL COLOR von Revell, Matt 35 (Hautfarben) und Matt 85 (Braun) |
 | Tastaturplatine | mit Hilfe des Platinendesigns kann die Platine über diverse Anbieter gefertigt werden |
 | Tastaturcontroller | ein USB-Keyboard-Controller mit vordefinierter Belegung: KEYWARRIOR24_8_MODUL_KW24_8_MOD |
 | USB-Kabel | USB-Kabel mit Stecker und Litzen zum Einlöten |
@@ -93,8 +94,12 @@ Das gedruckt Logo muss wir abgebildet auf der hinteren Gehäuseabdeckung angebra
 ![Abdeckung hinten](images/resized/img_chassis_02_abdeckung_hinten.jpg "Abdeckung hinten")
 
 ## Tastatur zusammenbauen
-Benötigt werden die gedruckte Tastaturmatte und die gedruckten Tastenaufkleber.
-Die Matte muss mit Sprühlack Matt-Orange besprüht werden.
+Benötigt werden die gedruckte Tastaturmatte, Modellfarbe und die gedruckten Tastenaufkleber.
+
+Die Tasten der Matte müssen zunächst mit der Farbe (Matt 35, Hautfarben) mit einem Pinsel grundiert werden, und dann
+mit (Matt 85, Braun) gestrichen werden. Es sollten nur die Tasten selbst bemalt werden, damit die Matte gut zwischen Platine und Tastaturschablone passen und leichtgängig bleiben. Ein Färben mit Sprühlack ist nicht zu empfehlen.
+
+*TODO:* Bild aktualisieren
 
 ![Tastaturmatte und Aufkleber](images/resized/img_chassis_03_tastaturmatte_aufkleber.jpg "Tastaturmatte und Aufkleber")
 
