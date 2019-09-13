@@ -101,7 +101,8 @@ mit (Matt 85, Braun) gestrichen werden. Es sollten nur die Tasten selbst bemalt 
 
 *TODO:* Bild aktualisieren
 
-![Tastaturmatte und Aufkleber](images/resized/img_chassis_03_tastaturmatte_aufkleber.jpg "Tastaturmatte und Aufkleber")
+![Tastaturmatte und Aufkleber](images/resized/img_chassis_03_aufkleber.jpg "Aufkleber")
+![Tastaturmatte und Aufkleber](images/resized/img_chassis_04_tastaturmatte.jpg "Tastaturmatte")
 
 Die Aufkleber werden nun geschnitten.
 
@@ -134,7 +135,6 @@ Dann wird der Aufkleber auf die Schablone geklebt. Wichtig ist, dass die Ausspar
 
 Nun wird die Tastenmatte von hinten in die Schablone gesteckt, und die Schablone in den Tastaturrahmen eingehakt.
 
-![Tastaturmatte in Schablone](images/resized/img_chassis_16_tastaturmatte_abdeckung.jpg "Tastaturmatte in Schablone")
 ![Tastaturschablone an Rahmen anbringen](images/resized/img_chassis_17_abdeckung_vorne_komplett.jpg "Tastaturschablone an Rahmen anbringen")
 ![Tastaturschablone im Rahmen unten](images/resized/img_chassis_18_abdeckung_vorne_unten.jpg "Tastaturschablone im Rahmen unten")
 
