@@ -96,8 +96,8 @@ Das gedruckt Logo muss wir abgebildet auf der hinteren Gehäuseabdeckung angebra
 ## Tastatur zusammenbauen
 Benötigt werden die gedruckte Tastaturmatte, Modellfarbe und die gedruckten Tastenaufkleber.
 
-Die Tasten der Matte müssen zunächst mit der Farbe (Matt 35, Hautfarben) mit einem Pinsel grundiert werden, und dann
-mit (Matt 85, Braun) gestrichen werden. Es sollten nur die Tasten selbst bemalt werden, damit die Matte gut zwischen Platine und Tastaturschablone passen und leichtgängig bleiben. Ein Färben mit Sprühlack ist nicht zu empfehlen.
+Die Tasten der Matte müssen zunächst mit der Farbe (Matt 35, Hautfarben) mit einem Pinsel grundiert und dann
+mit (Matt 85, Braun) gestrichen werden. Es sollten nur die Tasten selbst bemalt werden, damit die Matte gut zwischen Platine und Tastaturschablone passt und die Tasten leichtgängig bleiben. Ein Färben mit Sprühlack ist nicht zu empfehlen.
 
 *TODO:* Bild aktualisieren
 
