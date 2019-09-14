@@ -9,6 +9,7 @@ Nachbau eines VZ200-Color-Computers (1983)
 * [Zusammenbau des Monitors mit TFT-Display, Raspberry-Pi und Lautsprecher](#monitor)
 * [Installation des Raspberry Pi](#installation)
 * [VZ200 Companion App](apps/README.md)
+* [Nützliche Links](#useful-links)
 
 # <a name="druck">Design und Druck der Bauteile</a>
 ## 3d-Modell
@@ -424,7 +425,7 @@ Endpunkt | Method | Request | Response | Beschreibung
 /tape/stop | POST | | Integer | Tape stoppen; gibt Slot zurück
 /sound/{volume} | POST | Integer | | Audio-Lautstärke von 0 (=Stumm) bis 255 (=+6 DB)
 
-# Nützliche Links
+# <a name="useful-links">Nützliche Links</a>
 
 Raspi-Emulator für Windows (leider schon 7 Jahre alt)
 * https://sourceforge.net/projects/rpiqemuwindows/
