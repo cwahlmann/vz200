@@ -9,6 +9,7 @@ Nachbau eines VZ200-Color-Computers (1983)
 * [Zusammenbau des Monitors mit TFT-Display, Raspberry-Pi und Lautsprecher](#monitor)
 * [Installation des Raspberry Pi](#installation)
 * [VZ200 Companion App](apps/README.md)
+* [Nützliche Links](#useful-links)
 
 # <a name="druck">Design und Druck der Bauteile</a>
 ## 3d-Modell
@@ -98,8 +99,6 @@ Benötigt werden die gedruckte Tastaturmatte, Modellfarbe und die gedruckten Tas
 
 Die Tasten der Matte müssen zunächst mit der Farbe (Matt 35, Hautfarben) mit einem Pinsel grundiert und dann
 mit (Matt 85, Braun) gestrichen werden. Es sollten nur die Tasten selbst bemalt werden, damit die Matte gut zwischen Platine und Tastaturschablone passt und die Tasten leichtgängig bleiben. Ein Färben mit Sprühlack ist nicht zu empfehlen.
-
-*TODO:* Bild aktualisieren
 
 ![Tastaturmatte und Aufkleber](images/resized/img_chassis_03_aufkleber.jpg "Aufkleber")
 ![Tastaturmatte und Aufkleber](images/resized/img_chassis_04_tastaturmatte.jpg "Tastaturmatte")
@@ -426,14 +425,27 @@ Endpunkt | Method | Request | Response | Beschreibung
 /tape/stop | POST | | Integer | Tape stoppen; gibt Slot zurück
 /sound/{volume} | POST | Integer | | Audio-Lautstärke von 0 (=Stumm) bis 255 (=+6 DB)
 
-# Nützliche Links
+# <a name="useful-links">Nützliche Links</a>
 
 Raspi-Emulator für Windows (leider schon 7 Jahre alt)
-https://sourceforge.net/projects/rpiqemuwindows/
+* https://sourceforge.net/projects/rpiqemuwindows/
 
-# Screenshots
+VZ-Dokumentation
+* http://vzalive.bluebilby.com/archive/
+* http://www.vz200.org/bushy/
+* http://www.vz200.org/downloads.php
 
-![Prototyp](3d-model/screenshots/Prototyp_01.jpg "Prototyp")
-![Prototyp](3d-model/screenshots/Prototyp-03.jpg "Prototyp")
-![Prototyp](3d-model/screenshots/Prototyp-04.jpg "Prototyp")
-![Prototyp](3d-model/screenshots/Prototyp-05.jpg "Prototyp")
+VZ-Software
+* http://vzalive.bluebilby.com/downloads/downloads.html
+* http://www.vz200.org/downloads.php
+
+VZ-Emulatoren
+* http://vzalive.bluebilby.com/emulators/
+* http://jemu.winape.net
+* http://vzalive.bluebilby.com/emulators/winvz4.zip
+* http://vzalive.bluebilby.com/emulators/vzem_22.zip
+* http://www.mess.org/download.html
+* http://www.vz200.org/weblinks.php?cat_id=5
+
+VZ-ROMS
+* http://vzalive.bluebilby.com/emulators/vz200.zip
