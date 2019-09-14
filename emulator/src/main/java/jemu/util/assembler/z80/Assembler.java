@@ -95,7 +95,7 @@ public class Assembler {
 	}
 
 	public void parseLine(String l) {
-		String line = l.trim();
+		String line = removeComment(l).trim();
 		if (line.isEmpty() || line.startsWith(";") || line.startsWith("//")) {
 			return;
 		}
@@ -131,6 +131,44 @@ public class Assembler {
 			}
 			addCursorAddress(1);
 		});
+	}
+
+	public String removeComment(String line) {
+		boolean commentFound = false;
+		boolean firstSlashFound = false;
+		boolean isStringConstant = false;
+		int index = 0;
+		while (index < line.length() && !commentFound) {
+			switch (line.charAt(index)) {
+			case '"':
+				isStringConstant = !isStringConstant;
+				break;
+			case ';':
+				if (!isStringConstant) {
+					commentFound = true;
+				}
+				break;
+			case '/':
+				if (!isStringConstant) {
+					if (firstSlashFound) {
+						commentFound = true;
+						index--;
+					} else {
+						firstSlashFound = true;
+					}
+				} else {
+					firstSlashFound = false;
+				}
+				break;
+			default:
+				firstSlashFound = false;
+			}
+			index++;
+		}
+		if (commentFound) {
+			return line.substring(0, index - 1);
+		}
+		return line;
 	}
 
 	public void resolveOpenTokens() {

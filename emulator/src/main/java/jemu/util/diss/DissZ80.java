@@ -120,7 +120,7 @@ public class DissZ80 extends Disassembler {
       case 0x28: result = "JR Z," + e(memory,address);                   break;
 
       case 0x2a: result = "LD " + (replace == null ? "HL" : replace) +
-                   "(" + nn(memory,address) + ")";                       break;
+                   ",(" + nn(memory,address) + ")";                       break;
 
       case 0x2f: result = "CPL";                                         break;
 
@@ -330,7 +330,7 @@ public class DissZ80 extends Disassembler {
       case 0xe7:
       case 0xef:
       case 0xf7:
-      case 0xff: result = "RST #" + Util.hex((byte)(opcode & 0x38));     break;
+      case 0xff: result = "RST 0x" + Util.hex((byte)(opcode & 0x38));     break;
 
       case 0xc9: result = "RET";                                         break;
 
@@ -540,7 +540,7 @@ public class DissZ80 extends Disassembler {
 
   protected String nn(Memory memory, int[] address) {
     int lsb = memory.readByte(nextAddress(address),config);
-    return "#" + Util.hex((short)(lsb +
+    return "0x" + Util.hex((short)(lsb +
       (memory.readByte(nextAddress(address),config) << 8)));
   }
 
@@ -556,19 +556,19 @@ public class DissZ80 extends Disassembler {
       if (offset == -1)
         offset = memory.readByte(nextAddress(address),config);
       // TODO: Signed offset
-      return "(" + replace + "+#" + Util.hex((byte)offset) + ")";
+      return "(" + replace + "+0x" + Util.hex((byte)offset) + ")";
     }
   }
 
   protected String n(Memory memory, int[] address) {
-    return "#" + Util.hex((byte)memory.readByte(nextAddress(address),config));
+    return "0x" + Util.hex((byte)memory.readByte(nextAddress(address),config));
   }
 
   protected String e(Memory memory, int[] address) {
     int addr = nextAddress(address);
     int result = memory.readByte(addr,config);
     addr = (addr + 1 + (byte)result) & 0xffff;
-    return "#" + Util.hex((short)addr);
+    return "0x" + Util.hex((short)addr);
   }
 
   protected String cc(int index) {
