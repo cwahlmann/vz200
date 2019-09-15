@@ -413,6 +413,7 @@ Endpunkt | Method | Request | Response | Beschreibung
 /vz[?autorun={True/False}][&range={start-end}]      | GET    |         | application/octet-stream | .vz-Programm auslesen; autorun: mit Autostart-Flag speichern; range: Speicherbereich (default: Basic-Pointer)
 /bas     | POST   | application/octet-stream | String | Basic-Programm-Source einspielen
 /asm[?autorun={True/False}]     | POST   | application/octet-stream | Range: {von-bis} | Assembler-Programm-Source einspielen und ggf. starten (default True)
+/asmzip[?autorun={True/False}]     | POST   | application/octet-stream | Range: {von-bis} | Zip-Datei mit Assembler-Programm-Source einspielen und ggf. starten (default True)
 /asm/{von[-bis]} | GET    | | String | Speicherbereich als Maschinenprogramm auslesen
 /hex     | POST   | application/octet-stream | String | Hexadezimalen Source einspielen und starten
 /hex/{von[-bis]} | GET    | | String | Speicherbereich in hexadezimalem Format auslesen
