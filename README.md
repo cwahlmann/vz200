@@ -8,6 +8,7 @@ Nachbau eines VZ200-Color-Computers (1983)
 * [Zusammenbau des VZ200](#zusammenbau)
 * [Zusammenbau des Monitors mit TFT-Display, Raspberry-Pi und Lautsprecher](#monitor)
 * [Installation des Raspberry Pi](#installation)
+* [Der VZ200 Emulator](#emulator) 
 * [VZ200 Companion App](apps/README.md)
 * [Nützliche Links](#useful-links)
 
@@ -343,7 +344,7 @@ Zum Schluss Desktop-Umgebung das Hintergrundbild `desktop-wallpaper.png" einstel
 
 Nach einem Reboot sollte der Emulator im Vollbildmodus starten.
 
-# VZ200-Emulator Jemu
+# <a name="emulator">Der VZ200 Emulator</a>
 
 Der genutzte Emulator ist eine angepasste Version des Java-Emulators 'jemu': http://jemu.winape.net/
 
