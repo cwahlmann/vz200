@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, IonRange } from '@ionic/angular';
 
 import { HomePage } from './home.page';
 import { HttpTestingController } from '@angular/common/http/testing';
@@ -11,7 +11,7 @@ describe('HomePage', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [HomePage],
+      declarations: [HomePage, HTMLIonRangeElement],
       imports: [IonicModule.forRoot()],
       providers: [{provide: HttpClient, class: HttpTestingController}]
     }).compileComponents();
@@ -33,4 +33,14 @@ describe('HomePage', () => {
     tick();
     expect(component.onReset).toHaveBeenCalled();
   }));
+
+  fit('should have an emulator volume range slider with an event handler calling RESTservice', fakeAsync(() => {
+    const rangeVolume: IonRange = fixture.nativeElement.querySelector('ion-range#volume');
+    expect(rangeVolume).toBeDefined();
+    spyOn(component, 'onVolumeChanged');
+    rangeVolume
+    tick();
+    expect(component.onVolumeChanged).toHaveBeenCalled();
+  }));
+
 });
