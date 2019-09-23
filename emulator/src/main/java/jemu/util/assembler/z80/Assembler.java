@@ -7,20 +7,28 @@
 package jemu.util.assembler.z80;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Properties;
+import java.util.UUID;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +70,65 @@ public class Assembler {
 		return String.format("%04x-%04x", runAddress, maxCursorAddress);
 	}
 
+	public String assembleZipStream(InputStream in) {
+		File propertiesFile = null;
+		Path tempPath = null;
+		try {
+			tempPath = createTempPath();
+			propertiesFile = unzip(tempPath, in);
+			Properties properties = new Properties();
+			if (propertiesFile != null) {
+				properties.load(new FileReader(propertiesFile));
+			}
+			Path mainAsm = tempPath.resolve(properties.getProperty("main", "main.asm"));
+			log.info("assemble main file: {}", mainAsm);
+			parseFile(mainAsm);
+			resolveOpenTokens();
+			return String.format("%04x-%04x", runAddress, maxCursorAddress);
+		} catch (IOException e) {
+			return "ERROR: " + e.getMessage();
+		} finally {
+			if (tempPath != null) {
+				deleteTempDir(tempPath);
+			}
+		}
+	}
+
+	private Path createTempPath() throws IOException {
+		Path temp = Paths.get(System.getProperty("user.home"), "/jemu/temp_" + UUID.randomUUID().toString());
+		Files.createDirectories(temp);
+		return temp;
+	}
+
+	private void deleteTempDir(Path tempPath) {
+		FileUtils.deleteQuietly(tempPath.toFile());
+	}
+
+	private File unzip(Path tempPath, InputStream is) throws IOException {
+		File propertiesFile = null;
+		byte[] buffer = new byte[1024];
+		try (ZipInputStream zis = new ZipInputStream(is)) {
+			ZipEntry entry = zis.getNextEntry();
+			while (entry != null) {
+				Path entryPath = tempPath.resolve(entry.getName());
+				if (!entry.isDirectory()) {
+					Files.createDirectories(entryPath.getParent());
+					FileOutputStream fos = new FileOutputStream(entryPath.toFile());
+					int len;
+					while ((len = zis.read(buffer)) > 0) {
+						fos.write(buffer, 0, len);
+					}
+					fos.close();
+					if (entry.getName().endsWith("asm.properties")) {
+						propertiesFile = entryPath.toFile();
+					}
+				}
+				entry = zis.getNextEntry();
+			}
+		}
+		return propertiesFile;
+	}
+
 	private void parseFile(Path path) {
 		if (visitedPaths.contains(path)) {
 			log.warn("Ignore file {} to avoid an endless include loop", path);
@@ -69,8 +136,8 @@ public class Assembler {
 		}
 		visitedPaths.add(path);
 		currentLineNo.add(0);
-		try {
-			Files.lines(path).forEach(line -> {
+		try (Stream<String> s = Files.lines(path)) {
+			s.forEach(line -> {
 				currentLineNo.set(currentLineNo.size() - 1, currentLineNo.get(currentLineNo.size() - 1) + 1);
 				parseLine(line);
 			});
@@ -95,7 +162,7 @@ public class Assembler {
 	}
 
 	public void parseLine(String l) {
-		String line = l.trim();
+		String line = removeComment(l).trim();
 		if (line.isEmpty() || line.startsWith(";") || line.startsWith("//")) {
 			return;
 		}
@@ -131,6 +198,44 @@ public class Assembler {
 			}
 			addCursorAddress(1);
 		});
+	}
+
+	public String removeComment(String line) {
+		boolean commentFound = false;
+		boolean firstSlashFound = false;
+		boolean isStringConstant = false;
+		int index = 0;
+		while (index < line.length() && !commentFound) {
+			switch (line.charAt(index)) {
+			case '"':
+				isStringConstant = !isStringConstant;
+				break;
+			case ';':
+				if (!isStringConstant) {
+					commentFound = true;
+				}
+				break;
+			case '/':
+				if (!isStringConstant) {
+					if (firstSlashFound) {
+						commentFound = true;
+						index--;
+					} else {
+						firstSlashFound = true;
+					}
+				} else {
+					firstSlashFound = false;
+				}
+				break;
+			default:
+				firstSlashFound = false;
+			}
+			index++;
+		}
+		if (commentFound) {
+			return line.substring(0, index - 1);
+		}
+		return line;
 	}
 
 	public void resolveOpenTokens() {

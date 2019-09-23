@@ -8,7 +8,9 @@ Nachbau eines VZ200-Color-Computers (1983)
 * [Zusammenbau des VZ200](#zusammenbau)
 * [Zusammenbau des Monitors mit TFT-Display, Raspberry-Pi und Lautsprecher](#monitor)
 * [Installation des Raspberry Pi](#installation)
+* [Der VZ200 Emulator](#emulator) 
 * [VZ200 Companion App](apps/README.md)
+* [Nützliche Links](#useful-links)
 
 # <a name="druck">Design und Druck der Bauteile</a>
 ## 3d-Modell
@@ -70,6 +72,7 @@ den Monitor integriert. Der VZ200 wird als USB-Tastatur an den Raspberry angesch
 | Gedrucktes Logo | klare, selbstklebende, transparente A4 Polyesterfolie für Tintenstrahldrucker (z.B. von Photo Paper Direct PPD-39-20) |
 | Gedruckte Tasten auf Vinylfolie | weiße, matte, selbstklebende A4 Vinylfolie für Tintenstrahldrucker (z.B. von Photo Paper Direct PPD-38-10) |
 | Gedruckte Tastaturschablone auf Vinylfolie | weiße, matte, selbstklebende A4 Vinylfolie für Tintenstrahldrucker (z.B. von Photo Paper Direct PPD-38-10) |
+| Modellfarbe für Tasten | EMAIL COLOR von Revell, Matt 35 (Hautfarben) und Matt 85 (Braun) |
 | Tastaturplatine | mit Hilfe des Platinendesigns kann die Platine über diverse Anbieter gefertigt werden |
 | Tastaturcontroller | ein USB-Keyboard-Controller mit vordefinierter Belegung: KEYWARRIOR24_8_MODUL_KW24_8_MOD |
 | USB-Kabel | USB-Kabel mit Stecker und Litzen zum Einlöten |
@@ -93,10 +96,13 @@ Das gedruckt Logo muss wir abgebildet auf der hinteren Gehäuseabdeckung angebra
 ![Abdeckung hinten](images/resized/img_chassis_02_abdeckung_hinten.jpg "Abdeckung hinten")
 
 ## Tastatur zusammenbauen
-Benötigt werden die gedruckte Tastaturmatte und die gedruckten Tastenaufkleber.
-Die Matte muss mit Sprühlack Matt-Orange besprüht werden.
+Benötigt werden die gedruckte Tastaturmatte, Modellfarbe und die gedruckten Tastenaufkleber.
 
-![Tastaturmatte und Aufkleber](images/resized/img_chassis_03_tastaturmatte_aufkleber.jpg "Tastaturmatte und Aufkleber")
+Die Tasten der Matte müssen zunächst mit der Farbe (Matt 35, Hautfarben) mit einem Pinsel grundiert und dann
+mit (Matt 85, Braun) gestrichen werden. Es sollten nur die Tasten selbst bemalt werden, damit die Matte gut zwischen Platine und Tastaturschablone passt und die Tasten leichtgängig bleiben. Ein Färben mit Sprühlack ist nicht zu empfehlen.
+
+![Tastaturmatte und Aufkleber](images/resized/img_chassis_03_aufkleber.jpg "Aufkleber")
+![Tastaturmatte und Aufkleber](images/resized/img_chassis_04_tastaturmatte.jpg "Tastaturmatte")
 
 Die Aufkleber werden nun geschnitten.
 
@@ -129,7 +135,6 @@ Dann wird der Aufkleber auf die Schablone geklebt. Wichtig ist, dass die Ausspar
 
 Nun wird die Tastenmatte von hinten in die Schablone gesteckt, und die Schablone in den Tastaturrahmen eingehakt.
 
-![Tastaturmatte in Schablone](images/resized/img_chassis_16_tastaturmatte_abdeckung.jpg "Tastaturmatte in Schablone")
 ![Tastaturschablone an Rahmen anbringen](images/resized/img_chassis_17_abdeckung_vorne_komplett.jpg "Tastaturschablone an Rahmen anbringen")
 ![Tastaturschablone im Rahmen unten](images/resized/img_chassis_18_abdeckung_vorne_unten.jpg "Tastaturschablone im Rahmen unten")
 
@@ -339,7 +344,7 @@ Zum Schluss Desktop-Umgebung das Hintergrundbild `desktop-wallpaper.png" einstel
 
 Nach einem Reboot sollte der Emulator im Vollbildmodus starten.
 
-# VZ200-Emulator Jemu
+# <a name="emulator">Der VZ200 Emulator</a>
 
 Der genutzte Emulator ist eine angepasste Version des Java-Emulators 'jemu': http://jemu.winape.net/
 
@@ -408,6 +413,7 @@ Endpunkt | Method | Request | Response | Beschreibung
 /vz[?autorun={True/False}][&range={start-end}]      | GET    |         | application/octet-stream | .vz-Programm auslesen; autorun: mit Autostart-Flag speichern; range: Speicherbereich (default: Basic-Pointer)
 /bas     | POST   | application/octet-stream | String | Basic-Programm-Source einspielen
 /asm[?autorun={True/False}]     | POST   | application/octet-stream | Range: {von-bis} | Assembler-Programm-Source einspielen und ggf. starten (default True)
+/asmzip[?autorun={True/False}]     | POST   | application/octet-stream | Range: {von-bis} | Zip-Datei mit Assembler-Programm-Source einspielen und ggf. starten (default True)
 /asm/{von[-bis]} | GET    | | String | Speicherbereich als Maschinenprogramm auslesen
 /hex     | POST   | application/octet-stream | String | Hexadezimalen Source einspielen und starten
 /hex/{von[-bis]} | GET    | | String | Speicherbereich in hexadezimalem Format auslesen
@@ -421,14 +427,27 @@ Endpunkt | Method | Request | Response | Beschreibung
 /tape/stop | POST | | Integer | Tape stoppen; gibt Slot zurück
 /sound/{volume} | POST | Integer | | Audio-Lautstärke von 0 (=Stumm) bis 255 (=+6 DB)
 
-# Nützliche Links
+# <a name="useful-links">Nützliche Links</a>
 
 Raspi-Emulator für Windows (leider schon 7 Jahre alt)
-https://sourceforge.net/projects/rpiqemuwindows/
+* https://sourceforge.net/projects/rpiqemuwindows/
 
-# Screenshots
+VZ-Dokumentation
+* http://vzalive.bluebilby.com/archive/
+* http://www.vz200.org/bushy/
+* http://www.vz200.org/downloads.php
 
-![Prototyp](3d-model/screenshots/Prototyp_01.jpg "Prototyp")
-![Prototyp](3d-model/screenshots/Prototyp-03.jpg "Prototyp")
-![Prototyp](3d-model/screenshots/Prototyp-04.jpg "Prototyp")
-![Prototyp](3d-model/screenshots/Prototyp-05.jpg "Prototyp")
+VZ-Software
+* http://vzalive.bluebilby.com/downloads/downloads.html
+* http://www.vz200.org/downloads.php
+
+VZ-Emulatoren
+* http://vzalive.bluebilby.com/emulators/
+* http://jemu.winape.net
+* http://vzalive.bluebilby.com/emulators/winvz4.zip
+* http://vzalive.bluebilby.com/emulators/vzem_22.zip
+* http://www.mess.org/download.html
+* http://www.vz200.org/weblinks.php?cat_id=5
+
+VZ-ROMS
+* http://vzalive.bluebilby.com/emulators/vz200.zip

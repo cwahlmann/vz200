@@ -95,6 +95,16 @@ public class JemuRestController {
 		}
 	}
 
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/asmzip", consumes = "application/octet-stream;charset=UTF-8")
+	public String loadAsmZip(@RequestParam(defaultValue = "True") Boolean autorun, RequestEntity<InputStream> entity) {
+		try (InputStream is = entity.getBody()) {
+			return computer().loadAsmZip(is, autorun);
+		} catch (Exception e) {
+			log.error("Fehler beim Einspielen des Assembler-Programms", e);
+			return "Fehler beim Einspielen des Assembler-Programms: " + e.getMessage();
+		}
+	}
+
 	@RequestMapping(method = RequestMethod.POST, path = "/vz200/hex", consumes = "application/octet-stream;charset=UTF-8")
 	public String loadHex(RequestEntity<InputStream> entity) {
 		try (InputStream is = entity.getBody()) {

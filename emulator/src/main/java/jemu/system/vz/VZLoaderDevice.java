@@ -61,7 +61,7 @@ public class VZLoaderDevice extends Device {
 			try {
 				String filename = getFilename(value);
 				log.info("Save program [{}] to [{}]", value, filename);
-				vz.saveFile(filename);
+				vz.saveFile(filename, "", false);
 				vz.alert(String.format("vz-program #%03d saved", value));
 			} catch (Exception e) {
 				vz.alert(String.format("error saving vz-program #%03d", value));

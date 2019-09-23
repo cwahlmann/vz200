@@ -237,6 +237,10 @@ public abstract class Computer extends Device implements Runnable {
 		return "";
 	}
 
+	public String loadAsmZip(InputStream is, Boolean autorun) throws Exception {
+		return "";
+	}
+
 	public void loadBinaryFile(String name) throws Exception {
 		loadBinaryFile(new FileInputStream(name));
 	}
