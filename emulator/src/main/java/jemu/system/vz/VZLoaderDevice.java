@@ -20,7 +20,7 @@ public class VZLoaderDevice extends Device {
 	}
 
 	public static final int OUT_PORT_MASK = 0b11111110; // 0xfe
-	public static final int OUT_PORT_TEST = 0b11111100; // 0xfa
+	public static final int OUT_PORT_TEST = 0b11111100; // 0xfc
 	public static final int COMMAND_LOAD = 0b11111100;
 	public static final int COMMAND_SAVE = 0b11111101;
 	public static final int FIRST_WRITABLE_VZ = 100; // 0x60;

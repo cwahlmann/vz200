@@ -80,7 +80,8 @@ public class Assembler {
 			if (propertiesFile != null) {
 				properties.load(new FileReader(propertiesFile));
 			}
-			Path mainAsm = tempPath.resolve(properties.getProperty("main", "main.asm"));
+			Path mainAsm = tempPath.resolve(propertiesFile.toPath().getParent())
+					.resolve(properties.getProperty("main", "main.asm"));
 			log.info("assemble main file: {}", mainAsm);
 			parseFile(mainAsm);
 			resolveOpenTokens();
@@ -89,7 +90,7 @@ public class Assembler {
 			return "ERROR: " + e.getMessage();
 		} finally {
 			if (tempPath != null) {
-				deleteTempDir(tempPath);
+//				deleteTempDir(tempPath);
 			}
 		}
 	}
@@ -111,8 +112,11 @@ public class Assembler {
 			ZipEntry entry = zis.getNextEntry();
 			while (entry != null) {
 				Path entryPath = tempPath.resolve(entry.getName());
-				if (!entry.isDirectory()) {
-					Files.createDirectories(entryPath.getParent());
+				System.out.println("======>>>>> Entry: "+entryPath.toString());
+				if (entry.isDirectory()) {
+					Files.createDirectories(entryPath);
+				} else {	
+//					Files.createDirectories(entryPath.getParent());
 					FileOutputStream fos = new FileOutputStream(entryPath.toFile());
 					int len;
 					while ((len = zis.read(buffer)) > 0) {
@@ -177,12 +181,16 @@ public class Assembler {
 		if (Pattern.matches("^" + Constants.PATTERN_LABEL + ".*", line)) {
 			String s[] = line.split("[\t ]+", 2);
 			String label = s[0];
-			line = s[1];
+			line = s.length == 2 ? s[1].trim() : "";
 
 			if (labelMap.containsKey(label)) {
 				log.warn("label {} will be overwritten", label);
 			}
 			labelMap.put(label, getCursorAddress());
+
+			if (line.isEmpty() || line.startsWith(";") || line.startsWith("//")) {
+				return;
+			}
 		}
 
 		// parse command

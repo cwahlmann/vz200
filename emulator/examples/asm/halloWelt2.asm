@@ -19,7 +19,8 @@
         LD (0x78de), A
         EI
     	// and then: do nothing ;-)
-wait:   JR wait:
+wait:   
+		JR wait:
 
 x:      defb 64
 y:      defb 61

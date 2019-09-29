@@ -4,8 +4,6 @@ import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.io.InputStream;
 
-import javax.swing.JPanel;
-
 import jemu.core.cpu.Processor;
 import jemu.core.device.Computer;
 import jemu.core.device.DeviceMapping;
@@ -34,10 +32,10 @@ public class ZX extends Computer {
   protected Keyboard keyboard = new Keyboard();
   protected boolean zx81;
 
-  public ZX(JPanel applet, String name) {
-    super(applet,name);
+  public ZX() {
+    super("ZX81");
     name = name.toLowerCase();
-    zx81 = "zx81".equals(name);
+    zx81 = true;
     setBasePath(name);
   }
 

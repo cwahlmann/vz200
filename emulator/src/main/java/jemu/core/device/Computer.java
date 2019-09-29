@@ -8,7 +8,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Constructor;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,9 +19,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.ZipInputStream;
 
-import javax.swing.JPanel;
-
-import jemu.core.Util;
 import jemu.core.cpu.Processor;
 import jemu.core.device.memory.Memory;
 import jemu.ui.Display;
@@ -61,7 +57,6 @@ public abstract class Computer extends Device implements Runnable {
 	public static final int MAX_FRAME_SKIP = 20;
 	public static final int MAX_FILE_SIZE = 1024 * 1024; // 1024K maximum
 
-	public JPanel applet;
 	protected Thread thread = new Thread(this);
 	protected boolean stopped = false;
 	protected int action = STOP;
@@ -81,24 +76,9 @@ public abstract class Computer extends Device implements Runnable {
 	// Listeners for stopped emulation
 	protected Vector listeners = new Vector(1);
 
-//	public static Computer createComputer(Applet applet, String name) throws Exception {
-	public static Computer createComputer(JPanel applet, String name) throws Exception {
-		for (int index = 0; index < COMPUTERS.length; index++) {
-			if (COMPUTERS[index].key.equalsIgnoreCase(name)) {
-				Class cl = Util.findClass(null, COMPUTERS[index].className);
-				Constructor con = cl.getConstructor(new Class[] { JPanel.class, String.class });
-				return (Computer) con.newInstance(new Object[] { applet, name });
-			}
-		}
-		throw new Exception("Computer " + name + " not found");
-	}
-
-	public Computer(JPanel applet, String name) {
-//	public Computer(Applet applet, String name) {
+	public Computer(String name) {
 		super("Computer: " + name);
-		this.applet = applet;
 		this.name = name;
-		// thread.setPriority(Thread.MIN_PRIORITY);
 		thread.start();
 	}
 
@@ -324,7 +304,6 @@ public abstract class Computer extends Device implements Runnable {
 		}
 		thread = null;
 		display = null;
-		applet = null;
 	}
 
 	protected void emulate(int mode) {

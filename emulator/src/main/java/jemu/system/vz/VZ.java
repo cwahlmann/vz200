@@ -10,11 +10,10 @@ import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.List;
 
-import javax.swing.JPanel;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import jemu.core.cpu.Processor;
 import jemu.core.cpu.Z80;
@@ -28,14 +27,13 @@ import jemu.util.diss.Disassembler;
 import jemu.util.diss.DissZ80;
 
 /**
- * Title: JEMU Description: The Java Emulation Platform Copyright: Copyright (c)
- * 2002 Company:
- * 
- * @author
- * @version 1.0
+ * @author Christian
+ *
  */
-
+@Component(jemu.system.vz.VZ.BEAN_ID)
 public class VZ extends Computer {
+	public static final String BEAN_ID = "jemu.system.vz.VZ";
+
 	private static final Logger log = LoggerFactory.getLogger(VZ.class);
 
 	private static final int SYSTEM_BASIC_START = 0x78a4;
@@ -47,14 +45,8 @@ public class VZ extends Computer {
 	protected static final int AUDIO_TEST = 0x40000000;
 	protected static final int AUDIO_RESYNC_FRAMES = 50;
 
-	// These values should be 127, -128, 0, 127, but this causes a clicking sound
-	// caused by a timing bug in sun.audio.AudioDevice so to set the VZ to a normal
-	// level of 127 these have been changed (they normally only toggle between 1 and
-	// 2,
-	// and are 2 when no sound is generated: i.e. VDCLatch = 0x20).
-	// protected static final byte[] SOUND_LEVELS = { 127, -128, 0, 127 };
-	// protected static final byte[] SOUND_LEVELS = { -128, 0, 127, 127 };
-	protected static final byte[] SOUND_LEVELS = { 1, -1, 0, 1 };
+	private static int SOUND_LEVEL = 240;
+	private int soundLevel = 0;
 
 	protected boolean vz200;
 	protected int cyclesPerSecond = CYCLES_PER_SEC_VZ200;
@@ -63,13 +55,12 @@ public class VZ extends Computer {
 	protected int cycles = 0;
 	protected int frameFlyback = 0x80;
 	protected int vdcLatch = 0x00;
-	protected SimpleRenderer renderer = new FullRenderer(memory); // new SimpleRenderer();
+	protected SimpleRenderer renderer = new FullRenderer(memory); 
 	protected Keyboard keyboard = new Keyboard();
 	protected Disassembler disassembler = new DissZ80();
-	protected SoundPlayer player = SoundUtil.getSoundPlayer(false);
-	protected VzPrinterDevice printer = new VzPrinterDevice();
+	protected SoundPlayer player = SoundUtil.getSoundPlayer(441, false);
+	protected VzPrinterDevice printer;
 	protected int soundBit = 1;
-	protected int volume = 127;
 	protected int soundUpdate = 0;
 	protected int audioAdd;
 	protected int syncCnt = AUDIO_RESYNC_FRAMES;
@@ -79,10 +70,11 @@ public class VZ extends Computer {
 	protected int cyclesToFlyback;
 	protected VZTapeDevice tapeDevice;
 	protected VZLoaderDevice loaderDevice;
+	protected VzAudioDevice audioDevice;
 
-	public VZ(JPanel applet, String name) {
-		super(applet, name);
-		vz200 = "VZ200".equalsIgnoreCase(name);
+	public VZ() {
+		super("VZ200");
+		vz200 = true;
 		if (vz200) {
 			cyclesPerSecond = CYCLES_PER_SEC_VZ200;
 			scansPerFrame = 312;
@@ -101,23 +93,24 @@ public class VZ extends Computer {
 		z80.setMemoryDevice(this);
 		z80.setCycleDevice(this);
 		z80.setInterruptDevice(this);
-		// printer support
-		printer.register(z80);
-		//
-
-		player.setFormat(SoundUtil.ULAW);
+		
+		player.setFormat(SoundUtil.UPCM8);
 		setBasePath("vz");
+		this.printer = new VzPrinterDevice();
+		this.printer.register(z80);
 		this.tapeDevice = new VZTapeDevice(this);
 		this.tapeDevice.register(z80);
 		this.loaderDevice = new VZLoaderDevice(this);
 		this.loaderDevice.register(z80);
+		this.audioDevice = new VzAudioDevice(this);
+		this.audioDevice.register(z80);
 	}
 
 	public void initialise() {
 		memory.setMemory(0, getFile(romPath + "VZBAS" + (vz200 ? "12" : "20") + ".ROM", 16384));
 		SimpleRenderer.setFontData(getFile(romPath + "VZ.CHR", 768));
 		super.initialise();
-		this.setVolume(50);
+		this.setVolume(127);
 	}
 
 	public String getKeyboardImage() {
@@ -155,8 +148,7 @@ public class VZ extends Computer {
 		soundUpdate += audioAdd;
 		if ((soundUpdate & AUDIO_TEST) != 0) {
 			soundUpdate -= AUDIO_TEST;
-			// player.writeulaw(soundByte);
-			player.writeMono(soundBit * volume);
+			player.writeMono(soundLevel);
 		}
 
 		if (frameSkip == 0)
@@ -188,13 +180,17 @@ public class VZ extends Computer {
 			return memory.writeByte(address, value);
 		else if (address >= 0x7000)
 			return renderer.setData(memory.writeByte(address, value));
-		else if (address == 0x6fff) {
-			setVolume(value);
-		} else if (address >= 0x6800) {
+		else if (address >= 0x6800) {
 
 			// check sound
-			if (((vdcLatch ^ value) & 0x21) != 0) {
-				soundBit = SOUND_LEVELS[(value & 0x01) | ((value >> 4) & 0x02)];
+			boolean audiolatch1 = (vdcLatch & 0x20) != 0;
+			boolean audiolatch2 = (vdcLatch & 0x01) != 0;
+			if (audiolatch1 && !audiolatch2) {
+				soundLevel = SOUND_LEVEL;
+			} else if (audiolatch2 && !audiolatch1) {
+				soundLevel = 0;
+			} else {
+				soundLevel = SOUND_LEVEL / 2;
 			}
 
 			vdcLatch = value;
@@ -203,11 +199,12 @@ public class VZ extends Computer {
 		return value & 0xff;
 	}
 
-	private static final int MIN_VOL = 0;
-	private static final int MAX_VOL = 127;
-
 	public void setVolume(int volume) {
-		this.volume = volume;
+		this.player.setVolume(volume);
+	}
+
+	public int getVolume() {
+		return this.player.getVolume();
 	}
 
 	public void processKeyEvent(KeyEvent e) {
@@ -223,8 +220,6 @@ public class VZ extends Computer {
 		} else if (e.getExtendedKeyCode() == 0x010000df) { // ß
 			keyCode = KeyEvent.VK_MINUS;
 		}
-		// log.info("KEY EVENT {}", String.format("%8x / %08x", e.getKeyCode(),
-		// e.getExtendedKeyCode()));
 		if (e.getID() == KeyEvent.KEY_PRESSED)
 			keyboard.keyPressed(keyCode);
 		else if (e.getID() == KeyEvent.KEY_RELEASED)

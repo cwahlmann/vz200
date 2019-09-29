@@ -62,7 +62,7 @@ public class JemuUi extends JPanel
 	private static final Logger log = LoggerFactory.getLogger(JemuUi.class);
 	private static final long serialVersionUID = 1L;
 
-	protected Computer computer = null;
+	private final Computer computer;
 
 	protected boolean isStandalone = false;
 	protected Display display = new Display();
@@ -84,9 +84,10 @@ public class JemuUi extends JPanel
 	}
 
 	@Autowired
-	public JemuUi(JemuConfiguration config) {
+	public JemuUi(JemuConfiguration config, Computer computer) {
 		this.config = config;
 		this.isStandalone = true;
+		this.computer = computer;
 		enableEvents(AWTEvent.KEY_EVENT_MASK);
 	}
 
@@ -112,12 +113,7 @@ public class JemuUi extends JPanel
 			boolean pause = Util.getBoolean(getParameter("PAUSE", "false"));
 			large = Util.getBoolean(getParameter("LARGE", "false"));
 			log.info("DEBUG=" + debug + ", PAUSE=" + pause + ", LARGE=" + large);
-			if (computer == null) {
-				setComputer(getParameter("COMPUTER", Computer.DEFAULT_COMPUTER), !(debug || pause));
-			} else if (!(debug || pause)) {
-				computer.start();
-			}
-			log.info("Computer Set to [{}]", computer.getName());
+			initComputer();
 
 			if (!fullscreen) {
 				boolean status = Util.getBoolean(getParameter("STATUS", "false"));
@@ -460,31 +456,11 @@ public class JemuUi extends JPanel
 		computer.start();
 	}
 
-	public void setComputer(String name) throws Exception {
-		setComputer(name, true);
-	}
-
-	public void setComputer(String name, boolean start) throws Exception {
-		if (computer == null || !name.equalsIgnoreCase(computer.getName())) {
-			Computer newComputer = Computer.createComputer(this, name);
-			if (computer != null) {
-				computer.dispose();
-				computer = null;
-				Runtime runtime = Runtime.getRuntime();
-				runtime.gc();
-				runtime.runFinalization();
-				runtime.gc();
-				log.info("Computer Disposed");
-			}
-			computer = newComputer;
-			setFullSize(large);
-			computer.initialise();
-			refreshKeyboardImage(config.getBoolean(Constants.FULLSCREEN));
-			if (debug != null)
-				debug.setComputer(computer);
-			if (start)
-				computer.start();
-		}
+	public void initComputer() throws Exception {
+		setFullSize(large);
+		computer.initialise();
+		refreshKeyboardImage(config.getBoolean(Constants.FULLSCREEN));
+		computer.start();
 	}
 
 	public void setFullSize(boolean value) {
@@ -499,15 +475,7 @@ public class JemuUi extends JPanel
 	}
 
 	public void itemStateChanged(ItemEvent e) {
-		if (e.getStateChange() == ItemEvent.SELECTED) {
-			Object item = computerSelectionBox.getSelectedItem();
-			try {
-				setComputer(((ComputerDescriptor) item).key);
-				findWindow(this).pack();
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		}
+		// not used
 	}
 
 	public Window findWindow(Component comp) {

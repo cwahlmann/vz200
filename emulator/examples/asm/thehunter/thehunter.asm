@@ -1,30 +1,28 @@
+//   ***** THE HUNTER *****
+// 
+// A BAT HUNTING GAME BY FR3D
+//
+//          alias 
+//    Christian Wahlmann
+
 .org 0x8000
 .run 0x8000
 
 .def screen: 0x7000
-.def intadr: 0x787d
 .def latch:  0x6800
 
+		JP start_program:
+		
+.include utility.asm
+
+start_program:
 // install screen interrupt hook
-        DI
-        
-        LD HL, intadr:
-        LD (HL), 0xc3
-        INC HL
-        LD DE, main:
-        LD (HL), E
-        INC HL
-        LD (HL), D
+		LD DE, main:
+		CALL install_interrupt_main_loop:
 
-        LD A, 0x01
-        LD (0x78dd), A
-        
-        XOR A
-        LD (game_state:), A
-        EI
-
-    	// outer game loop
-run_intro: 	CALL intro:
+// outer game loop
+run_intro: 
+		CALL intro:
 
 run_new_game: CALL init0:
 
@@ -143,15 +141,10 @@ init_lp1: LD (IX+2), 0xFF
 		RET
 
 // main loop
-main: 	DI
-        PUSH HL
-        PUSH DE
-        PUSH BC
-        PUSH AF
-
+main:
 		LD A, (game_state:)
 		CP 0x01
-		JR NZ, exit:
+		RET NZ
 
 		CALL clear_screen:
         CALL draw:
@@ -166,17 +159,11 @@ main: 	DI
 
 		LD A, (lives:)
 		OR A
-		JR NZ, exit:
+		RET NZ
 		
 		LD A, 0x03
 		LD (game_state:), A
-						
-exit:   POP AF
-        POP BC
-        POP DE
-        POP HL
-        EI
-        RETI
+        RET
 
 fire_pressed: defb 0x00
 
@@ -311,8 +298,8 @@ move_ducks_lp1: PUSH BC
 		CP 0xff
 		JR NZ, move_ducks_nx1:
 
-		CALL zufall:
-		LD A, (zahl_l:)
+		CALL random:
+		LD A, (randomnumber_l:)
 		OR A
 		CALL Z, new_duck:
 		JR move_ducks_nx2:  
@@ -331,20 +318,20 @@ move_ducks_nx2: POP BC
 		RET 
 
 // *** new duck
-new_duck: CALL zufall:
-		LD A, (zahl_l:)
+new_duck: CALL random:
+		LD A, (randomnumber_l:)
 		AND 0x1f
 		LD (IX+0), A
 		
-		CALL zufall:
-		LD A, (zahl_l:)
+		CALL random:
+		LD A, (randomnumber_l:)
 		AND 0x07
 		LD (IX+1), A
 		XOR A
 		LD (IX+2), A
 		LD (IX+3), A
-		CALL zufall:
-		LD A, (zahl_l:)
+		CALL random:
+		LD A, (randomnumber_l:)
 		AND 0x07
 		ADD A, 0x02
 		LD (IX+4), A
@@ -365,13 +352,13 @@ move_duck: LD A, (IX+5)
 		LD (IX+5), A
 
 // select sprite
-		CALL zufall:
-		LD A, (zahl_l:)
+		CALL random:
+		LD A, (randomnumber_l:)
 		AND 0x03
 		LD (IX+2), A
 		
-		CALL zufall:
-		LD A, (zahl_l:)
+		CALL random:
+		LD A, (randomnumber_l:)
 		CP 0xfd
 		JR C, move_duck_n0:
 
@@ -380,9 +367,9 @@ move_duck: LD A, (IX+5)
 		LD (IX+3), A
 		
 // move x
-move_duck_n0: CALL zufall:
+move_duck_n0: CALL random:
 		LD D, (IX+0)
-		LD A, (zahl_l:)
+		LD A, (randomnumber_l:)
 		AND 0x01
 		ADD A, A
 		SUB 0x01
@@ -404,8 +391,8 @@ move_duck_n2: LD (IX+0), A
         INC HL
         INC HL
         INC HL
-move_duck_n2a: CALL zufall:
-		LD A, (zahl_l:)
+move_duck_n2a: CALL random:
+		LD A, (randomnumber_l:)
 		AND 0x03
 		LD E, A
 		LD D, 0x00
@@ -591,45 +578,6 @@ clr_loop2:	  LD (HL), 0x20
 			  DEC B
 			  JR NZ, clr_loop2:
 			  RET
-
-// Zufallsgenerator
-
-zahl_h:   defb 0x00
-zahl_l:   defb 0x00
-
-zufall: PUSH HL
-		PUSH DE
-		
-		LD HL, (zahl_h:)
-        LD D, H
-        LD E, L
-
-        ADD HL, HL
-        ADD HL, HL
-		ADD HL, DE
-
-        ADD HL, HL
-        ADD HL, HL
-		ADD HL, DE
-        ADD HL, HL
-
-        ADD HL, HL
-		ADD HL, DE
-        ADD HL, HL
-		ADD HL, DE
-
-        ADD HL, HL
-        ADD HL, HL
-        ADD HL, HL
-		ADD HL, DE
-
-		LD DE, 0x2517
-		ADD HL, DE
-		LD (zahl_h:), HL
-		
-		POP DE
-		POP HL
-		RET
 		
 score_msg: defs "SCORE: "
 		defb 0x00
@@ -655,7 +603,7 @@ draw_score_at: LD DE, score_msg:
 		DEC DE
 draw_score_lp1: PUSH DE
 		PUSH BC
-		CALL div_10:
+		CALL div_by_ten:
 		POP BC
 		POP DE
  	    ADD A, 0x30
@@ -687,7 +635,7 @@ draw_highscore_at: LD DE, highscore_msg:
 		DEC DE
 draw_highscore_lp1: PUSH DE
 		PUSH BC
-		CALL div_10:
+		CALL div_by_ten:
 		POP BC
 		POP DE
  	    ADD A, 0x30
@@ -706,31 +654,6 @@ draw_lives_lp2: LD (HL), 0x2a
 		DEC A
 		JR NZ, draw_lives_lp2: 
         RET
-
-;Inputs:
-;     HL is the numerator
-;     C is the denominator
-;Outputs:
-;     A is the remainder
-;     B is 0
-;     C is not changed
-;     DE is not changed
-;     HL is the quotient
-;
-div_10: LD C, 0x0a
-div:  	LD B, 0x10
-     	XOR A
-  
-div_lp1: ADD HL, HL
-		RLA
-        CP C
-        JR C, div_nx1:
-           
-        INC HL
-        SUB C
-        
-div_nx1: DJNZ div_lp1:
-       	RET
 
 intro_logo:	defb 0x3c, 0x3e, 0x38, 0x3a, 0x30, 0x3a, 0x3e, 0x3c, 0x38, 0x00, 0x2a, 0x20, 0x2a, 0x2a, 0x20, 0x2a, 0x2b, 0x20, 0x2a, 0x2c, 0x2e, 0x28, 0x2e, 0x2c, 0x28, 0x2e, 0x2d, 0x20
 			defb 0x30, 0x3a, 0x30, 0x3e, 0x3c, 0x3a, 0x3e, 0x38, 0x30, 0x00, 0x2e, 0x2c, 0x2a, 0x2a, 0x20, 0x2a, 0x2a, 0x29, 0x2a, 0x20, 0x2a, 0x20, 0x2e, 0x28, 0x20, 0x2e, 0x2c, 0x2a
