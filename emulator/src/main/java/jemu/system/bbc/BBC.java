@@ -9,22 +9,23 @@
 
 package jemu.system.bbc;
 
-import java.applet.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Dimension;
+import java.awt.event.KeyEvent;
 
-import javax.swing.JPanel;
-
-import jemu.core.*;
-import jemu.core.cpu.*;
-import jemu.core.device.*;
-import jemu.core.device.crtc.*;
-import jemu.core.device.floppy.*;
-import jemu.core.device.io.*;
-import jemu.core.device.memory.*;
-import jemu.core.device.sound.*;
-import jemu.ui.*;
-import jemu.util.diss.*;
+import jemu.core.Util;
+import jemu.core.cpu.MC6502;
+import jemu.core.cpu.Processor;
+import jemu.core.device.Computer;
+import jemu.core.device.crtc.Basic6845;
+import jemu.core.device.crtc.SAA505x;
+import jemu.core.device.floppy.Drive;
+import jemu.core.device.floppy.I8271;
+import jemu.core.device.io.R6522;
+import jemu.core.device.memory.Memory;
+import jemu.core.device.sound.SN76489;
+import jemu.ui.Display;
+import jemu.util.diss.Disassembler;
+import jemu.util.diss.Diss6502;
 
 /**
  *
@@ -67,8 +68,8 @@ public class BBC extends Computer {
   protected int audioAdd = psg.getSoundPlayer().getClockAdder(AUDIO_TEST,CYCLES_PER_SECOND >> 1);
   
   /** Creates a new instance of BBC */
-  public BBC(JPanel applet, String name) {
-    super(applet,name);
+  public BBC() {
+    super("BBC");
     cpu.setMemoryDevice(this);
     cpu.setCycleDevice(this);
     sysVIA.getPort(R6522.PORT_A).setInputDevice(this,SYS_VIA_PORT_A);

@@ -4,8 +4,6 @@ import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.io.InputStream;
 
-import javax.swing.JPanel;
-
 import jemu.core.cpu.Processor;
 import jemu.core.device.Computer;
 import jemu.core.device.DeviceMapping;
@@ -55,8 +53,8 @@ public class CPC extends Computer {
   protected int audioAdd = psg.getSoundPlayer().getClockAdder(AUDIO_TEST,CYCLES_PER_SECOND);
   protected int audioCount = 0;
 
-  public CPC(JPanel applet, String name) {
-    super(applet,name);
+  public CPC() {
+    super("CPC464");
     z80.setMemoryDevice(memory);
     z80.addOutputDeviceMapping(new DeviceMapping(memory,0x2000,0x0000));    // ROM Select
     z80.setInterruptDevice(gateArray);

@@ -21,6 +21,10 @@ public abstract class SoundPlayer {     // Probably should be an interface, but 
     return (int)((long)test * (long)getSampleRate() / (long)cyclesPerSecond);
   }
 
+  public abstract int getVolume();
+  
+  public abstract void setVolume(int volume);
+  
   public abstract int getSampleRate();
 
   public abstract void writeMono(int value);

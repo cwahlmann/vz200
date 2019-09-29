@@ -1,0 +1,34 @@
+Wie heißt euer Stand?
+---------------------
+
+VZ200-Remake
+
+Beschreibt euren Stand in einem Wort oder Satz. (max. 300)
+-----------------------------------------------------
+
+Mit einem funktionstüchtigen Nachbau des "VZ200 Color Computer" von 1983 lassen wir die Welt der 8-Bit Computer wieder auferstehen.
+
+(129 Zeichen)
+
+Beschreibt euer Projekt (max. 800)
+-----------------------------
+
+Vom Platinendesign über 3D-Druck bis hin zum fertigen Rechner in schnuckeligen 70%: hier kannst du den kompletten
+(Neu-)Entstehungsprozess des Computers miterleben, auf dem wir unsere ersten Gehversuche in der Welt der IT gemacht haben.
+
+Während der ganzen Messe schrauben und löten wir Modelle zusammen. Ihr könnt uns dabei über die Schulter schauen,
+und auch gerne selbst Hand anlegen. Was wir gemeinsam produziert haben, werden wir im Laufe der Messe verlosen.
+
+Ob Space-Invader oder Hallo Welt - fertige Modelle des "VZ200 Color Computer" stehen zum Ausprobieren bereit.
+
+Zu diesen Zeiten steigen wir tiefer in einzelne Themen ein:
+
+11:00h - 3D-Design und -Druck
+14:00h - Platinenlayout mit KiCad
+16:00h - Basic- und Assembler-Programmierung
+
+cwahlmann.github.io/vz200-remake
+
+(791 Zeichen)
+
+

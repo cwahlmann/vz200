@@ -13,8 +13,6 @@ import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.io.InputStream;
 
-import javax.swing.JPanel;
-
 import jemu.core.cpu.Processor;
 import jemu.core.cpu.Z80;
 import jemu.core.device.Computer;
@@ -49,8 +47,8 @@ public class Spectrum extends Computer {
   protected static final byte RLE_TAG = (byte)0xed;
 
   /** Creates a new instance of Spectrum */
-  public Spectrum(JPanel applet, String name) {
-    super(applet,name);
+  public Spectrum() {
+    super("Spectrum");
     video.setMemory(memory);
     z80.setMemoryDevice(video);
     z80.setCycleDevice(this);

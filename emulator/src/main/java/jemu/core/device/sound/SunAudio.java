@@ -36,6 +36,17 @@ public class SunAudio extends SoundPlayer implements Runnable {
 		return 8000;
 	}
 
+	@Override
+	public int getVolume() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	@Override
+	public void setVolume(int volume) {
+		// TODO Auto-generated method stub
+	}
+	
 	public void play() {
 		if (!playing) {
 			// sync();
