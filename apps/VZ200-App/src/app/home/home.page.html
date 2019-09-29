@@ -22,7 +22,7 @@
           <ion-icon slot="start" name="power"></ion-icon>
           Reset
       </ion-button>
-      <ion-range min="0" max="240" step="32" id="volume" #volume [value]="volume"
+      <ion-range min="0" max="255" step="16" id="volume" #volume [value]="volume"
         color="primary" snaps="true" ticks="true" (ionChange)="onVolumeChanged($event)">
         <ion-icon size="small" slot="start" name="volume-mute"></ion-icon>
         <ion-icon slot="end" name="volume-high"></ion-icon>
