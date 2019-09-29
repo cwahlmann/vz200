@@ -6,12 +6,10 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public interface Constants {
-	public static final String LAST_WORKING_DIR = "LAST_WORKING_DIR";
-	public static final String SCREEN_WIDTH = "SCREEN_WIDTH";
-	public static final String SCREEN_HEIGHT = "SCREEN_HEIGHT";
-	public static final String FULLSCREEN = "FULLSCREEN";
-	
+public class Constants {
+	private Constants() {
+	}
+		
 	public static final String WHITESPACE_PATTERN = "[\t ]+";
 
 	public enum StatementToken {
@@ -31,7 +29,7 @@ public interface Constants {
 		}
 	}
 
-	public enum RegisterToken {
+	public static enum RegisterToken {
 		B("^B$", 0), C("^C$", 1), D("^D$", 2), E("^E$", 3), H("^H$", 4), IX_H("^IXh$", 4), IY_H("^IYh$", 4), L("^L$",
 				5), IX_L("^IXl$", 5), IY_L("^IYl$", 5), OF_HL("^(\\s*HL\\s*)$", 6), A("^A$", 7);
 
@@ -56,7 +54,7 @@ public interface Constants {
 		}
 	}
 
-	public enum NumToken {
+	public static enum NumToken {
 		// @formatter:off
 		hex("0x[0-9a-fA-F]{2,4}", s -> Integer.valueOf(s.substring(2), 16)), 
 		dez("(\\+|\\-){0,1}[0-9]+",
@@ -85,7 +83,7 @@ public interface Constants {
 		}
 	}
 
-	public enum DefToken {
+	public static enum DefToken {
 		DEFB("^defb[\t ]+.*"), DEFW("^defw[\t ]+.*"), DEFS("^defs[\t ]+.*");
 		private String regex;
 
@@ -98,23 +96,23 @@ public interface Constants {
 		}
 	}
 
-	public String PATTERN_LABEL = "[a-zA-Z][0-9a-zA-Z_]*\\:";
-	public String PATTERN_PLUS_O = "[\\+\\-][0-9]+";
-	public String PATTERN_O = "([\\+\\-]{0,1}[0-9]+)|(" + PATTERN_LABEL + ")";
-	public String PATTERN_NN = "(0x[0-9ABCDEFabcdef]{4})|(" + PATTERN_LABEL + ")";
-	public String PATTERN_N = "(0x[0-9ABCDEFabcdef]{2})|(" + PATTERN_LABEL + ")";
-	public String PATTERN_B = "[0-7]{1}";
-	public String PATTERN_R = "(B|C|D|E|H|L|\\(HL\\)|A)";
-	public String PATTERN_P = "(B|C|D|E|IXh|IXl|A)";
-	public String PATTERN_Q = "(B|C|D|E|IYh|IYl|A)";
+	public static final String PATTERN_LABEL = "[a-zA-Z][0-9a-zA-Z_]*\\:";
+	public static final String PATTERN_PLUS_O = "[\\+\\-][0-9]+";
+	public static final String PATTERN_O = "([\\+\\-]{0,1}[0-9]+)|(" + PATTERN_LABEL + ")";
+	public static final String PATTERN_NN = "(0x[0-9ABCDEFabcdef]{4})|(" + PATTERN_LABEL + ")";
+	public static final String PATTERN_N = "(0x[0-9ABCDEFabcdef]{2})|(" + PATTERN_LABEL + ")";
+	public static final String PATTERN_B = "[0-7]{1}";
+	public static final String PATTERN_R = "(B|C|D|E|H|L|\\(HL\\)|A)";
+	public static final String PATTERN_P = "(B|C|D|E|IXh|IXl|A)";
+	public static final String PATTERN_Q = "(B|C|D|E|IYh|IYl|A)";
 
-	public String TOKEN_O = "o";
-	public String TOKEN_N = "n";
-	public String TOKEN_NN = "nn";
-	public String TOKEN_P = "p";
-	public String TOKEN_B = "b";
+	public static final String TOKEN_O = "o";
+	public static final String TOKEN_N = "n";
+	public static final String TOKEN_NN = "nn";
+	public static final String TOKEN_P = "p";
+	public static final String TOKEN_B = "b";
 
-	public String[] R = new String[] { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
-	public String[] P = new String[] { "B", "C", "D", "E", "IXh", "IXl", null, "A" };
-	public String[] Q = new String[] { "B", "C", "D", "E", "IYh", "IYl", null, "A" };
+	public static final String[] R = new String[] { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
+	public static final String[] P = new String[] { "B", "C", "D", "E", "IXh", "IXl", null, "A" };
+	public static final String[] Q = new String[] { "B", "C", "D", "E", "IYh", "IYl", null, "A" };
 }

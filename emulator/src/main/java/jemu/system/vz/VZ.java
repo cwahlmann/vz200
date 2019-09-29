@@ -13,12 +13,16 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import jemu.config.Constants;
+import jemu.config.JemuConfiguration;
 import jemu.core.cpu.Processor;
 import jemu.core.cpu.Z80;
 import jemu.core.device.Computer;
 import jemu.core.device.memory.Memory;
+import jemu.core.device.sound.JavaSound;
 import jemu.core.device.sound.SoundPlayer;
 import jemu.core.device.sound.SoundUtil;
 import jemu.ui.Display;
@@ -55,7 +59,7 @@ public class VZ extends Computer {
 	protected int cycles = 0;
 	protected int frameFlyback = 0x80;
 	protected int vdcLatch = 0x00;
-	protected SimpleRenderer renderer = new FullRenderer(memory); 
+	protected SimpleRenderer renderer = new FullRenderer(memory);
 	protected Keyboard keyboard = new Keyboard();
 	protected Disassembler disassembler = new DissZ80();
 	protected SoundPlayer player = SoundUtil.getSoundPlayer(441, false);
@@ -71,9 +75,12 @@ public class VZ extends Computer {
 	protected VZTapeDevice tapeDevice;
 	protected VZLoaderDevice loaderDevice;
 	protected VzAudioDevice audioDevice;
+	private final JemuConfiguration config;
 
-	public VZ() {
+	@Autowired
+	public VZ(JemuConfiguration config) {
 		super("VZ200");
+		this.config = config;
 		vz200 = true;
 		if (vz200) {
 			cyclesPerSecond = CYCLES_PER_SEC_VZ200;
@@ -89,11 +96,11 @@ public class VZ extends Computer {
 		z80.setCyclesPerSecond(cyclesPerSecond);
 		cyclesPerFrame = CYCLES_PER_SCAN * scansPerFrame;
 		cyclesToFlyback = cyclesPerFrame - (CYCLES_PER_SCAN * scansOfFlyback);
-		audioAdd = player.getClockAdder(AUDIO_TEST, cyclesPerSecond);
+		audioAdd = player.getClockAdder(AUDIO_TEST, cyclesPerSecond - JavaSound.SAMPLE_RATE);
 		z80.setMemoryDevice(this);
 		z80.setCycleDevice(this);
 		z80.setInterruptDevice(this);
-		
+
 		player.setFormat(SoundUtil.UPCM8);
 		setBasePath("vz");
 		this.printer = new VzPrinterDevice();
@@ -110,7 +117,7 @@ public class VZ extends Computer {
 		memory.setMemory(0, getFile(romPath + "VZBAS" + (vz200 ? "12" : "20") + ".ROM", 16384));
 		SimpleRenderer.setFontData(getFile(romPath + "VZ.CHR", 768));
 		super.initialise();
-		this.setVolume(127);
+		this.setVolume(config.getInt(Constants.SOUND_VOLUME));
 	}
 
 	public String getKeyboardImage() {
@@ -201,6 +208,8 @@ public class VZ extends Computer {
 
 	public void setVolume(int volume) {
 		this.player.setVolume(volume);
+		this.config.set(Constants.SOUND_VOLUME, volume);
+		this.config.persist();
 	}
 
 	public int getVolume() {

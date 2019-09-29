@@ -13,9 +13,9 @@ import javax.swing.JFrame;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import jemu.config.Constants;
 import jemu.config.JemuConfiguration;
 import jemu.ui.JemuUi;
-import jemu.util.assembler.z80.Constants;
 
 @Component
 public class Emulator {

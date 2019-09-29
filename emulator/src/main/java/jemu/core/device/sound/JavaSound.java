@@ -68,7 +68,8 @@ public class JavaSound extends SunAudio {
 			log.error("Unable to determine volume - no control available.");
 			return 0;
 		}
-		return (int)((control.getValue()-control.getMinimum()) / (control.getMaximum() - control.getMinimum()) * 255f) ;
+		return (int) ((control.getValue() - control.getMinimum()) / (control.getMaximum() - control.getMinimum())
+				* 255f);
 	}
 
 	protected void init() {
@@ -77,18 +78,17 @@ public class JavaSound extends SunAudio {
 		data = new byte[samples * channels];
 		AudioFormat format = stereo ? STEREO_FORMAT : MONO_FORMAT;
 		try {
-			line = (SourceDataLine) AudioSystem
-					.getLine(new DataLine.Info(SourceDataLine.class, format, SAMPLE_RATE * channels));
-			line.open();
+			line = (SourceDataLine) AudioSystem.getLine(new DataLine.Info(SourceDataLine.class, format));
+			line.open(format, SAMPLE_RATE * channels);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		findControl(line);
+		control = findControl(line);
 	}
 
 	private static Set<String> VOLUME_CONTROL = Stream.of("volume", "master gain").collect(Collectors.toSet());
 
-	private void findControl(SourceDataLine line) {
+	private FloatControl findControl(SourceDataLine line) {
 		control = Stream.of(line.getControls()).filter(c -> c instanceof FloatControl).map(c -> (FloatControl) c)
 				.filter(c -> VOLUME_CONTROL.contains(c.getType().toString().toLowerCase())).findAny().orElse(null);
 		if (control != null) {
@@ -96,9 +96,13 @@ public class JavaSound extends SunAudio {
 		} else {
 			log.error("No volume control available.");
 		}
+		return control;
 	}
 
 	public void sync() {
+		if (line.available() < 500) {
+			line.drain();
+		}
 	}
 
 	public void play() {
@@ -118,7 +122,8 @@ public class JavaSound extends SunAudio {
 			data[offset] = (byte) value;
 			break;
 		}
-		if (++offset >= data.length) {
+		offset++;
+		if (offset >= data.length) {
 			line.write(data, 0, data.length);
 			offset = 0;
 		}

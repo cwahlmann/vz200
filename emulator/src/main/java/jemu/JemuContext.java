@@ -6,8 +6,8 @@ import java.nio.file.Paths;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import jemu.config.Constants;
 import jemu.config.JemuConfiguration;
-import jemu.util.assembler.z80.Constants;
 
 
 @Configuration
@@ -21,6 +21,7 @@ public class JemuContext {
 		config.setIfMissing(Constants.SCREEN_WIDTH, "800");
 		config.setIfMissing(Constants.SCREEN_HEIGHT, "480");
 		config.setIfMissing(Constants.FULLSCREEN, "true");
+		config.setIfMissing(Constants.SOUND_VOLUME, "100");
 		return config;
 	};
 }
