@@ -392,9 +392,9 @@ PORT | IN / OUT | Beschreibung
 
 ## Erweiterung Volume-Controle
 
-ADRESS | R / W | Beschreibung
+PORT | IN / OUT | Beschreibung
 -------|-------|-------------
-0x6fff / 28671 | W | Setzt die Lautstärke (0-127)
+251 | R/W | liest / setzt die Lautstärke (0-255)
 
 ## REST-Interface
 
@@ -425,7 +425,8 @@ Endpunkt | Method | Request | Response | Beschreibung
 /tape/play | POST | | Integer | Tape starten; gibt Slot zurück
 /tape/record | POST | | Integer | Aufnahme starten; gibt Slot zurück
 /tape/stop | POST | | Integer | Tape stoppen; gibt Slot zurück
-/sound/{volume} | POST | Integer | | Audio-Lautstärke von 0 (=Stumm) bis 255 (=+6 DB)
+/sound/{volume} | POST | Integer | | Audio-Lautstärke schreiben von 0 bis 255
+/sound     | GET  | | Integer | Audio-Lautstärke lesen
 
 # <a name="useful-links">Nützliche Links</a>
 
