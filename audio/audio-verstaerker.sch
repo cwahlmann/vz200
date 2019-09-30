@@ -1,0 +1,154 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:my_audio
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L +5V #PWR2
+U 1 1 5D91BC7C
+P 4000 3650
+F 0 "#PWR2" H 4000 3500 50  0001 C CNN
+F 1 "+5V" H 4000 3790 50  0000 C CNN
+F 2 "" H 4000 3650 50  0000 C CNN
+F 3 "" H 4000 3650 50  0000 C CNN
+	1    4000 3650
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR1
+U 1 1 5D91BCDF
+P 3850 3750
+F 0 "#PWR1" H 3850 3500 50  0001 C CNN
+F 1 "GND" H 3850 3600 50  0000 C CNN
+F 2 "" H 3850 3750 50  0000 C CNN
+F 3 "" H 3850 3750 50  0000 C CNN
+	1    3850 3750
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	3850 3750 4150 3750
+$Comp
+L SPEAKER SP1
+U 1 1 5D91BD23
+P 6550 3950
+F 0 "SP1" H 6450 4200 50  0000 C CNN
+F 1 "SPEAKER" H 6450 3700 50  0000 C CNN
+F 2 "" H 6550 3950 50  0000 C CNN
+F 3 "" H 6550 3950 50  0000 C CNN
+	1    6550 3950
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R1
+U 1 1 5D91BD4A
+P 5900 3650
+F 0 "R1" H 6000 3700 50  0000 C CNN
+F 1 "R" H 5900 3650 50  0000 C CNN
+F 2 "" V 5830 3650 50  0000 C CNN
+F 3 "" H 5900 3650 50  0000 C CNN
+	1    5900 3650
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R2
+U 1 1 5D91BD63
+P 5900 3950
+F 0 "R2" H 6000 4000 50  0000 C CNN
+F 1 "R" H 5900 3950 50  0000 C CNN
+F 2 "" V 5830 3950 50  0000 C CNN
+F 3 "" H 5900 3950 50  0000 C CNN
+	1    5900 3950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6250 3850 6250 3800
+Wire Wire Line
+	6250 3800 5900 3800
+Wire Wire Line
+	6250 4100 6250 4050
+Wire Wire Line
+	5600 4100 6250 4100
+Connection ~ 5900 4100
+Wire Wire Line
+	5900 3500 5600 3500
+Wire Wire Line
+	5600 3500 5600 3900
+Wire Wire Line
+	5600 3900 5400 3900
+$Comp
+L PAM_8403 U1
+U 1 1 5D91C1B8
+P 4850 4150
+F 0 "U1" H 4450 4850 60  0000 C CNN
+F 1 "PAM_8403" H 4950 4850 60  0000 C CNN
+F 2 "" H 4850 4150 60  0000 C CNN
+F 3 "" H 4850 4150 60  0000 C CNN
+	1    4850 4150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4150 3650 4000 3650
+$Comp
+L CONN_01X03 P1
+U 1 1 5D91C2EA
+P 3750 4200
+F 0 "P1" H 3750 4400 50  0000 C CNN
+F 1 "AUDIO OUT" V 3850 4200 50  0000 C CNN
+F 2 "" H 3750 4200 50  0000 C CNN
+F 3 "" H 3750 4200 50  0000 C CNN
+	1    3750 4200
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	4150 4100 3950 4100
+Wire Wire Line
+	3950 4200 4150 4200
+Wire Wire Line
+	4150 4300 3950 4300
+Wire Wire Line
+	5600 4100 5600 4000
+Wire Wire Line
+	5600 4000 5400 4000
+Text Notes 5600 4550 0    60   ~ 0
+R1: 47 Ohm\nR2: 1000 kOhm\nSP1: 2W, 4 Ohm
+$EndSCHEMATC
