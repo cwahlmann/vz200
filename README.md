@@ -238,11 +238,13 @@ Damit ist der VZ200 fertig. Der Emulator "JEmu" kann übrigens sowohl auf einem 
 | Audio-Verstärker | Mini Audio Verstärkerplatine PAM8403 DC 5V (z.B. über https://www.roboter-bausatz.de) |
 | 3,5er Stereo Klinkenstecker | gerne gebraucht, da dieser sowieso "entkernt" werden muss |
 | Lautsprecher | 2 Zoll / 5 cm Miniaturlautsprecher 3 W 4 Ohm |
+| Widerstände für Spannungsteiler: 1x 1000 kOhm, 1x 47 Ohm| der Spannungsteiler reduziert Spannung direkt am Lautsprecher und damit auch die Verstärker-eigenen Störgeräusche |
 | Raspberry Pi | Modell >= 3b |
 | TFT-Display | JOY-iT 5“ HDMI Touchscreen Display |
 | 4 Schrauben M2 6mm | Befestigung des Lautsprechers im Gehäuse |
 | 4 Schrauben M2 8mm | Verschrauben des Gehäuses |
 | 4 Schrauben M2 6mm| Befestigung des Displays |
+
 
 ## TODO
 
