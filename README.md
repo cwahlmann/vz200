@@ -238,11 +238,14 @@ Damit ist der VZ200 fertig. Der Emulator "JEmu" kann übrigens sowohl auf einem 
 | Audio-Verstärker | Mini Audio Verstärkerplatine PAM8403 DC 5V (z.B. über https://www.roboter-bausatz.de) |
 | 3,5er Stereo Klinkenstecker | gerne gebraucht, da dieser sowieso "entkernt" werden muss |
 | Lautsprecher | 2 Zoll / 5 cm Miniaturlautsprecher 3 W 4 Ohm |
+| Widerstände für Spannungsteiler: 1x 1000 kOhm, 1x 47 Ohm| der Spannungsteiler reduziert Spannung direkt am Lautsprecher und damit auch die Verstärker-eigenen Störgeräusche |
 | Raspberry Pi | Modell >= 3b |
 | TFT-Display | JOY-iT 5“ HDMI Touchscreen Display |
 | 4 Schrauben M2 6mm | Befestigung des Lautsprechers im Gehäuse |
 | 4 Schrauben M2 8mm | Verschrauben des Gehäuses |
 | 4 Schrauben M2 6mm| Befestigung des Displays |
+
+![Audio Schaltplan](audio/audio_schaltplan_skaliert.png "Audio Verstärker Schaltplan")
 
 ## TODO
 
@@ -392,9 +395,9 @@ PORT | IN / OUT | Beschreibung
 
 ## Erweiterung Volume-Controle
 
-ADRESS | R / W | Beschreibung
+PORT | IN / OUT | Beschreibung
 -------|-------|-------------
-0x6fff / 28671 | W | Setzt die Lautstärke (0-127)
+251 | R/W | liest / setzt die Lautstärke (0-255)
 
 ## REST-Interface
 
@@ -425,7 +428,8 @@ Endpunkt | Method | Request | Response | Beschreibung
 /tape/play | POST | | Integer | Tape starten; gibt Slot zurück
 /tape/record | POST | | Integer | Aufnahme starten; gibt Slot zurück
 /tape/stop | POST | | Integer | Tape stoppen; gibt Slot zurück
-/sound/{volume} | POST | Integer | | Audio-Lautstärke von 0 (=Stumm) bis 255 (=+6 DB)
+/sound/{volume} | POST | Integer | | Audio-Lautstärke schreiben von 0 bis 255
+/sound     | GET  | | Integer | Audio-Lautstärke lesen
 
 # <a name="useful-links">Nützliche Links</a>
 
