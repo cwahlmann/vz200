@@ -428,8 +428,9 @@ Endpunkt | Method | Request | Response | Beschreibung
 /tape/play | POST | | Integer | Tape starten; gibt Slot zurück
 /tape/record | POST | | Integer | Aufnahme starten; gibt Slot zurück
 /tape/stop | POST | | Integer | Tape stoppen; gibt Slot zurück
-/sound/{volume} | POST | Integer | | Audio-Lautstärke schreiben von 0 bis 255
+/sound/{volume} | POST | Integer | String | Audio-Lautstärke schreiben von 0 bis 255
 /sound     | GET  | | Integer | Audio-Lautstärke lesen
+/registers | GET  | | String | gibt den den Wert aller Z80-Register als JSON zurück
 
 # <a name="useful-links">Nützliche Links</a>
 
