@@ -1,12 +1,16 @@
 package jemu.rest;
 
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -211,12 +215,27 @@ public class JemuRestController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST, path = "/vz200/sound/{volume}")
-	public void setVolume(@PathVariable(name = "volume") int volume) {
+	public String setVolume(@PathVariable(name = "volume") int volume) {
 		computer().setVolume(volume);
+		return "OK.";
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/vz200/sound")
 	public int getVolume() {
 		return computer().getVolume();
+	}
+
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/registers")
+	public String getRegisters() {
+		String[] names = computer().getProcessor().getRegisterNames();
+
+		List<Pair<String, Integer>> regs = new ArrayList<>();  
+		for (int i = 0; i < names.length; i++) {
+			regs.add(Pair.of(names[i], computer().getProcessor().getRegisterValue(i)));
+		}
+		
+		return regs.stream().sorted((a, b) -> a.getLeft().compareTo(b.getLeft()))
+		.map(p -> String.format("\"%s\": \"%04X\"", p.getLeft(), p.getRight()))
+		.collect(Collectors.joining(", ", "{", "}"));
 	}
 }

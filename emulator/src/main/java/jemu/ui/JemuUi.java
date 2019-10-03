@@ -91,10 +91,6 @@ public class JemuUi extends JPanel
 		enableEvents(AWTEvent.KEY_EVENT_MASK);
 	}
 
-	public void init() {
-		requestFocus();
-	}
-
 	public void start(boolean fullscreen) {
 		this.fullscreen = fullscreen;
 		try {
