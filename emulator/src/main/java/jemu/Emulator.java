@@ -29,25 +29,27 @@ public class Emulator {
 		this.jemuUi = jemuUi;
 	}
 
+	public static class EmulatorFrame extends JFrame {
+
+		private static final long serialVersionUID = 1L;
+
+		protected void processWindowEvent(WindowEvent e) {
+			super.processWindowEvent(e);
+			if (e.getID() == WindowEvent.WINDOW_CLOSING) {
+				System.exit(0);
+			}
+		}
+
+		public synchronized void enableWindowEvents() {
+			enableEvents(AWTEvent.WINDOW_EVENT_MASK);
+		}
+	}
+	
 	@PostConstruct
 	public void start() {	
-		JFrame frame = new JFrame() {
-			private static final long serialVersionUID = 1L;
-
-			protected void processWindowEvent(WindowEvent e) {
-				super.processWindowEvent(e);
-				if (e.getID() == WindowEvent.WINDOW_CLOSING) {
-					System.exit(0);
-				}
-			}
-
-			public synchronized void setTitle(String title) {
-				super.setTitle(title);
-				enableEvents(AWTEvent.WINDOW_EVENT_MASK);
-			}
-
-		};
+		EmulatorFrame frame = new EmulatorFrame();
 		frame.setTitle("JEMU");
+		frame.enableWindowEvents();
 		frame.getContentPane().add(jemuUi, BorderLayout.CENTER);
 		// frame.setBackground(Color.black);
 		if (config.getBoolean(Constants.FULLSCREEN)) {
@@ -62,7 +64,6 @@ public class Emulator {
 		}
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		frame.setLocation((d.width - frame.getSize().width) / 2, (d.height - frame.getSize().height) / 2);
-		jemuUi.init();
 		jemuUi.start(config.getBoolean(Constants.FULLSCREEN));
 		frame.setVisible(true);
 		jemuUi.focusDisplay();

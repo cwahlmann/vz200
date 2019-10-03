@@ -54,7 +54,7 @@ public class VZ extends Computer {
 
 	protected boolean vz200;
 	protected int cyclesPerSecond = CYCLES_PER_SEC_VZ200;
-	protected Z80 z80 = new Z80(cyclesPerSecond); // This is different for VZ-200 and VZ-300
+	protected Z80 z80; // This is different for VZ-200 and VZ-300
 	protected VZMemory memory = new VZMemory(this);
 	protected int cycles = 0;
 	protected int frameFlyback = 0x80;
@@ -93,7 +93,7 @@ public class VZ extends Computer {
 			scansOfFlyback = 56;
 			renderer.setVerticalAdjustment(1);
 		}
-		z80.setCyclesPerSecond(cyclesPerSecond);
+		z80 = new Z80(cyclesPerSecond);
 		cyclesPerFrame = CYCLES_PER_SCAN * scansPerFrame;
 		cyclesToFlyback = cyclesPerFrame - (CYCLES_PER_SCAN * scansOfFlyback);
 		audioAdd = player.getClockAdder(AUDIO_TEST, cyclesPerSecond - JavaSound.SAMPLE_RATE);

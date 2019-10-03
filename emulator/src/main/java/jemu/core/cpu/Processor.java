@@ -1,8 +1,8 @@
 package jemu.core.cpu;
 
-import java.util.*;
-import jemu.core.*;
-import jemu.core.device.*;
+import jemu.core.Util;
+import jemu.core.device.Device;
+import jemu.core.device.DeviceMapping;
 
 /**
  * Title: JEMU Description: The Java Emulation Platform Copyright: Copyright (c)
@@ -41,6 +41,8 @@ public abstract class Processor extends Device {
 	// Processor stopped
 	protected boolean stopped = false;
 
+	protected boolean paused = false;
+
 	public Processor(String type, long cyclesPerSecond) {
 		super(type);
 		this.cyclesPerSecond = cyclesPerSecond;
@@ -68,6 +70,14 @@ public abstract class Processor extends Device {
 		return cycles;
 	}
 
+	public synchronized void pause() {
+		this.paused = true;
+	}
+
+	public synchronized void resume() {
+		this.paused = false;
+	}
+
 	public abstract void step();
 
 	public abstract void stepOver();
@@ -75,7 +85,9 @@ public abstract class Processor extends Device {
 	public void run() {
 		stopped = false;
 		do {
-			step();
+			if (!paused) {
+				step();
+			}
 		} while (!stopped);
 	}
 

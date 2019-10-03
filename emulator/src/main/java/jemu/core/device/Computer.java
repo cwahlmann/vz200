@@ -348,7 +348,6 @@ public abstract class Computer extends Device implements Runnable {
 	}
 
 	public void reset() {
-		// System.out.println(this + " Reset");
 		boolean run = running;
 		stop();
 		getProcessor().reset();

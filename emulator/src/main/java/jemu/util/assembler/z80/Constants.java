@@ -60,7 +60,7 @@ public class Constants {
 		dez("(\\+|\\-){0,1}[0-9]+",
 				s -> Integer.valueOf(s, 10)), 
 		okt("0o[0-7]+", s -> Integer.valueOf(s.substring(2), 8)), 
-		qua("0q[0-3]{4,8}", s -> Integer.valueOf(s.substring(2), 4)), 
+		qua("0q[0-3\\.]{4,8}", s -> Integer.valueOf(s.replaceAll("\\.", "0").substring(2), 4)), 
 		bin("0b[0-1]{8,16}", s -> Integer.valueOf(s.substring(2), 2)), 
 		IXY_O("I[XY].*[+-]{1}.*[0-9]+", s -> Integer.valueOf(s.substring(2))), 
 		CHR("'.'", s -> (int) s.charAt(1)), 
