@@ -38,4 +38,23 @@ describe('RESTserviceService', () => {
     expect(mockRequest.request.method).toBe('POST');
     mockRequest.flush('reset done');
   }));
+
+  it('should issue a sound post request to the emulator', fakeAsync(() => {
+    service.doVolumeChange(64).then(result => {
+      expect(result).toEqual('Ok.');
+    });
+    const mockRequest = httpMock.expectOne(`${service.ROOT_URL}/sound/64`);
+    expect(mockRequest.request.method).toBe('POST');
+    mockRequest.flush('Ok.');
+  }));
+
+  it('should read the current volume from the emulator', fakeAsync(() => {
+    service.getVolume().then(result => {
+      expect(result).toEqual(64);
+    });
+    const mockRequest = httpMock.expectOne(`${service.ROOT_URL}/sound`);
+    expect(mockRequest.request.method).toBe('GET');
+    mockRequest.flush(64);
+  }));
+
 });
