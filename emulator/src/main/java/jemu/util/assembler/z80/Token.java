@@ -12,9 +12,10 @@ class Token {
 	private boolean relativeA = false;
 	private boolean relativeB = false;
 	private int nextCursorAddress;
+	private int lineNo;
 
 	public Token(Optional<Integer> a, Optional<Integer> b, String varA, boolean relativeA, String varB,
-			boolean relativeB, BiFunction<Integer, Integer, Integer> f) {
+			boolean relativeB, BiFunction<Integer, Integer, Integer> f, int lineNo) {
 		this.a = a;
 		this.b = b;
 		this.sourceA = varA;
@@ -22,6 +23,7 @@ class Token {
 		this.relativeA = relativeA;
 		this.relativeB = relativeB;
 		this.f = f;
+		this.lineNo = lineNo;
 	}
 
 	public Optional<Integer> value() {
@@ -61,5 +63,9 @@ class Token {
 	
 	public boolean isRelativeB() {
 		return relativeB;
+	}
+	
+	public int getLineNo() {
+		return lineNo;
 	}
 }
