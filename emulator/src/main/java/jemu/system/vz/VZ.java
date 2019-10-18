@@ -322,8 +322,9 @@ public class VZ extends Computer {
 	public String loadAsmFile(String name, Boolean autorun) throws Exception {
 		Assembler asm = new Assembler(getMemory());
 		String result = asm.assemble(Paths.get(name));
-		log.info(String.format("Start at %04x...", asm.getRunAddress()));
+		log.info("Assembling successfull: {}", result);
 		if (autorun) {
+			log.info(String.format("Start at %04x...", asm.getRunAddress()));
 			z80.setPC(asm.getRunAddress());
 		}
 		return result;
@@ -333,8 +334,9 @@ public class VZ extends Computer {
 	public String loadAsmFile(InputStream is, Boolean autorun) throws Exception {
 		Assembler asm = new Assembler(getMemory());
 		String result = asm.assemble(is);
-		log.info(String.format("Start at %04x...", asm.getRunAddress()));
+		log.info("Assembling successfull: {}", result);
 		if (autorun) {
+			log.info(String.format("Start at %04x...", asm.getRunAddress()));
 			z80.setPC(asm.getRunAddress());
 		}
 		return result;
@@ -344,8 +346,9 @@ public class VZ extends Computer {
 	public String loadAsmZip(InputStream is, Boolean autorun) throws Exception {
 		Assembler asm = new Assembler(getMemory());
 		String result = asm.assembleZipStream(is);
-		log.info(String.format("Start at %04x...", asm.getRunAddress()));
+		log.info("Assembling successfull: {}", result);
 		if (autorun) {
+			log.info(String.format("Start at %04x...", asm.getRunAddress()));
 			z80.setPC(asm.getRunAddress());
 		}
 		return result;

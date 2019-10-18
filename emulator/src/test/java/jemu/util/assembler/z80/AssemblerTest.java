@@ -1,12 +1,18 @@
 package jemu.util.assembler.z80;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import jemu.util.assembler.z80.Constants.NumToken;
+import jemu.util.assembler.z80.Constants.RegisterToken;
 
 public class AssemblerTest {
 
@@ -51,7 +57,54 @@ public class AssemblerTest {
 		// @formatter:off
 		String[] source = { "start: LD A, (var1:)", "       RET", "var1:  defb 0x34" };
 		// @formatter:on
-		int[] expected = { 0x3a, 0x04, 0x00, 0xc9, 0x34 };
+		int[] expected = { 0x3a, 0x04, 0x00, 0xc9, 0x34};
+		assertParse(0, expected, source);
+	}
+
+	@Test
+	public void numTokenTest() {
+		String pw = NumToken.regexWord();
+		String pb= NumToken.regexWord();
+		
+		assertFalse(RegisterToken.parse("0q33333332").isPresent());
+		assertTrue(Pattern.matches(pw, "0q33333332"));
+		assertTrue(Pattern.matches(pb, "0q3332"));
+	}
+	
+	@Test
+	public void parseIntegerTest() {
+		String value = "0q33333332";
+
+		String regex = Constants.NumToken.quaWord.regex();
+		assertTrue(Pattern.matches(regex, value));
+
+		regex = Constants.NumToken.regexWord();
+		assertTrue(Pattern.matches(regex, value));
+		
+		Command com = Command.com("LD A,(nn)").c(0x3a).nnl1().nnh1();
+		assertTrue(LineParser.matches(com, "LD A, (0q.0123.01)"));
+	}		
+	
+	@Test
+	public void parseIntegerTest2() {
+		// @formatter:off
+		String[] source = { 
+				"LD A, (0xfffe)", 
+				"LD A, (65534)", 
+				"LD A, (0o177776)", 
+				"LD A, (0b1111111111111110)",
+				"LD A, (0q33333332)",
+				"LD A, ('3A')",  
+				};
+		int[] expected = { 
+				0x3a, 0xfe, 0xff, 
+				0x3a, 0xfe, 0xff, 
+				0x3a, 0xfe, 0xff, 
+				0x3a, 0xfe, 0xff, 
+				0x3a, 0xfe, 0xff,
+				0x3a, 0x33, 0x41,
+				};
+		// @formatter:on
 		assertParse(0, expected, source);
 	}
 
