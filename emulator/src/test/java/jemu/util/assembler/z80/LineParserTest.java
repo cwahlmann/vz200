@@ -3,9 +3,7 @@ package jemu.util.assembler.z80;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -35,7 +33,7 @@ public class LineParserTest {
 							: replace(definition);
 					Pair<Integer, String> pairB = replace(pairA.getRight());
 					definition = pairB.getRight();
-					List<Integer> result = LineParser.parseLine(0, definition, new HashSet<String>()).stream()
+					List<Integer> result = LineParser.parseLine(0, definition).stream()
 							.map(token -> token.value().orElse(-1)).collect(Collectors.toList());
 					Integer a = pairA.getLeft();
 					Integer b = pairB.getLeft();
@@ -58,7 +56,7 @@ public class LineParserTest {
 	}
 	
 	private void parseCommandsSymbolTest(String line, int size, String sourcaA, String sourceB) {
-		List<Token> result = LineParser.parseLine(0, line, new HashSet<String>());
+		List<Token> result = LineParser.parseLine(0, line);
 		assertEquals(size, result.size());
 		for (int i=0; i<size; i++) {
 			assertFalse(result.get(i).value().isPresent());

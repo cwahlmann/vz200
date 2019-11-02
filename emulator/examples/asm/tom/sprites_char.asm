@@ -1,4 +1,4 @@
-sprite_data_char: 
+sprites_char: 
 
 // 00-03: TOM left
 

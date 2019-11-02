@@ -18,15 +18,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -57,7 +54,6 @@ public class Assembler {
 	private List<Integer> currentLineNo = new ArrayList<>();
 	private List<Pair<Integer, Token>> tokensToBeResolved = new ArrayList<>();
 
-	public Set<String> errors = new HashSet<>();
 	public Assembler(Memory memory) {
 		this.memory = memory;
 	}
@@ -65,18 +61,12 @@ public class Assembler {
 	public String assemble(Path path) {
 		parseFile(path);
 		resolveOpenTokens();
-		if (!errors.isEmpty()) {
-			throw new RuntimeException(errors.stream().collect(Collectors.joining("\n")));
-		}
 		return String.format("%04x-%04x", runAddress, maxCursorAddress);
 	}
 
 	public String assemble(InputStream is) {
 		parseStream(is);
 		resolveOpenTokens();
-		if (!errors.isEmpty()) {
-			throw new RuntimeException(errors.stream().sorted().collect(Collectors.joining("\n")));
-		}
 		return String.format("%04x-%04x", runAddress, maxCursorAddress);
 	}
 
@@ -95,15 +85,12 @@ public class Assembler {
 			log.info("assemble main file: {}", mainAsm);
 			parseFile(mainAsm);
 			resolveOpenTokens();
-			if (!errors.isEmpty()) {
-				throw new RuntimeException(errors.stream().sorted().collect(Collectors.joining("\n")));
-			}
 			return String.format("%04x-%04x", runAddress, maxCursorAddress);
 		} catch (IOException e) {
 			return "ERROR: " + e.getMessage();
 		} finally {
 			if (tempPath != null) {
-				deleteTempDir(tempPath);
+//				deleteTempDir(tempPath);
 			}
 		}
 	}
@@ -125,9 +112,11 @@ public class Assembler {
 			ZipEntry entry = zis.getNextEntry();
 			while (entry != null) {
 				Path entryPath = tempPath.resolve(entry.getName());
+				System.out.println("======>>>>> Entry: "+entryPath.toString());
 				if (entry.isDirectory()) {
 					Files.createDirectories(entryPath);
 				} else {	
+//					Files.createDirectories(entryPath.getParent());
 					FileOutputStream fos = new FileOutputStream(entryPath.toFile());
 					int len;
 					while ((len = zis.read(buffer)) > 0) {
@@ -157,7 +146,7 @@ public class Assembler {
 				parseLine(line);
 			});
 		} catch (Exception e) {
-			throw new RuntimeException("Error reading file " + path, e);
+			throw new RuntimeException("Error parsing file " + path, e);
 		}
 		visitedPaths.remove(path);
 		currentLineNo.remove(currentLineNo.size() - 1);
@@ -171,8 +160,8 @@ public class Assembler {
 				parseLine(line);
 			});
 		} catch (Exception e) {
-			log.warn("error reading assembler stream", e);
-			throw new RuntimeException("error reading assembler stream", e);
+			log.warn("error parsing assembler line {}", currentLineNo.get(0), e);
+			throw new RuntimeException("error parsing assembler line " + currentLineNo.get(0) + ": " + e.getMessage());
 		}
 	}
 
@@ -196,7 +185,6 @@ public class Assembler {
 
 			if (labelMap.containsKey(label)) {
 				log.warn("label {} will be overwritten", label);
-				errors.add(String.format("warning: label %s will be overwritten", label));
 			}
 			labelMap.put(label, getCursorAddress());
 
@@ -207,7 +195,7 @@ public class Assembler {
 
 		// parse command
 
-		List<Token> tokens = LineParser.parseLine(currentLineNo.get(currentLineNo.size() - 1), line, errors);
+		List<Token> tokens = LineParser.parseLine(currentLineNo.get(currentLineNo.size() - 1), line);
 		int nextCursorAddress = cursorAddress + tokens.size() % 0xffff;
 		tokens.forEach(t -> {
 			if (t.value().isPresent()) {
@@ -266,8 +254,7 @@ public class Assembler {
 			String sourceB = t.sourceB().replaceAll("[\\(\\)]", "");
 			if (Pattern.matches(Constants.PATTERN_LABEL, sourceA)) {
 				if (!labelMap.containsKey(sourceA)) {
-					log.error("Line {}: unable to resolve label [{}]", t.getLineNo(), sourceA);
-					errors.add(String.format("Line %d: unable to resolve label [%s]", t.getLineNo(), sourceA));
+					log.error("unable to resolve label {}", sourceA);
 				} else {
 					int value = labelMap.get(sourceA);
 					if (t.isRelativeA()) {
@@ -278,8 +265,7 @@ public class Assembler {
 			}
 			if (Pattern.matches(Constants.PATTERN_LABEL, sourceB)) {
 				if (!labelMap.containsKey(sourceB)) {
-					log.error("Line {}: unable to resolve label [{}]", t.getLineNo(), sourceB);
-					errors.add(String.format("Line %d: unable to resolve label [%s]", t.getLineNo(), sourceB));
+					log.error("unable to resolve label {}", sourceB);
 				} else {
 					int value = labelMap.get(sourceB);
 					if (t.isRelativeB()) {

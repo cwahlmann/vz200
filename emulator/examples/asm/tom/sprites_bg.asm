@@ -1,4 +1,4 @@
-sprite_data_bg: 
+sprites_bg: 
 
 // 00: nothing
 
@@ -14,24 +14,24 @@ sprite_data_bg:
 // 01-07: red bricks
 		  defw 0q..333333
 		  defw 0q33333333
-		  defw 0q33..3333
-		  defw 0q3333.333
 		  defw 0q33333333
 		  defw 0q33333333
-		  defw 0q.3333..3
+		  defw 0q33333333
+		  defw 0q33333333
+		  defw 0q.3333333
 		  defw 0q........
 		  
-  		  defw 0q33..3333
+  		  defw 0q33333333
 		  defw 0q33333333
 		  defw 0q33333333
-		  defw 0q33333.33
-		  defw 0q33..3333
 		  defw 0q33333333
-		  defw 0q3333.333
+		  defw 0q33333333
+		  defw 0q33333333
+		  defw 0q33333333
 		  defw 0q........
 		  
   		  defw 0q333333..
-		  defw 0q33..333.
+		  defw 0q3333333.
 		  defw 0q3333333.
 		  defw 0q333333..
 		  defw 0q3333333.
@@ -41,26 +41,26 @@ sprite_data_bg:
 		  
 		  defw 0q..3333..
 		  defw 0q3333333.
-		  defw 0q33.3333.
-		  defw 0q3.3333..
-		  defw 0q3.33333.
+		  defw 0q3333333.
+		  defw 0q333333..
+		  defw 0q3333333.
 		  defw 0q3333333.
 		  defw 0q3333333.
 		  defw 0q3333333.
 
 		  defw 0q3333333.
-		  defw 0q333.333.
-		  defw 0q3333.33.
 		  defw 0q3333333.
-		  defw 0q333.333.
+		  defw 0q3333333.
+		  defw 0q3333333.
+		  defw 0q3333333.
 		  defw 0q3333333.
 		  defw 0q333333..
 		  defw 0q.333333.
 
 		  defw 0q.333333.
 		  defw 0q3333333.
-		  defw 0q3333.33.
-		  defw 0q333.333.
+		  defw 0q3333333.
+		  defw 0q3333333.
 		  defw 0q3333333.
 		  defw 0q3333333.
 		  defw 0q.3333...
@@ -68,10 +68,10 @@ sprite_data_bg:
 
 		  defw 0q..3333..
 		  defw 0q3333333.
-		  defw 0q33.3333.
-		  defw 0q3.33333.
 		  defw 0q3333333.
-		  defw 0q333.333.
+		  defw 0q3333333.
+		  defw 0q3333333.
+		  defw 0q3333333.
 		  defw 0q.33333..
 		  defw 0q........
 

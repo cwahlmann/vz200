@@ -1,10 +1,8 @@
 package jemu.util.assembler.z80;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,7 +47,7 @@ public class LineParser {
 		return Stream.of(Constants.DefToken.values()).filter(d -> d.matches(source)).findAny();
 	}
 
-	public static List<Token> parseLine(int lineNo, String source, Set<String> errors) {
+	public static List<Token> parseLine(int lineNo, String source) {
 		String line = source.trim();
 
 		Optional<Constants.DefToken> definition = findDefinition(line);
@@ -57,11 +55,11 @@ public class LineParser {
 			String l[] = line.split("\\s+", 2);
 			switch (definition.get()) {
 			case DEFB:
-				return parseBytes(l[1], lineNo);
+				return parseBytes(l[1]);
 			case DEFW:
-				return parseWords(l[1], lineNo);
+				return parseWords(l[1]);
 			case DEFS:
-				return parseString(l[1], lineNo);
+				return parseString(l[1]);
 			}
 		}
 		Optional<Command> command = findCommand(line);
@@ -71,31 +69,30 @@ public class LineParser {
 			String sourceB = s.length >= 3 ? s[2].trim() : "0";
 			return command
 					.get().getOpcode().stream().map(f -> new Token(parseArg(sourceA), parseArg(sourceB), sourceA,
-							command.get().isRelative1(), sourceB, command.get().isRelative2(), f, lineNo))
+							command.get().isRelative1(), sourceB, command.get().isRelative2(), f))
 					.collect(Collectors.toList());
 		}
-		errors.add(String.format(String.format("Line %d: Could not parse [%s]", lineNo, source)));
-		return Collections.emptyList();
+		throw new RuntimeException(String.format("Line %d: Could not parse [%s]", lineNo, source));
 	}
 
-	private static List<Token> parseBytes(String line, int lineNo) {
+	private static List<Token> parseBytes(String line) {
 		return Stream.of(line.split(","))
-				.map(s -> new Token(parseConst(s.trim()), Optional.of(0), s, false, "", false, (a, b) -> a, lineNo))
+				.map(s -> new Token(parseConst(s.trim()), Optional.of(0), s, false, "", false, (a, b) -> a))
 				.collect(Collectors.toList());
 	}
 
-	private static List<Token> parseWords(String line, int lineNo) {
+	private static List<Token> parseWords(String line) {
 		List<Token> result = new ArrayList<>();
 		for (String s : line.split(",")) {
 			Optional<Integer> i = parseConst(s);
 			if (i.isPresent()) {
 				result.add(new Token(Optional.of(i.get() & 0xff), Optional.of(0), s, false, "", false,
-						(a, b) -> a & 0xff, lineNo));
-				result.add(new Token(Optional.of(i.get() >> 8), Optional.of(0), s, false, "", false, (a, b) -> a, lineNo));
+						(a, b) -> a & 0xff));
+				result.add(new Token(Optional.of(i.get() >> 8), Optional.of(0), s, false, "", false, (a, b) -> a));
 				System.out.println("");
 			} else {
-				result.add(new Token(i, Optional.of(0), s, false, "", false, (a, b) -> a & 0xff, lineNo));
-				result.add(new Token(i, Optional.of(0), s, false, "", false, (a, b) -> a >> 8, lineNo));
+				result.add(new Token(i, Optional.of(0), s, false, "", false, (a, b) -> a & 0xff));
+				result.add(new Token(i, Optional.of(0), s, false, "", false, (a, b) -> a >> 8));
 			}
 		}
 		return result;
@@ -114,11 +111,11 @@ public class LineParser {
 
 	private static AsciiMapper asciiMapper = new AsciiMapper();
 
-	private static List<Token> parseString(String line, int lineNo) {
+	private static List<Token> parseString(String line) {
 		int index0 = line.indexOf("\"");
 		int index1 = line.lastIndexOf("\"");
 		return line.substring(index0 + 1, index1).chars().map(c -> asciiMapper.map((char) c))
-				.mapToObj(n -> new Token(Optional.of(n), Optional.of(0), "", false, "", false, (a, b) -> a, lineNo))
+				.mapToObj(n -> new Token(Optional.of(n), Optional.of(0), "", false, "", false, (a, b) -> a))
 				.collect(Collectors.toList());
 	}
 

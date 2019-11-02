@@ -8,7 +8,6 @@
 		JP start_program:
 		
 .include utility.asm
-.include sprite.asm
  
 start_program:
 		LD A, 0x02
@@ -16,15 +15,6 @@ start_program:
 
 		LD A, 0x08
 		LD (latch:), A
-
-		LD HL, buffer:
-		LD (screen_data:), HL
-		
-		LD HL, sprite_data_bg:
-		LD (block_data:), HL
-		
-		LD HL, sprite_data_char:
-		LD (sprite_data:), HL
 
 // install screen interrupt hook
 		LD DE, main:
@@ -50,48 +40,40 @@ outer_loop_1:
 		LD HL, 0x0101
 		CALL draw_level:
 						 
+		LD HL, buffer:
 		LD A, (tom_dir:)
-		OR A
-		JR NZ, go_left:
-		
-; go right
+		LD B, A
 		LD A, (tom_pos:)
+		ADD A, B
+		LD (tom_pos:), A
+		
 		CP 0x7b
-		JR NC, turn_left:
-		
-		INC A
-		LD (tom_pos:), A
-		JR draw_tom:
-		
-turn_left:
-		LD A, 0x01
+		JR NZ, outer_next_1: 
+		LD A, 0xff
 		LD (tom_dir:), A
-		LD A, 0x7a
-		LD (tom_pos:), A
-		JR draw_tom:		
-		
-go_left:
-		LD A, (tom_pos:)
-		OR A
-		JR Z, turn_right:
-		
-		DEC A
-		LD (tom_pos:), A
-		JR draw_tom:
-		
-turn_right:
-		LD A, 0x00
+		JR outer_next_2:
+outer_next_1:
+		CP 0x00
+		JR NZ, outer_next_2:
+		LD A, 0x01 
 		LD (tom_dir:), A
-		LD (tom_pos:), A
-
-draw_tom:
+outer_next_2:
+		LD B, 0x00
 		LD A, (tom_dir:)
+		CP 0x01
+		JR NZ, outer_next_3: 
+		LD B, 0x04
+outer_next_3:
+		LD A, (tom_pos:)		
+		
 		LD E, A
+		SRL E
+		SRL E
 		LD D, 0x00
-		LD HL, tom_sprite_offset:
 		ADD HL, DE
-		LD A, (HL)
-		LD HL, (tom_pos:)		
+		
+		AND 0x03
+		ADD A, B
 		CALL draw_sprite:
 
 		LD A, 0x01
@@ -100,12 +82,10 @@ draw_tom:
 		JR outer_loop_1: 
 
 tom_pos:
-		defw 0x0000
+		defb 0x00
 tom_dir:
-		defb 0x01 // left: 0x00
-tom_sprite_offset:
-		defb 0x04, 0x00
-		
+		defb 0x01 // left: 0xff
+
 screen_needs_refresh:
 		defb 0x00
 
@@ -157,18 +137,10 @@ clear_loop_1:
 		JR NZ, clear_loop_1:
 		RET
 
-animation:
-		defb    0x00
-
-; draw level
+; draw leveldata
 ; input: L xoffset (1-84)
 ;        H yoffset (1-36)
 draw_level:
-		LD A, (animation:)
-		INC A
-		AND 0x03
-		LD (animation:), A
-
 		DEC L
 		DEC H
 
@@ -193,7 +165,7 @@ draw_level:
 		
 		ADD HL, BC ; +x
 		
-		LD DE, level_data:
+		LD DE, level:
 		ADD HL, DE
 		
 		LD E, L
@@ -208,20 +180,10 @@ draw_level_loop_1:
 		LD L, 0x00
 		
 draw_level_loop_2:
+		LD A, (DE)
 		PUSH HL
 		PUSH DE
 		PUSH BC
-
-		LD A, (DE)
-		CP 0x80 		; is it to be animated?
-		JR C, draw_level_next_1:
-						
-		AND 0xfc
-		LD C, A
-		LD A, (animation:)
-		ADD A, C
-		
-draw_level_next_1:
 		CALL draw_block:
 		POP BC
 		POP DE
@@ -240,16 +202,75 @@ draw_level_next_1:
 		INC H
 		DEC B
 		JR NZ, draw_level_loop_1:
-		RET  		
+		RET
+  		
+; draw a block on a fix pos
+; input: L xpos (00-0f)
+;		 H ypos (00-07)
+;        A  sprite nr
+		 
+draw_block:
+		SLA L 			; multiply xpos with 2
+						; ypos in msb means y already multiplied by 256, that is 8 lines
+		LD DE, buffer:
+		ADD HL, DE		
+		LD DE, sprites_bg:
+		JR draw:
+				 
+; draw a sprite
+; input: HL screenpos
+;       A  sprite nr
+
+draw_sprite:
+		LD DE, sprites_char:
+draw:
+		PUSH HL
+
+		LD L, A
+		LD H, 0x00
+		ADD HL, HL
+		ADD HL, HL
+		ADD HL, HL
+		ADD HL, HL
+		ADD HL, DE
+		
+		LD E, L
+		LD D, H
+
+		POP HL
+		PUSH HL
+
+		LD C, 0x08
+		
+draw_sprite_loop_1:
+		LD A, (DE)
+		INC HL
+		LD (HL), A
+		INC DE
+		DEC HL
+
+		LD A, (DE)
+		LD (HL), A
+		INC DE
+		
+		PUSH DE
+		LD DE, 0x0020
+		ADD HL, DE
+		POP DE
+
+		DEC C
+		LD A, C
+		OR A
+		JR NZ, draw_sprite_loop_1:
+		
+		POP HL
+		RET
 				
 .org 0x9000
-.include sprite_data_bg.asm
-
-.org 0x9800
-.include sprite_data_bg_anim.asm
+.include sprites_bg.asm
 
 .org 0xa000
-.include sprite_data_char.asm
+.include sprites_char.asm
 
 .org 0xb000
-.include level_data.asm
+.include level.asm

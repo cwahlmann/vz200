@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Constants {
@@ -57,22 +56,15 @@ public class Constants {
 
 	public static enum NumToken {
 		// @formatter:off
-		charWord("'..'", s -> (int) s.charAt(1) + ((int) s.charAt(2) << 8)),
-		charByte("'.'", s -> (int) s.charAt(1)), 
-		hexWord("0x[0-9a-fA-F]{1,4}", s -> Integer.valueOf(s.substring(2), 16)), 
-		hexByte("0x[0-9a-fA-F]{1,2}", s -> Integer.valueOf(s.substring(2), 16)), 
-		dezWord("[\\+\\-]{0,1}[1-9][0-9]{0,4}",
+		hex("0x[0-9a-fA-F]{2,4}", s -> Integer.valueOf(s.substring(2), 16)), 
+		dez("(\\+|\\-){0,1}[0-9]+",
 				s -> Integer.valueOf(s, 10)), 
-		dezByte("[\\+\\-]{0,1}[1-9][0-9]{0,2}",
-				s -> Integer.valueOf(s, 10)), 
-		oktWord("0o[0-7]{1,6}", s -> Integer.valueOf(s.substring(2), 8)), 
-		oktByte("0o[0-7]{1,3}", s -> Integer.valueOf(s.substring(2), 8)), 
-		quaWord("0q[0-3\\.]{1,8}", s -> Integer.valueOf(s.replaceAll("\\.", "0").substring(2), 4)), 
-		quaByte("0q[0-3\\.]{1,4}", s -> Integer.valueOf(s.replaceAll("\\.", "0").substring(2), 4)), 
-		binWord("0b[0-1]{1,16}", s -> Integer.valueOf(s.substring(2), 2)), 
-		binByte("0b[0-1]{1,8}", s -> Integer.valueOf(s.substring(2), 2)), 
-		IXY_O("I[XY].*[+-]{1}.*[0-9]+", s -> Integer.valueOf(s.substring(2))),
-		;
+		okt("0o[0-7]+", s -> Integer.valueOf(s.substring(2), 8)), 
+		qua("0q[0-3\\.]{4,8}", s -> Integer.valueOf(s.replaceAll("\\.", "0").substring(2), 4)), 
+		bin("0b[0-1]{8,16}", s -> Integer.valueOf(s.substring(2), 2)), 
+		IXY_O("I[XY].*[+-]{1}.*[0-9]+", s -> Integer.valueOf(s.substring(2))), 
+		CHR("'.'", s -> (int) s.charAt(1)), 
+		CHR2("'..'", s -> (int) s.charAt(1) + ((int) s.charAt(2) << 8));
 		// @formatter:on
 		NumToken(String regex, Function<String, Integer> mapper) {
 			this.regex = regex;
@@ -86,33 +78,8 @@ public class Constants {
 			return Pattern.matches(regex, s);
 		}
 
-		public String regex() {
-			return regex;
-		}
-		
 		public static Optional<Integer> parse(String s) {
 			return Stream.of(NumToken.values()).filter(t -> t.matches(s)).map(t -> t.mapper.apply(s)).findAny();
-		}
-		
-		public static String regexByte() {
-			return Stream.of(
-					NumToken.charByte,
-					NumToken.hexByte,
-					NumToken.dezByte,
-					NumToken.oktByte,
-					NumToken.quaByte,
-					NumToken.binByte
-					).map(t -> t.regex).collect(Collectors.joining(")|(", "(", ")"));
-		}
-		public static String regexWord() {
-			return Stream.of(
-					NumToken.charWord,
-					NumToken.hexWord,
-					NumToken.dezWord,
-					NumToken.oktWord,
-					NumToken.quaWord,
-					NumToken.binWord
-					).map(t -> t.regex).collect(Collectors.joining(")|(", "(", ")"));
 		}
 	}
 
@@ -132,8 +99,8 @@ public class Constants {
 	public static final String PATTERN_LABEL = "[a-zA-Z][0-9a-zA-Z_]*\\:";
 	public static final String PATTERN_PLUS_O = "[\\+\\-][0-9]+";
 	public static final String PATTERN_O = "([\\+\\-]{0,1}[0-9]+)|(" + PATTERN_LABEL + ")";
-	public static final String PATTERN_NN = NumToken.regexWord() + "|(" + PATTERN_LABEL + ")";
-	public static final String PATTERN_N = NumToken.regexByte() + "|(" + PATTERN_LABEL + ")";
+	public static final String PATTERN_NN = "(0x[0-9ABCDEFabcdef]{4})|(" + PATTERN_LABEL + ")";
+	public static final String PATTERN_N = "(0x[0-9ABCDEFabcdef]{2})|(" + PATTERN_LABEL + ")";
 	public static final String PATTERN_B = "[0-7]{1}";
 	public static final String PATTERN_R = "(B|C|D|E|H|L|\\(HL\\)|A)";
 	public static final String PATTERN_P = "(B|C|D|E|IXh|IXl|A)";

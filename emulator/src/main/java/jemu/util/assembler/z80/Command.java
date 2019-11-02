@@ -476,12 +476,11 @@ public class Command {
 				.replace("b", Constants.PATTERN_B)
 				.replace("+o", Constants.PATTERN_PLUS_O)
 				.replace("o", Constants.PATTERN_O)
-				.replace("r", Constants.PATTERN_R)
-				.replace("p", Constants.PATTERN_P)
-				.replace("q", Constants.PATTERN_Q)
 				.replace("nn", Constants.PATTERN_NN)
 				.replace("n", Constants.PATTERN_N)
-				;
+				.replace("r", Constants.PATTERN_R)
+				.replace("p", Constants.PATTERN_P)
+				.replace("q", Constants.PATTERN_Q);
 		//@formatter:on
 	}
 

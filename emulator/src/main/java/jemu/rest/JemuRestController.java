@@ -95,7 +95,7 @@ public class JemuRestController {
 			return computer().loadAsmFile(is, autorun);
 		} catch (Exception e) {
 			log.error("Fehler beim Einspielen des Assembler-Programms", e);
-			return "Fehler beim Einspielen des Assembler-Programms:\n" + e.getMessage();
+			return "Fehler beim Einspielen des Assembler-Programms: " + e.getMessage();
 		}
 	}
 
@@ -105,7 +105,7 @@ public class JemuRestController {
 			return computer().loadAsmZip(is, autorun);
 		} catch (Exception e) {
 			log.error("Fehler beim Einspielen des Assembler-Programms", e);
-			return "Fehler beim Einspielen des Assembler-Programms:\n" + e.getMessage();
+			return "Fehler beim Einspielen des Assembler-Programms: " + e.getMessage();
 		}
 	}
 
