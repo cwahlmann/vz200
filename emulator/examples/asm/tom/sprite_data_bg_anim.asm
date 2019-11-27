@@ -1,3 +1,5 @@
+sprite_data_bg_anim:
+
 // 80: water
 
 		  defw 0q........

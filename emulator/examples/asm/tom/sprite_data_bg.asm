@@ -1,4 +1,4 @@
-sprites_bg: 
+sprite_data_bg: 
 
 // 00: nothing
 
