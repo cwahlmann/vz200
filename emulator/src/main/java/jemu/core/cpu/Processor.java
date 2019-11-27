@@ -1,5 +1,8 @@
 package jemu.core.cpu;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jemu.core.Util;
 import jemu.core.device.Device;
 import jemu.core.device.DeviceMapping;
@@ -13,7 +16,8 @@ import jemu.core.device.DeviceMapping;
  */
 
 public abstract class Processor extends Device {
-
+	private final static Logger log = LoggerFactory.getLogger(Processor.class);
+	
 	// Memory for processor
 	protected Device memory;
 
@@ -71,10 +75,12 @@ public abstract class Processor extends Device {
 	}
 
 	public synchronized void pause() {
+		log.info("pause processor...");
 		this.paused = true;
 	}
 
 	public synchronized void resume() {
+		log.info("resume processor...");
 		this.paused = false;
 	}
 
@@ -87,6 +93,13 @@ public abstract class Processor extends Device {
 		do {
 			if (!paused) {
 				step();
+			} else {
+				try {
+				Thread.sleep(200);
+				} catch (InterruptedException e) {
+					log.warn("Stopping processer because of Thread interrupt!");
+					stopped = true;
+				}
 			}
 		} while (!stopped);
 	}

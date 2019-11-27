@@ -22,6 +22,7 @@ public class JemuContext {
 		config.setIfMissing(Constants.SCREEN_HEIGHT, "480");
 		config.setIfMissing(Constants.FULLSCREEN, "true");
 		config.setIfMissing(Constants.SOUND_VOLUME, "100");
+		config.setIfMissing(Constants.ENABLE_DOS_ROM, "false");
 		return config;
 	};
 }

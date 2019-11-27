@@ -115,6 +115,10 @@ public class VZ extends Computer {
 
 	public void initialise() {
 		memory.setMemory(0, getFile(romPath + "VZBAS" + (vz200 ? "12" : "20") + ".ROM", 16384));
+		if (config.getBoolean(Constants.ENABLE_DOS_ROM, false)) {
+			memory.setMemory(0x4000, getFile(romPath + "vzdos.rom", 8192));
+			new VzFloppyDevice(this).register(z80);
+		}
 		SimpleRenderer.setFontData(getFile(romPath + "VZ.CHR", 768));
 		super.initialise();
 		this.setVolume(config.getInt(Constants.SOUND_VOLUME));

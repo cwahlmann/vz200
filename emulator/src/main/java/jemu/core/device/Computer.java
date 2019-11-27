@@ -57,27 +57,36 @@ public abstract class Computer extends Device implements Runnable {
 	public static final int MAX_FRAME_SKIP = 20;
 	public static final int MAX_FILE_SIZE = 1024 * 1024; // 1024K maximum
 
-	protected Thread thread = new Thread(this);
-	protected boolean stopped = false;
+	protected Thread thread;
+	protected boolean stopped;
 	protected int action = STOP;
-	protected boolean running = false;
-	protected boolean waiting = false;
+	protected boolean running;
+	protected boolean waiting;
 	protected long startTime;
 	protected long startCycles;
 	protected String name;
 	protected String romPath;
 	protected String filePath;
-	protected Vector<FileDescriptor> files = null;
+	protected Vector<FileDescriptor> files;
 	protected Display display;
-	protected int frameSkip = 0;
-	protected int runTo = -1;
-	protected int mode = STOP;
+	protected int frameSkip;
+	protected int runTo;
+	protected int mode;
 
 	// Listeners for stopped emulation
 	protected Vector listeners = new Vector(1);
 
 	public Computer(String name) {
 		super("Computer: " + name);
+		thread = new Thread(this);
+		stopped = false;
+		action = STOP;
+		running = false;
+		waiting = false;
+		files = null;
+		frameSkip = 0;
+		runTo = -1;
+		mode = STOP;
 		this.name = name;
 		thread.start();
 	}

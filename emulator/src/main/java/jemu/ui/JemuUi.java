@@ -64,15 +64,14 @@ public class JemuUi extends JPanel
 
 	private final Computer computer;
 
-	protected boolean isStandalone = false;
-	protected Display display = new Display();
-	protected Debugger debug = null;
-	protected JButton bReset = new JButton("Reset");
-	protected boolean started = false;
-	protected boolean large = false;
-	protected Thread focusThread = null;
+	protected boolean isStandalone;
+	protected Display display;
+	protected Debugger debug;
+	protected JButton bReset;
+	protected boolean started;
+	protected boolean large;
 	protected Color background;
-	protected boolean gotGames = false;
+	protected boolean gotGames;
 	protected ImageComponent keyboardImagePanel;
 	protected JComboBox<ComputerDescriptor> computerSelectionBox;
 	protected boolean fullscreen;
@@ -88,6 +87,13 @@ public class JemuUi extends JPanel
 		this.config = config;
 		this.isStandalone = true;
 		this.computer = computer;
+		this.display = new Display();
+		isStandalone = false;
+		debug = null;
+		bReset = new JButton("Reset");
+		started = false;
+		large = false;
+		gotGames = false;
 		enableEvents(AWTEvent.KEY_EVENT_MASK);
 	}
 
@@ -105,100 +111,101 @@ public class JemuUi extends JPanel
 			display.addKeyListener(this);
 			display.addMouseListener(this);
 			display.addFocusListener(this);
-			boolean debug = Util.getBoolean(getParameter("DEBUG", "false"));
-			boolean pause = Util.getBoolean(getParameter("PAUSE", "false"));
 			large = Util.getBoolean(getParameter("LARGE", "false"));
-			log.info("DEBUG=" + debug + ", PAUSE=" + pause + ", LARGE=" + large);
 			initComputer();
-
 			if (!fullscreen) {
-				boolean status = Util.getBoolean(getParameter("STATUS", "false"));
-				JPanel topPanel = null;
-				if (status) {
-					topPanel = new JPanel();
-					topPanel.setLayout(new FlowLayout());
-				}
-				boolean selector = Util.getBoolean(getParameter("SELECTOR", "true"));
-				if (selector) {
-					if (topPanel == null) {
-						topPanel = new JPanel();
-						topPanel.setLayout(new FlowLayout());
-					}
-					JLabel computerLabel = new JLabel("Computer:");
-					computerLabel.setForeground(new Color(0, 0, 127));
-					topPanel.add(computerLabel);
-					computerSelectionBox = new JComboBox<>();
-					for (int i = 0; i < Computer.COMPUTERS.length; i++) {
-						ComputerDescriptor desc = Computer.COMPUTERS[i];
-						if (desc.shown) {
-							computerSelectionBox.addItem(desc);
-							if (computer.getName().equalsIgnoreCase(desc.key))
-								computerSelectionBox.setSelectedIndex(computerSelectionBox.getItemCount() - 1);
-						}
-					}
-					topPanel.add(computerSelectionBox);
-					computerSelectionBox.addItemListener(this);
-					JLabel loadLabel = new JLabel("Program:");
-					loadLabel.setForeground(new Color(0, 0, 127));
-					topPanel.add(loadLabel);
-					bReset.addActionListener(this);
-					topPanel.add(bReset);
-					JButton loadButton = new JButton("LOAD");
-					loadButton.addActionListener(event -> {
-						String filename = chooseLoadFile();
-
-						boolean running = computer.isRunning();
-						computer.stop();
-
-						if (filename != null) {
-							try {
-								if (filename.toUpperCase().endsWith(".HEX")) {
-									loadHexFile(filename);
-								} else if (filename.toUpperCase().endsWith(".ASM")) {
-									loadAsmFile(filename);
-								} else {
-									loadFile(filename);
-								}
-							} catch (Exception e) {
-								log.error("Error loading file {}", filename, e);
-								alertException(e);
-							} finally {
-								display.requestFocus();
-								if (running) {
-									computer.start();
-								}
-							}
-						}
-					});
-					JButton saveButton = new JButton("SAVE");
-					saveButton.addActionListener(event -> {
-						String filename = chooseSaveFile();
-						if (filename != null) {
-							try {
-								computer.saveFile(filename);
-							} catch (Exception e) {
-								log.info("Error saving file " + filename);
-								e.printStackTrace();
-							}
-						}
-					});
-					topPanel.add(loadButton);
-					topPanel.add(saveButton);
-				}
-
-				if (topPanel != null) {
-					topPanel.setBackground(background);
-					add(topPanel, BorderLayout.NORTH);
-				}
-				if (debug)
-					showDebugger();
+				initWindowed();
 			}
 			started = true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("error initializing emulator", e);
 		}
 	}
 
+	private void initWindowed() {
+		boolean debug = Util.getBoolean(getParameter("DEBUG", "false"));
+		boolean status = Util.getBoolean(getParameter("STATUS", "false"));
+		JPanel topPanel = null;
+		if (status) {
+			topPanel = new JPanel();
+			topPanel.setLayout(new FlowLayout());
+		}
+		boolean selector = Util.getBoolean(getParameter("SELECTOR", "true"));
+		if (selector) {
+			if (topPanel == null) {
+				topPanel = new JPanel();
+				topPanel.setLayout(new FlowLayout());
+			}
+			JLabel computerLabel = new JLabel("Computer:");
+			computerLabel.setForeground(new Color(0, 0, 127));
+			topPanel.add(computerLabel);
+			computerSelectionBox = new JComboBox<>();
+			for (int i = 0; i < Computer.COMPUTERS.length; i++) {
+				ComputerDescriptor desc = Computer.COMPUTERS[i];
+				if (desc.shown) {
+					computerSelectionBox.addItem(desc);
+					if (computer.getName().equalsIgnoreCase(desc.key))
+						computerSelectionBox.setSelectedIndex(computerSelectionBox.getItemCount() - 1);
+				}
+			}
+			topPanel.add(computerSelectionBox);
+			computerSelectionBox.addItemListener(this);
+			JLabel loadLabel = new JLabel("Program:");
+			loadLabel.setForeground(new Color(0, 0, 127));
+			topPanel.add(loadLabel);
+			bReset.addActionListener(this);
+			topPanel.add(bReset);
+			JButton loadButton = new JButton("LOAD");
+			loadButton.addActionListener(event -> {
+				String filename = chooseLoadFile();
+
+				boolean running = computer.isRunning();
+				computer.stop();
+
+				if (filename != null) {
+					try {
+						if (filename.toUpperCase().endsWith(".HEX")) {
+							loadHexFile(filename);
+						} else if (filename.toUpperCase().endsWith(".ASM")) {
+							loadAsmFile(filename);
+						} else {
+							loadFile(filename);
+						}
+					} catch (Exception e) {
+						log.error("Error loading file {}", filename, e);
+						alertException(e);
+					} finally {
+						display.requestFocus();
+						if (running) {
+							computer.start();
+						}
+					}
+				}
+			});
+			JButton saveButton = new JButton("SAVE");
+			saveButton.addActionListener(event -> {
+				String filename = chooseSaveFile();
+				if (filename != null) {
+					try {
+						computer.saveFile(filename);
+					} catch (Exception e) {
+						log.info("Error saving file " + filename);
+						e.printStackTrace();
+					}
+				}
+			});
+			topPanel.add(loadButton);
+			topPanel.add(saveButton);
+		}
+
+		if (topPanel != null) {
+			topPanel.setBackground(background);
+			add(topPanel, BorderLayout.NORTH);
+		}
+		if (debug)
+			showDebugger();
+	}
+	
 	private String chooseSaveFile() {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle("Save program");
@@ -289,17 +296,16 @@ public class JemuUi extends JPanel
 	public void waitStart() {
 		try {
 			while (!started)
+				log.info("waiting for the emulator to get started...");
 				Thread.sleep(10);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		log.info("emulator if started now. continuing...");
 	}
 
 	public void focusDisplay() {
 		display.requestFocus();
-		/*
-		 * if (!display.isFocused()) (focusThread = new Thread(this)).start();
-		 */
 	}
 
 	public void run() {
@@ -459,15 +465,14 @@ public class JemuUi extends JPanel
 		computer.start();
 	}
 
-	public void setFullSize(boolean value) {
-		large = value;
-		boolean running = computer.isRunning();
-		computer.stop();
+	public void setFullSize(boolean large) {
+//		boolean running = computer.isRunning();
+//		computer.stop();
 		computer.setLarge(large);
 		display.setImageSize(computer.getDisplaySize(large), computer.getDisplayScale(large));
 		computer.setDisplay(display);
-		if (running)
-			computer.start();
+//		if (running)
+//			computer.start();
 	}
 
 	public void itemStateChanged(ItemEvent e) {

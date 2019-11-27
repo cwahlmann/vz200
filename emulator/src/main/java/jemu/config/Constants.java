@@ -9,4 +9,5 @@ public class Constants {
 	public static final String SCREEN_HEIGHT = "SCREEN_HEIGHT";
 	public static final String FULLSCREEN = "FULLSCREEN";
 	public static final String SOUND_VOLUME = "SOUND_VOLUME";
+	public static final String ENABLE_DOS_ROM = "ENABLE_DOS_ROM";
 }
