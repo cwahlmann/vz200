@@ -137,10 +137,18 @@ clear_loop_1:
 		JR NZ, clear_loop_1:
 		RET
 
-; draw leveldata
+animation:
+		defb    0x00
+
+; draw level
 ; input: L xoffset (1-84)
 ;        H yoffset (1-36)
 draw_level:
+		LD A, (animation:)
+		INC A
+		AND 0x03
+		LD (animation:), A
+
 		DEC L
 		DEC H
 
@@ -180,10 +188,20 @@ draw_level_loop_1:
 		LD L, 0x00
 		
 draw_level_loop_2:
-		LD A, (DE)
 		PUSH HL
 		PUSH DE
 		PUSH BC
+
+		LD A, (DE)
+		CP 0x80 		; is it to be animated?
+		JR C, draw_level_next_1:
+						
+		AND 0xfc
+		LD C, A
+		LD A, (animation:)
+		ADD A, C
+		
+draw_level_next_1:
 		CALL draw_block:
 		POP BC
 		POP DE
@@ -268,6 +286,9 @@ draw_sprite_loop_1:
 				
 .org 0x9000
 .include sprites_bg.asm
+
+.org 0x9800
+.include sprites_bg_anim.asm
 
 .org 0xa000
 .include sprites_char.asm
