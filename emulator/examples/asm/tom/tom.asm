@@ -6,7 +6,8 @@
 .def latch:  0x6800
 
 		JP start_program:
-		
+
+.include keyboard.asm		
 .include utility.asm
 .include sprite.asm
  
@@ -49,62 +50,232 @@ outer_loop_1:
 
 		LD HL, 0x0101
 		CALL draw_level:
-						 
-		LD A, (tom_dir:)
-		OR A
-		JR NZ, go_left:
-		
-; go right
-		LD A, (tom_pos:)
-		CP 0x7b
-		JR NC, turn_left:
-		
-		INC A
-		LD (tom_pos:), A
-		JR draw_tom:
-		
-turn_left:
-		LD A, 0x01
-		LD (tom_dir:), A
-		LD A, 0x7a
-		LD (tom_pos:), A
-		JR draw_tom:		
-		
-go_left:
-		LD A, (tom_pos:)
-		OR A
-		JR Z, turn_right:
-		
-		DEC A
-		LD (tom_pos:), A
-		JR draw_tom:
-		
-turn_right:
-		LD A, 0x00
-		LD (tom_dir:), A
-		LD (tom_pos:), A
 
-draw_tom:
-		LD A, (tom_dir:)
-		LD E, A
-		LD D, 0x00
-		LD HL, tom_sprite_offset:
-		ADD HL, DE
-		LD A, (HL)
-		LD HL, (tom_pos:)		
-		CALL draw_sprite:
+		CALL player_move:
+		CALL player_check_boundary:
+		CALL player_check_obstacle:
+
+		LD HL, (tom_pos:)
+		LD A, (tom_dir_x:)
+		ADD A, L
+		LD L, A
+		LD A, (tom_dir_y:)
+		ADD A, H
+		LD H, A
+		LD (tom_pos:), HL
+										 
+		CALL draw_tom:
 
 		LD A, 0x01
 		LD (screen_needs_refresh:), A
 				
 		JR outer_loop_1: 
+		
+draw_tom:
+		LD A, (tom_pos_x:)
+		AND 0x03
+		LD L, A
+		
+		LD A, (tom_dir:)
+		CP 0xff // left?
+		JR NZ, draw_tom_next1:		
+		LD A, 0x00
+		JR draw_tom_next3:
+
+draw_tom_next1:
+		CP 0x01 // right?
+		JR NZ, draw_tom_next2:		
+		LD A, 0x04
+		JR draw_tom_next3:
+				
+draw_tom_next2: // stand still
+		LD A, 0x08
+
+draw_tom_next3:
+		// ADD A, L		
+		LD HL, (tom_pos:)		
+		JP draw_sprite:
+
+player_move:
+		LD A, key_K:
+		CALL check_key:
+		JR NZ, player_move_next1:
+
+		LD A, 0xff
+		JR player_move_next3:		
+
+player_move_next1:
+		LD A, key_L:
+		CALL check_key:
+		JR NZ, player_move_next2:
+
+		LD A, 0x01
+		JR player_move_next3:
+
+player_move_next2:
+		XOR A
+player_move_next3:
+		LD (tom_dir:), A
+		
+		LD A, (tom_jump:)
+		CP 0xff
+		JR Z, player_move_fall:
+		
+		OR A
+		JR NZ, player_move_jump:
+
+		LD A, (tom_dir_y:)
+		OR A
+		JR NZ, player_move_fall:
+		
+		LD A, key_SHIFT:
+		CALL check_key:
+		JR NZ, player_move_fall:
+
+		LD A, 0x09		
+player_move_jump:
+		DEC A
+		LD (tom_jump:), A
+		LD A, 0xff
+		LD (tom_dir_y:), A
+		RET
+		
+player_move_fall:
+		LD A, 0x00
+		LD (tom_jump:), A
+		LD A, 0x01
+		LD (tom_dir_y:), A
+		RET
+		
+player_check_boundary:
+		LD HL, (tom_pos:)
+		LD A, (tom_dir_x:)
+		CP 0xff
+		JR NZ, player_check_boundary_next1:
+		LD A, L
+		CP 0x09
+		JR NC, player_check_boundary_next2:
+		XOR A
+		LD (tom_dir_x:), A
+		JR player_check_boundary_next2:
+		
+player_check_boundary_next1:
+		CP 0x01
+		JR NZ, player_check_boundary_next2:
+		LD A, L
+		CP 0x78
+		JR C, player_check_boundary_next2:
+		XOR A
+		LD (tom_dir_x:), A
+
+player_check_boundary_next2:
+		LD A, (tom_dir_y:)
+		CP 0xff
+		JR NZ, player_check_boundary_next3:
+		LD A, H
+		CP 0x09
+		RET NC
+		XOR A
+		LD (tom_dir_y:), A
+		RET
+
+player_check_boundary_next3:
+		CP 0x01
+		RET NZ
+		LD A, H
+		CP 0x38
+		RET C
+		LD A, 0x00
+		LD (tom_dir_y:), A
+		RET
+	
+player_check_obstacle:
+		LD A, (tom_dir_x:)
+		CP 0xff
+		CALL Z, player_check_left:
+		LD A, (tom_dir_x:)
+		CP 0x01		
+		CALL Z, player_check_right:
+
+		LD A, (tom_dir_y:)
+		CP 0xff
+		CALL Z, player_check_top:
+		LD A, (tom_dir_y:)
+		CP 0x01		
+		CALL Z, player_check_bottom:
+		RET
+
+player_check_left:
+		LD HL, (tom_pos:)
+		DEC L
+		CALL calc_screen_pos:
+		JR check_vertical:
+		
+player_check_right:
+		LD HL, (tom_pos:)
+		LD A, L
+		ADD A, 0x08
+		LD L, A
+		CALL calc_screen_pos:
+
+check_vertical:
+		LD B, 0x08
+		LD DE, 0x0020
+check_vertical_loop1:			
+		LD A, (HL)
+		OR A
+		JR NZ, stop_vertical:
+		ADD HL, DE
+		DEC B
+		JR NZ, check_vertical_loop1:			
+		RET
+stop_vertical:
+		XOR A
+		LD (tom_dir_x:), A
+		RET
+		
+player_check_top:
+		LD HL, (tom_pos:)
+		DEC H
+		CALL calc_screen_pos:
+		LD A, (HL)
+		INC HL
+		OR (HL)
+		RET Z
+		XOR A
+		LD (tom_dir_y:), A
+		LD A, 0xff
+		LD (tom_jump:), A
+		RET
+
+player_check_bottom:
+		LD HL, (tom_pos:)
+		LD A, H
+		ADD A, 0x08
+		LD H, A
+		CALL calc_screen_pos:
+		LD A, (HL)
+		INC HL
+		OR (HL)
+		RET Z
+		XOR A
+		LD (tom_dir_y:), A
+		RET
 
 tom_pos:
-		defw 0x0000
+tom_pos_x:
+		defb 0x00
+tom_pos_y:
+		defb 0x00
 tom_dir:
-		defb 0x01 // left: 0x00
-tom_sprite_offset:
-		defb 0x04, 0x00
+tom_dir_x:
+		defb 0x00 // left: 0xff; right: 0x01
+tom_dir_y:
+		defb 0x01 // up: 0xff; down: 0x01
+tom_jump:
+		defb 0x00 // ff: blocked
+				  // 00: not jumping
+		          // n: jump count							
 		
 screen_needs_refresh:
 		defb 0x00

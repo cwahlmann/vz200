@@ -70,25 +70,8 @@ draw_sprite:
 		LD A, L		; take last two bits of xpos
 		AND 0x03 	 
 		ADD A, B	; and add to offset of sprite no
-					
-					; the screen column is xpos / 4
-		SRL L		; / 2
-		SRL L		; / 4
-		LD E, L		; 
-		LD D, 0x00  
 		
-		LD L, H		; the screen position is row * 32
-		LD H, 0x00
-		ADD HL, HL 	; x2
-		ADD HL, HL 	; x4
-		ADD HL, HL 	; x8
-		ADD HL, HL 	; x16
-		ADD HL, HL 	; x32
-		
-		ADD HL, DE 	; add column
-		
-		LD DE, (screen_data:) 			
-		ADD HL, DE	; add screen offset			
+		CALL calc_screen_pos:							
  		PUSH HL		; and save screen position
 
 ; calculate sprite data address: no * 16 + sprite_data:
@@ -131,6 +114,30 @@ draw_sprite_loop_1:
 		OR A
 		JR NZ, draw_sprite_loop_1:
 		
+		RET
+
+; input: 		L: xpos
+; 				H: ypos
+; output:		HL: screen pos 
+calc_screen_pos:
+		; the screen column is xpos / 4
+		SRL L		; / 2
+		SRL L		; / 4
+		LD E, L		; 
+		LD D, 0x00  
+		
+		LD L, H		; the screen position is row * 32
+		LD H, 0x00
+		ADD HL, HL 	; x2
+		ADD HL, HL 	; x4
+		ADD HL, HL 	; x8
+		ADD HL, HL 	; x16
+		ADD HL, HL 	; x32
+		
+		ADD HL, DE 	; add column
+		
+		LD DE, (screen_data:) 			
+		ADD HL, DE	; add screen offset			
 		RET
 
 ; draws one byte from sprite data address to screen
