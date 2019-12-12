@@ -376,12 +376,13 @@ sudo joe /boot/cmdline.txt
 splash quiet plymouth.ignore-serial-consoles logo.nologo vt.global_cursor_default=0
 ```
 
-Quelle: https://scribles.net/customizing-boot-up-screen-on-raspberry-pi/
-
-Desktop Hintergrund anpassen:
+Splash-Screen anpassen:
 ```
 sudo cp ~/vz200/desktop-wallpaper-1.png /usr/share/plymouth/themes/pix/splash.png
 ```
+Quelle: https://scribles.net/customizing-boot-up-screen-on-raspberry-pi/
+
+In der Desktop-Umgebung das Hintergrundbild `~/vz200/desktop-wallpaper-1.png` einstellen.
 
 ## Lautstärke auf Maximum stellen:
 ```
@@ -390,8 +391,6 @@ amixer sset 'Master' 65536
 Taskleiste ausblenden: Rechtsklick auf Taskleite - Leisteneinstellungen - Erweitert: Leiste bei Nichtbenutzung minimieren + Größe bei minimiertem Zustand: 0 Pixel
 
 HDMI-Settings in /boot/config.txt anpassen: `disable-overscan=1`, `hdmi_group=1`, `hdmi_mode=3`
-
-Zum Schluss Desktop-Umgebung das Hintergrundbild `desktop-wallpaper-3.png` einstellen.
 
 Nach einem Reboot sollte der Emulator im Vollbildmodus starten.
 
