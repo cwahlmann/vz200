@@ -257,11 +257,12 @@ gradle createVZ200Zip
 ```
 Es entsteht ein Zip mit allen benötigten Dateien unter `build\distributions\JemuVZ200.zip`
 
-## Installieren der Desktop-Version des Betriebssystems Raspbian: siehe Raspbian-Dokumentation unter www.raspbian.org
+## Installieren der Desktop-Version des Betriebssystems Raspbian
+siehe Raspbian-Dokumentation unter www.raspbian.org
 (Raspbian Buster Desktop Lite)
 
-
-## Zip ins Home-Verzeichnis des Raspberry kopieren und entpacken.
+## gebautes Zip installieren
+Zip-Datei ins Home-Verzeichnis des Raspberry kopieren und entpacken.
 Danach sollte folgende Verzeichnisstruktur entstanden sein:
 
 ```
@@ -286,7 +287,8 @@ Archive:  JemuVZ200.zip
   inflating: vz200.sh
 ```
 
-## `dos2unix` installieren:
+## Startskript ausführbar machen
+`dos2unix` installieren:
 ```
 sudo apt-get install dos2unix
 ```
@@ -297,23 +299,24 @@ dos2unix vz200.desktop
 dos2unix vz200.sh
 ```
 
-## Das Start-Skript `vz200.sh` ausführbar machen:
+Execute-Flag setzen:
 ```
 chmod +x vz200.sh
 ```
 
-## Die Datei `vz200.desktop` in den Autostart-Ordner kopieren:
-
+## Emulator automatisch starten
+Die Datei `vz200.desktop` in den Autostart-Ordner kopieren:
 ```
 mkdir ~/.config/autostart
 cp vz200.desktop ~/.config/autostart
 ```
-## Installieren der OpenJDK-8 Runtime und des ALSA-Treibers mit `apt-get`:
+## JDK und Sound-Treiber installieren
+Installieren der OpenJDK-8 Runtime und des ALSA-Treibers mit `apt-get`:
 ```
 sudo apt-get install openjdk-8-jre
 sudo apt-get install alsa-base alsa-utils
 ```
-## Die Java-Sound-Konfiguration anpassen (PulseAudio auskommentieren, DirectAudioDevice einkommentieren):
+Die Java-Sound-Konfiguration anpassen (PulseAudio auskommentieren, DirectAudioDevice einkommentieren):
 ```
 sudo joe /etc/java-8-openjdk/sound.properties
 #javax.sound.sampled.Clip=org.classpath.icedtea.pulseaudio.PulseAudioMixerProvider`
@@ -367,12 +370,12 @@ sudo joe /boot/cmdline.txt
 splash quiet plymouth.ignore-serial-consoles logo.nologo vt.global_cursor_default=0
 ```
 
-Installieren des neuen Splash-Screens:
+Quelle: https://scribles.net/customizing-boot-up-screen-on-raspberry-pi/
+
+Desktop Hintergrund anpassen:
 ```
 sudo cp ~/vz200/desktop-wallpaper-1.png /usr/share/plymouth/themes/pix/splash.png
 ```
-
-Quelle: https://scribles.net/customizing-boot-up-screen-on-raspberry-pi/
 
 ## Lautstärke auf Maximum stellen:
 ```
