@@ -310,6 +310,12 @@ Die Datei `vz200.desktop` in den Autostart-Ordner kopieren:
 mkdir ~/.config/autostart
 cp vz200.desktop ~/.config/autostart
 ```
+## joe Texteditor installieren
+```
+sudo apt-get install joe
+```
+(Alternativ kann auch der schon installierte Editor `nano` genutzt werden.)
+
 ## JAVA und ALSA-Sound-Treiber installieren
 Installieren der OpenJDK-8 Runtime und des ALSA-Treibers mit `apt-get`:
 ```
