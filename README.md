@@ -251,17 +251,17 @@ Damit ist der VZ200 fertig. Der Emulator "JEmu" kann übrigens sowohl auf einem 
 
 # <a name="installation">Installation des Raspberry Pi</a>
 
-Projekt bauen mit Gradle:
+## Projekt bauen mit Gradle:
 ```
 gradle createVZ200Zip
 ```
 Es entsteht ein Zip mit allen benötigten Dateien unter `build\distributions\JemuVZ200.zip`
 
-Installieren der Desktop-Version des Betriebssystems Raspbian: siehe Raspbian-Dokumentation unter www.raspbian.org
+## Installieren der Desktop-Version des Betriebssystems Raspbian: siehe Raspbian-Dokumentation unter www.raspbian.org
 (Raspbian Buster Desktop Lite)
 
 
-Zip ins Home-Verzeichnis des Raspberry kopieren und entpacken.
+## Zip ins Home-Verzeichnis des Raspberry kopieren und entpacken.
 Danach sollte folgende Verzeichnisstruktur entstanden sein:
 
 ```
@@ -286,7 +286,7 @@ Archive:  JemuVZ200.zip
   inflating: vz200.sh
 ```
 
-`dos2unix` installieren:
+## `dos2unix` installieren:
 ```
 sudo apt-get install dos2unix
 ```
@@ -297,23 +297,23 @@ dos2unix vz200.desktop
 dos2unix vz200.sh
 ```
 
-Das Start-Skript `vz200.sh` ausführbar machen:
+## Das Start-Skript `vz200.sh` ausführbar machen:
 ```
 chmod +x vz200.sh
 ```
 
-Die Datei `vz200.desktop` in den Autostart-Ordner kopieren:
+## Die Datei `vz200.desktop` in den Autostart-Ordner kopieren:
 
 ```
 mkdir ~/.config/autostart
 cp vz200.desktop ~/.config/autostart
 ```
-Installieren der OpenJDK-8 Runtime und des ALSA-Treibers mit `apt-get`:
+## Installieren der OpenJDK-8 Runtime und des ALSA-Treibers mit `apt-get`:
 ```
 sudo apt-get install openjdk-8-jre
 sudo apt-get install alsa-base alsa-utils
 ```
-Die Java-Sound-Konfiguration anpassen (PulseAudio auskommentieren, DirectAudioDevice einkommentieren):
+## Die Java-Sound-Konfiguration anpassen (PulseAudio auskommentieren, DirectAudioDevice einkommentieren):
 ```
 sudo joe /etc/java-8-openjdk/sound.properties
 #javax.sound.sampled.Clip=org.classpath.icedtea.pulseaudio.PulseAudioMixerProvider`
@@ -330,12 +330,51 @@ Editor verlassen mit STRG-K und X.
    
 Raspi-Configuration starten und folgende Einstellungen vornehmen:
 - Umstellen audio auf headphone
-- Splash-Screen unterdrücken
 ```
 sudo raspi-config
 ```
 
-Lautstärke auf Maximum stellen:
+## Slash-Screen installieren:
+
+Bearbeiten der Datei `/boot/config.txt`:
+```
+sudo joe /boot/config.txt
+```
+Folgende Zeile hinzufügen:
+```
+disable_splash=1
+```
+
+Bearbeiten der Datei `/usr/share/plymouth/themes/pix/pix.script`:
+```
+sudo joe /usr/share/plymouth/themes/pix/pix.script
+```
+Folgende Zeilen auskommentieren:
+```
+message_sprite = Sprite();
+message_sprite.SetPosition(screen_width * 0.1, screen_height * 0.9, 10000);
+my_image = Image.Text(text, 1, 1, 1);
+message_sprite.SetImage(my_image);
+```
+
+Bearbeiten der Datei `/boot/cmdline.txt`:
+```
+sudo joe /boot/cmdline.txt
+```
+- `console=tty1` durch `console=tty3` ersetzen
+- und folgende Parameter ans Ende der Zeile anfügen:
+```
+splash quiet plymouth.ignore-serial-consoles logo.nologo vt.global_cursor_default=0
+```
+
+Installieren des neuen Splash-Screens:
+```
+sudo cp ~/vz200/desktop-wallpaper-1.png /usr/share/plymouth/themes/pix/splash.png
+```
+
+Quelle: https://scribles.net/customizing-boot-up-screen-on-raspberry-pi/
+
+## Lautstärke auf Maximum stellen:
 ```
 amixer sset 'Master' 65536
 ```
@@ -343,7 +382,7 @@ Taskleiste ausblenden: Rechtsklick auf Taskleite - Leisteneinstellungen - Erweit
 
 HDMI-Settings in /boot/config.txt anpassen: `disable-overscan=1`, `hdmi_group=1`, `hdmi_mode=3`
 
-Zum Schluss Desktop-Umgebung das Hintergrundbild `desktop-wallpaper.png" einstellen.
+Zum Schluss Desktop-Umgebung das Hintergrundbild `desktop-wallpaper-3.png` einstellen.
 
 Nach einem Reboot sollte der Emulator im Vollbildmodus starten.
 
