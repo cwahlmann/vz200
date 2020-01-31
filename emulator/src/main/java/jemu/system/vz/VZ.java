@@ -228,7 +228,7 @@ public class VZ extends Computer {
 	public void processKeyEvent(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 		if (keyCode == KeyEvent.VK_ESCAPE) {
-			reset();
+			softReset();
 			return;
 		}
 		if (e.getExtendedKeyCode() == 0x010000d6) { // ö
