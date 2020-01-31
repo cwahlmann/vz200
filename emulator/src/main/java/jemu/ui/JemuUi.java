@@ -458,6 +458,10 @@ public class JemuUi extends JPanel
 		computer.start();
 	}
 
+	public void softReset() {
+		computer.softReset();
+	}
+
 	public void initComputer() throws Exception {
 		setFullSize(large);
 		computer.initialise();

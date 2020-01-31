@@ -123,6 +123,11 @@ public class VZ extends Computer {
 		super.initialise();
 		this.setVolume(config.getInt(Constants.SOUND_VOLUME));
 	}
+	
+	@Override
+	public void softReset() {
+		z80.setPC(0x0000);
+	}
 
 	public String getKeyboardImage() {
 		return "/jemu/ui/vz/keyboard.png";

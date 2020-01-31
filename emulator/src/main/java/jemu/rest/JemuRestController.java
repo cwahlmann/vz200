@@ -47,7 +47,8 @@ public class JemuRestController {
 
 	@RequestMapping(method = RequestMethod.POST, path = "/vz200/reset")
 	public String reset() {
-		jemuUi.resetComputer();
+//		jemuUi.resetComputer();
+		jemuUi.softReset();
 		return "reset done";
 	}
 

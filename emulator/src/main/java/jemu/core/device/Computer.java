@@ -356,6 +356,8 @@ public abstract class Computer extends Device implements Runnable {
 		return filePath;
 	}
 
+	public void softReset() {}
+
 	public void reset() {
 		boolean run = running;
 		stop();
