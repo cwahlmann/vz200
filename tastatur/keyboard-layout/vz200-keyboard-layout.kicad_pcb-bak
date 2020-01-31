@@ -2827,7 +2827,7 @@
     (arrow2b (pts (xy 83.118 47.417) (xy 84.244504 46.830579)))
   )
   (gr_line (start 83.118 61.514) (end 83.118 61.641) (angle 90) (layer Edge.Cuts) (width 0.15))
-  (gr_text "VZ200 Keyboard Platinenlayout" (at 255.33 65.197) (layer F.SilkS)
+  (gr_text "VZ200 Keyboard Platinenlayout - 2019 - Christian Wahlmann" (at 254.9525 65.151) (layer F.SilkS)
     (effects (font (size 1.5 1.5) (thickness 0.3)) (justify right))
   )
   (gr_line (start 257.616 61.514) (end 257.616 63.546) (angle 90) (layer Edge.Cuts) (width 0.15))
