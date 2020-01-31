@@ -126,7 +126,7 @@ public class VZ extends Computer {
 	
 	@Override
 	public void softReset() {
-		z80.setPC(0x0000);
+		z80.reset();
 	}
 
 	public String getKeyboardImage() {

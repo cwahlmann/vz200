@@ -240,8 +240,14 @@ public class Z80 extends Processor {
 		return value;
 	}
 
+	private volatile boolean resetRequested = false;
+	
 	public void reset() {
-		pause();
+		resetRequested = true;
+	}
+	
+	private void doReset() {
+//		pause();
 		super.reset();
 		for (int i = 0; i < reg.length; i++)
 			reg[i] = 0;
@@ -250,7 +256,7 @@ public class Z80 extends Processor {
 		IFF1 = IFF2 = true;
 		interruptPending = 0;
 		interruptExecute = inHalt = noWait = false;
-		resume();
+//		resume();
 	}
 
 	public void stepOver() {
@@ -302,6 +308,10 @@ public class Z80 extends Processor {
 	}
 
 	public final void step() {
+		if (resetRequested) {
+			doReset();
+			resetRequested = false;
+		}
 		if (interruptExecute)
 			doInterrupt();
 		else
