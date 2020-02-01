@@ -66,7 +66,6 @@ public abstract class Processor extends Device {
 		for (DeviceMapping mapping : outputDevice) {
 			mapping.reset();
 		}
-		cycles = 0;
 		interruptPending = 0;
 	}
 

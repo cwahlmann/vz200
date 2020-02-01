@@ -247,16 +247,13 @@ public class Z80 extends Processor {
 	}
 	
 	private void doReset() {
-//		pause();
 		super.reset();
 		for (int i = 0; i < reg.length; i++)
 			reg[i] = 0;
 		SP = PC = IX = IY = 0;
 		I = R = R7 = IM = 0;
 		IFF1 = IFF2 = true;
-		interruptPending = 0;
 		interruptExecute = inHalt = noWait = false;
-//		resume();
 	}
 
 	public void stepOver() {
