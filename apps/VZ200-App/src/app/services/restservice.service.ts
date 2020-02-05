@@ -21,4 +21,18 @@ export class RESTserviceService {
     const result = await this.http.get(`${this.ROOT_URL}/sound`).toPromise();
     return result as number;
   }
+
+  public async getRegisters(): Promise<Object> {
+    return await this.http.get(`${this.ROOT_URL}/registers`).toPromise();
+  }
+
+  public uploadBasic(code: string): Promise<string> { 
+    return this.http.post(`${this.ROOT_URL}/bas`, code, {responseType: "text"} ).toPromise();
+  }
+
+  public async downloadVZ(): Promise<String> {
+    const result = await this.http.get(`${this.ROOT_URL}/vz?autorun=True`).toPromise();
+    return result as String;
+  }
+
 }
