@@ -269,9 +269,8 @@ Damit ist der VZ200 fertig. Der Emulator "JEmu" kann übrigens sowohl auf einem 
 ![Monitor Front aufkleben](images/img_monitor_21_monitor_front.jpg "Monitor Front aufkleben")
 ![Monitor bemalt](images/img_monitor_22_monitor_bemalt.jpg "Monitor bemalt")
 
-TODO
 
-# <a name=installation">Installation des Raspberry Pi</a>
+# <a name="installation">Installation des Raspberry Pi</a>
 
 ## Projekt bauen mit Gradle:
 ```
