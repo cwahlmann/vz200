@@ -1,0 +1,11 @@
+| LD HL,0x7000 | 21 00 70 | 33, 0, 112 | Bildschirmspeicheradresse in HL
+| LD BC,0x0200 | 01 00 02 | 1, 0, 2    | Zähler = Länge des Bildschirmspeichers im Textmodus
+| LD D,0x00    | 16 00    | 22, 0      | aktuelles Zeichen (beginnend mit @) 
+| LD (HL),D    | 72       | 114        | Schleife; Zeichen in Bildschirmspeicher laden
+| INC HL       | 23       | 35         | nächste Adresse
+| INC D        | 14       | 20         | nächstes Zeichen
+| DEC BC       | 0b       | 11         | Zähler runterzählen
+| LD A,B       | 78       | 120        | Test, ob Zähler = 0
+| OR C         | b1       | 177        |
+| JR NZ, -8    | 20 f8    | 32 248     | Nein? weiter in der Schleife
+| RET          | c9       | 201        | Programm beenden

@@ -2062,7 +2062,7 @@ public class Z80 extends Processor {
 
 	protected void decss(int opcode) {
 		int ss = (opcode & 0x30) >> 3;
-		setdd(ss, (getdd(ss) - 1) & 0xffff);
+		setdd(ss, (getdd(ss) +0xffff ) & 0xffff);
 	}
 
 	// -------------------------------------------------------------
@@ -2503,7 +2503,7 @@ public class Z80 extends Processor {
 	}
 
 	protected int decn(int n) {
-		n = (n - 1) & 0xff;
+		n = (n +0xff) & 0xff;
 		int f = n & 0xa8 | (reg[F] & FC) | FN;
 		if ((n & 0x0f) == 0x0f)
 			f |= FH;
