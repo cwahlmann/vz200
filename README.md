@@ -246,10 +246,30 @@ Damit ist der VZ200 fertig. Der Emulator "JEmu" kann übrigens sowohl auf einem 
 | 4 Schrauben M2 6mm| Befestigung des Displays |
 
 ![Audio Schaltplan](audio/audio_schaltplan_skaliert.png "Audio Verstärker Schaltplan")
+![Bauteile Druck](images\img_monitor_02_bauteile_druck.jpg "Bauteile Druck")
+![Bauteile elektrisch](images\img_monitor_01_bauteile_elektrisch.jpg "Bauteile elektrisch")
 
-## TODO
+## Zusammenbau des Monitors
 
-# <a name="installation">Installation des Raspberry Pi</a>
+![TFT-Display](images/img_monitor_03_raspberry_tft.jpg "TFT-Display")
+![TFT-Display](images/img_monitor_04_raspberry_tft_2.jpg "TFT-Display")
+![Lautsprecher Spannungsteiler](images/img_monitor_05_speaker_spannungsteiler.jpg "Lautsprecher Spannungsteiler")
+![Lautsprecher Spannungsteiler Detail](images/img_monitor_06_speaker_spannungsteiler_2.jpg "Lautsprecher Spannungsteiler Detail")
+![Audiokabel](images/img_monitor_07_klinke.jpg "Audiokabel")
+![Audiokabel Detail](images/img_monitor_08_klinke_2.jpg "Audiokabel Detail")
+![Power-Kabel Löten](images/img_monitor_09_audioverstärker_power.jpg "Power-Kabel Löten")
+![Power-Kabel](images/img_monitor_10_audioverstärker_power_2.jpg "Power-Kabel")
+![Audio-Verkabelung](images/img_monitor_11_audio_gesamt.jpg "Audio-Verkabelung")
+![Funktionstest](images/img_monitor_12_raspberry_tft_audio_funktion.jpg "Funktionstest")
+![Lautsprecher Isolierung](images/img_monitor_13_speaker_isolierung.jpg "Lautsprecher Isolierung")
+![Einbau in Monitor Lautsprecher und Verstärker](images/img_monitor_14_speaker_verstärker_einbau.jpg "Einbau in Monitor Lautsprecher und Verstärker")
+![Einbau in Monitor TFT](images/img_monitor_16_raspberry_tft_einbau_2.jpg "Einbau in Monitor TFT")
+![Verkabelung](images/img_monitor_17_verkabelung_gesamt.jpg "Verkabelung")
+![Gummifuesse ankleben](images/img_monitor_18_gummifuesse.jpg.jpg "Gummifuesse ankleben")
+![Monitor Front aufkleben](images/img_monitor_21_monitor_front.jpg "Monitor Front aufkleben")
+![Monitor bemalt](images/img_monitor_22_monitor_bemalt.jpg "Monitor bemalt")
+
+# <a name=installation">Installation des Raspberry Pi</a>
 
 ## Projekt bauen mit Gradle:
 ```
