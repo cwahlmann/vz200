@@ -246,8 +246,8 @@ Damit ist der VZ200 fertig. Der Emulator "JEmu" kann übrigens sowohl auf einem 
 | 4 Schrauben M2 6mm| Befestigung des Displays |
 
 ![Audio Schaltplan](audio/audio_schaltplan_skaliert.png "Audio Verstärker Schaltplan")
-![Bauteile Druck](images\img_monitor_02_bauteile_druck.jpg "Bauteile Druck")
-![Bauteile elektrisch](images\img_monitor_01_bauteile_elektrisch.jpg "Bauteile elektrisch")
+![Bauteile Druck](images/img_monitor_02_bauteile_druck.jpg "Bauteile Druck")
+![Bauteile elektrisch](images/img_monitor_01_bauteile_elektrisch.jpg "Bauteile elektrisch")
 
 ## Zusammenbau des Monitors
 
