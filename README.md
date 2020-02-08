@@ -283,11 +283,11 @@ Um Kurzschlüssel vorzubeugen, wird um den langen Widerstand des Spannungsteiler
 
 ![Lautsprecher Isolierung](images/img_monitor_13_speaker_isolierung.jpg "Lautsprecher Isolierung")
 
-Der Lautsprecher wird mit Hilfe des gedruckten Rings mit vier Schrauben ins Gehäuse geschraubt. Die Verstärkerplatine wir mit doppelseitigem Klebeband, einem Stück Kautschuk o.ä. angeklebt.
+Der Lautsprecher wird mit Hilfe des gedruckten Rings mit vier Schrauben ins Gehäuse geschraubt. Die Verstärkerplatine wird mit doppelseitigem Klebeband, einem Stück Kautschuk o.ä. angeklebt.
 
 ![Einbau in Monitor Lautsprecher und Verstärker](images/img_monitor_14_speaker_verstärker_einbau.jpg "Einbau in Monitor Lautsprecher und Verstärker")
 
-Das TFT_Display wird mit dem angesteckten Raspberry mit vier Schrauben in die Vorderseite des Gehäuses befestigt.
+Das TFT_Display wird mit dem angesteckten Raspberry mit vier Schrauben in der Vorderseite des Gehäuses befestigt.
 
 ![Einbau in Monitor TFT](images/img_monitor_16_raspberry_tft_einbau_2.jpg "Einbau in Monitor TFT")
 
