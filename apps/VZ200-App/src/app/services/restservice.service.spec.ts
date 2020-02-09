@@ -108,4 +108,15 @@ fdescribe('RESTserviceService', () => {
     httpMock.verify();
   }));
 
+  it('should download hello world as basic source code', fakeAsync(() => {
+    const HELLOWORLD = '10 PRINT"HELLO WORLD!"';
+    service.downloadBasic().then(result => {
+      expect(result).toContain(HELLOWORLD);
+    });
+    const mockRequest = httpMock.expectOne(`${service.ROOT_URL}/printer/flush`);
+    expect(mockRequest.request.method).toBe('GET');
+    mockRequest.flush(HELLOWORLD, { headers: { 'Accept': 'text/plain' } });
+    httpMock.verify();
+  }));
+
 });
