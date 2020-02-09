@@ -145,6 +145,10 @@ public class VZ extends Computer {
 		return z80;
 	}
 
+	public Keyboard getKeyboard(){
+		return keyboard;
+	}
+
 	public void cycle() {
 		if (++cycles == cyclesToFlyback) {
 			if (--syncCnt == 0) {
@@ -226,6 +230,7 @@ public class VZ extends Computer {
 	}
 
 	public void processKeyEvent(KeyEvent e) {
+		log.debug(String.format("processKeyEvent - Key pressed: %s", e.toString()));
 		int keyCode = e.getKeyCode();
 		if (keyCode == KeyEvent.VK_ESCAPE) {
 			softReset();

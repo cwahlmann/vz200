@@ -1,15 +1,14 @@
 package jemu.rest;
 
+import java.awt.AWTKeyStroke;
+import java.awt.event.KeyEvent;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jemu.system.vz.VZ;
 import jemu.system.vz.VZTapeDevice;
 import jemu.ui.JemuUi;
+import jemu.util.vz.VZUtils;
 
 @RestController
 public class JemuRestController {
@@ -47,7 +47,7 @@ public class JemuRestController {
 
 	@RequestMapping(method = RequestMethod.POST, path = "/vz200/reset")
 	public String reset() {
-//		jemuUi.resetComputer();
+		// jemuUi.resetComputer();
 		jemuUi.softReset();
 		return "reset done";
 	}
@@ -160,6 +160,22 @@ public class JemuRestController {
 		return lines.stream().collect(Collectors.joining("\n"));
 	}
 
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/printer/bas/{timeout}")
+	public String getBas(@PathVariable(name = "timeout") Integer timeout) {
+		// TODO: Wait for READY to come up on the screen to make timeout obsolete
+		// Wait for the listing to be printed
+		try {
+			VZUtils.type("LLIST\n", 250, computer().getKeyboard());
+			Thread.sleep(timeout != null ? timeout : 5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		List<String> lines = computer().flushPrinter();
+		return lines.stream().collect(Collectors.joining("\n"));
+	}
+
 	@RequestMapping(method = RequestMethod.GET, path = "/vz200/tape")
 	public String getTapeName() {
 		return tape().getTapeName();
@@ -230,13 +246,13 @@ public class JemuRestController {
 	public String getRegisters() {
 		String[] names = computer().getProcessor().getRegisterNames();
 
-		List<Pair<String, Integer>> regs = new ArrayList<>();  
+		List<Pair<String, Integer>> regs = new ArrayList<>();
 		for (int i = 0; i < names.length; i++) {
 			regs.add(Pair.of(names[i], computer().getProcessor().getRegisterValue(i)));
 		}
-		
+
 		return regs.stream().sorted((a, b) -> a.getLeft().compareTo(b.getLeft()))
-		.map(p -> String.format("\"%s\": \"%04X\"", p.getLeft(), p.getRight()))
-		.collect(Collectors.joining(", ", "{", "}"));
+				.map(p -> String.format("\"%s\": \"%04X\"", p.getLeft(), p.getRight()))
+				.collect(Collectors.joining(", ", "{", "}"));
 	}
 }
