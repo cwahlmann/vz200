@@ -9,7 +9,6 @@ import java.awt.event.KeyEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jemu.rest.JemuRestController;
 import jemu.system.vz.Keyboard;
 
 /**
@@ -22,7 +21,7 @@ import jemu.system.vz.Keyboard;
 
 public abstract class VZUtils {
 
-    private static final Logger log = LoggerFactory.getLogger(JemuRestController.class);
+    private static final Logger log = LoggerFactory.getLogger(VZUtils.class);
     // Code adapted from
     // https://stackoverflow.com/questions/1248510/convert-string-to-keyevents/37179377#37179377?newreg=8882e71698a54fe5aa0da94a6dad4786
     // By Sensei Sho
