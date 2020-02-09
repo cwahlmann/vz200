@@ -521,6 +521,7 @@ Endpunkt | Method | Request | Response | Beschreibung
 /vz      | POST   | application/octet-stream | String | .vz-Programm einspielen
 /vz[?autorun={True/False}][&range={start-end}]      | GET    |         | application/octet-stream | .vz-Programm auslesen; autorun: mit Autostart-Flag speichern; range: Speicherbereich (default: Basic-Pointer)
 /bas     | POST   | application/octet-stream | String | Basic-Programm-Source einspielen
+/bas/{timeout in ms}     | GET   |          | application/octet-stream | Basic-Programm-Source per Druckerschnittstelle auslesen. Timeout ist die Zeit in Millisekunden zwischen Druck starten und Erhalt durch den Aufrufer. Falls das Listing unvollständig ist, den Timeout erhöhen.
 /asm[?autorun={True/False}]     | POST   | application/octet-stream | Range: {von-bis} | Assembler-Programm-Source einspielen und ggf. starten (default True)
 /asmzip[?autorun={True/False}]     | POST   | application/octet-stream | Range: {von-bis} | Zip-Datei mit Assembler-Programm-Source einspielen und ggf. starten (default True)
 /asm/{von[-bis]} | GET    | | String | Speicherbereich als Maschinenprogramm auslesen
