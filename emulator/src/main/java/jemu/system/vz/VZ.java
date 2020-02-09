@@ -260,6 +260,11 @@ public class VZ extends Computer {
 		loader.importBasFile(is);
 	}
 
+	public void readBasicSource(OutputStream out) throws Exception {
+		VzBasicLoader loader = new VzBasicLoader(getMemory());
+		loader.exportBasFile(out);
+	}
+
 	public void loadBinaryFile(InputStream is) throws Exception {
 		try {
 			byte[] header = new byte[24];

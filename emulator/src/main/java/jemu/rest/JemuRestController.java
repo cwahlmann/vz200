@@ -1,8 +1,8 @@
 package jemu.rest;
 
-import java.awt.AWTKeyStroke;
-import java.awt.event.KeyEvent;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -90,6 +90,17 @@ public class JemuRestController {
 		return "Daten eingespielt.";
 	}
 
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/bas")
+	public String readBasicSource() {
+		try (ByteArrayOutputStream out = new ByteArrayOutputStream(256)) {
+			computer().readBasicSource(out);
+			return new String(out.toByteArray(), Charset.defaultCharset());
+		} catch (Exception e) {
+			log.error("Fehler beim Exportieren des Basic-Programms", e);
+			return "Fehler beim Exportieren des Basis-Programms: " + e.getMessage();
+		}
+	}
+	
 	@RequestMapping(method = RequestMethod.POST, path = "/vz200/asm", consumes = "application/octet-stream;charset=UTF-8")
 	public String loadAsm(@RequestParam(defaultValue = "True") Boolean autorun, RequestEntity<InputStream> entity) {
 		try (InputStream is = entity.getBody()) {
