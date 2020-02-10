@@ -527,7 +527,7 @@ Endpunkt | Method | Request | Response | Beschreibung
 /vz      | POST   | application/octet-stream | String | .vz-Programm einspielen
 /vz[?autorun={True/False}][&range={start-end}]      | GET    |         | application/octet-stream | .vz-Programm auslesen; autorun: mit Autostart-Flag speichern; range: Speicherbereich (default: Basic-Pointer)
 /bas     | POST   | application/octet-stream | String | Basic-Programm-Source einspielen
-/bas/{timeout in ms}     | GET   |          | application/octet-stream | Basic-Programm-Source per Druckerschnittstelle auslesen. Timeout ist die Zeit in Millisekunden zwischen Druck starten und Erhalt durch den Aufrufer. Falls das Listing unvollständig ist, den Timeout erhöhen.
+/bas     | GET   |          | application/octet-stream | Basic-Programm-Source auslesen. 
 /asm[?autorun={True/False}]     | POST   | application/octet-stream | Range: {von-bis} | Assembler-Programm-Source einspielen und ggf. starten (default True)
 /asmzip[?autorun={True/False}]     | POST   | application/octet-stream | Range: {von-bis} | Zip-Datei mit Assembler-Programm-Source einspielen und ggf. starten (default True)
 /asm/{von[-bis]} | GET    | | String | Speicherbereich als Maschinenprogramm auslesen
@@ -541,6 +541,7 @@ Endpunkt | Method | Request | Response | Beschreibung
 /tape/play | POST | | Integer | Tape starten; gibt Slot zurück
 /tape/record | POST | | Integer | Aufnahme starten; gibt Slot zurück
 /tape/stop | POST | | Integer | Tape stoppen; gibt Slot zurück
+/typetext | POST | text/plain | String | Tippt Text in den Bildschirm des VZ (in Arbeit)
 /sound/{volume} | POST | Integer | String | Audio-Lautstärke schreiben von 0 bis 255
 /sound     | GET  | | Integer | Audio-Lautstärke lesen
 /registers | GET  | | String | gibt den den Wert aller Z80-Register als JSON zurück
