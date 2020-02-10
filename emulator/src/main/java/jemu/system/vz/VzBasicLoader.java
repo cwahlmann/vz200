@@ -4,6 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,39 +43,47 @@ public class VzBasicLoader {
 		int address;
 	}
 
-	Destination destination;
+	private Memory memory;
 
 	static final String EXT = ".vz";
 	static final int ADR = 0x7ae9;
 	static final int BASIC_START = 0x78a4;
 	static final int BASIC_END = 0x78f9;
 
-	static final String[] token = new String[] { "END", "FOR", "RESET", "SET", "CLS", ""/* CMD */, "RANDOM", "NEXT",
-			"DATA", "INPUT", "DIM", "READ", "LET", "GOTO", "RUN", "IF", "RESTORE", "GOSUB", "RETURN", "REM", "STOP",
-			"ELSE", "COPY", "COLOR", "VERIFY", "DEFINT", "DEFSNG", "DEFDBL", "CRUN", "MODE", "SOUND", "RESUME", "OUT",
-			"ON", "OPEN", "FIELD", "GET", "PUT", "CLOSE", "LOAD", "MERGE", "NAME", "KILL", "LSET", "RSET", "SAVE",
-			"SYSTEM", "LPRINT", "DEF", "POKE", "PRINT", "CONT", "LIST", "LLIST", "DELETE", "AUTO", "CLEAR", "CLOAD",
-			"CSAVE", "NEW", "TAB(", "TO", "FN", "USING", "VARPTR", "USR", "ERL", "ERR", "STRING$", "INSTR", "POINT",
-			"TIME$", "MEM", "INKEY$", "THEN", "NOT", "STEP", "+", "-", "*", "/", "^", "AND", "OR", ">", "=", "<", "SGN",
-			"INT", "ABS", "FRE", "INP", "POS", "SQR", "RND", "LOG", "EXP", "COS", "SIN", "TAN", "ATN", "PEEK", "CVI",
-			"CVS", "CVD", "EOF", "LOC", "LOF", "MKI$", "MKS$", "MKD$", "CINT", "CSNG", "CDBL", "FIX", "LEN", "STR$",
-			"VAL", "ASC", "CHR$", "LEFT$", "RIGHT$", "MID$", "'", "", "", "", "" };
+	static final String[] TOKENS = new String[] { //
+			"END", "FOR", "RESET", "SET", "CLS", ""/* CMD */, "RANDOM", "NEXT", // 80-87
+			"DATA", "INPUT", "DIM", "READ", "LET", "GOTO", "RUN", "IF", // 88-8f
+			"RESTORE", "GOSUB", "RETURN", "REM", "STOP", "ELSE", "COPY", "COLOR", // 90-97
+			"VERIFY", "DEFINT", "DEFSNG", "DEFDBL", "CRUN", "MODE", "SOUND", "RESUME", // 98-9f
+			"OUT", "ON", "OPEN", "FIELD", "GET", "PUT", "CLOSE", "LOAD", // a0-a7
+			"MERGE", "NAME", "KILL", "LSET", "RSET", "SAVE", "SYSTEM", "LPRINT", // a8-af
+			"DEF", "POKE", "PRINT", "CONT", "LIST", "LLIST", "DELETE", "AUTO", // b0-b7
+			"CLEAR", "CLOAD", "CSAVE", "NEW", "TAB(", "TO", "FN", "USING", // b8-bf
+			"VARPTR", "USR", "ERL", "ERR", "STRING$", "INSTR", "POINT", "TIME$", // c0-c7
+			"MEM", "INKEY$", "THEN", "NOT", "STEP", "+", "-", "*", // c8-cf
+			"/", "^", "AND", "OR", ">", "=", "<", "SGN", // d0-d7
+			"INT", "ABS", "FRE", "INP", "POS", "SQR", "RND", "LOG", // d8-df
+			"EXP", "COS", "SIN", "TAN", "ATN", "PEEK", "CVI", "CVS", // e0-e7
+			"CVD", "EOF", "LOC", "LOF", "MKI$", "MKS$", "MKD$", "CINT", // e8-ef
+			"CSNG", "CDBL", "FIX", "LEN", "STR$", "VAL", "ASC", "CHR$", // f0-f7
+			"LEFT$", "RIGHT$", "MID$", "'", "", "", "", "" }; // f8-ff
+
+	static final int TOKEN_OFFSET = 0x80;
 
 	public VzBasicLoader(Memory memory) {
-		this.destination = new Destination(memory, ADR);
+		this.memory = memory;
 	}
 
-	private boolean checkToken(SourceLine sourceLine) {
-		int tokenOffset = 0x80;
-		for (int t = 0; t < token.length; t++) {
-			if (!token[t].isEmpty() && sourceLine.index + token[t].length() <= sourceLine.text.length()
-					&& sourceLine.text.substring(sourceLine.index, sourceLine.index + token[t].length())
-							.equalsIgnoreCase(token[t])) {
-				destination.memory.writeByte(destination.address, t + tokenOffset);
+	private boolean checkToken(SourceLine sourceLine, Destination destination) {
+
+		for (int t = 0; t < TOKENS.length; t++) {
+			if (!TOKENS[t].isEmpty() && sourceLine.index + TOKENS[t].length() <= sourceLine.text.length()
+					&& sourceLine.text.substring(sourceLine.index, sourceLine.index + TOKENS[t].length())
+							.equalsIgnoreCase(TOKENS[t])) {
+				destination.memory.writeByte(destination.address, t + TOKEN_OFFSET);
 				destination.address++;
-				sourceLine.index += token[t].length();
-				System.out.println("found token " + token[t]);
-				if (token[t].equals("REM")) {
+				sourceLine.index += TOKENS[t].length();
+				if (TOKENS[t].equals("REM")) {
 					sourceLine.comment = true;
 				}
 				return true;
@@ -80,7 +92,7 @@ public class VzBasicLoader {
 		return false;
 	}
 
-	private void readLineNumber(SourceLine sourceLine) {
+	private void readLineNumber(SourceLine sourceLine, Destination destination) {
 		int n = 0;
 		while (sourceLine.index < sourceLine.text.length()
 				&& Character.isDigit(sourceLine.text.charAt(sourceLine.index))) {
@@ -91,11 +103,10 @@ public class VzBasicLoader {
 		destination.address += 2;
 	}
 
-	private boolean checkString(SourceLine sourceLine) {
+	private boolean checkString(SourceLine sourceLine, Destination destination) {
 		if (sourceLine.text.charAt(sourceLine.index) != '"') {
 			return false;
 		}
-		System.out.println("found string");
 		destination.memory.writeByte(destination.address, '"');
 		destination.address++;
 		sourceLine.index++;
@@ -115,7 +126,6 @@ public class VzBasicLoader {
 		destination.memory.writeByte(destination.address, '"');
 		destination.address++;
 		sourceLine.index++;
-		System.out.println("found done");
 		return true;
 	}
 
@@ -125,7 +135,7 @@ public class VzBasicLoader {
 		}
 	}
 
-	private void readChar(SourceLine sourceLine) {
+	private void readChar(SourceLine sourceLine, Destination destination) {
 		destination.memory.writeByte(destination.address, sourceLine.text.charAt(sourceLine.index));
 		destination.address++;
 		sourceLine.index++;
@@ -135,25 +145,24 @@ public class VzBasicLoader {
 		return c == ' ' || c == '\t';
 	}
 
-	void loadBasFile(InputStream is) throws IOException {
-
+	void importBasFile(InputStream is) throws IOException {
+		Destination destination = new Destination(memory, ADR);
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
 			reader.lines().forEach(text -> {
-				System.out.println(text);
-				SourceLine sourceLine = new SourceLine(text.trim().toUpperCase());
+				SourceLine sourceLine = new SourceLine(text.trim().toUpperCase().replaceAll("\t", "    "));
 				if (!sourceLine.text.isEmpty()) {
 					destination.address += 2;
 					skipWhiteSpace(sourceLine);
-					readLineNumber(sourceLine);
+					readLineNumber(sourceLine, destination);
+					skipWhiteSpace(sourceLine);
 					while (sourceLine.index < sourceLine.text.length()) {
-						skipWhiteSpace(sourceLine);
-
 						if (sourceLine.comment) {
-							readChar(sourceLine);
+							readChar(sourceLine, destination);
 						} else {
-							boolean checked = checkToken(sourceLine) || checkString(sourceLine);
+							boolean checked = checkToken(sourceLine, destination)
+									|| checkString(sourceLine, destination);
 							if (!checked) {
-								readChar(sourceLine);
+								readChar(sourceLine, destination);
 							}
 						}
 					}
@@ -173,5 +182,38 @@ public class VzBasicLoader {
 		} catch (Exception e) {
 			log.error("Fehler beim Lesen des Inputstreams", e);
 		}
+	}
+
+	void exportBasFile(OutputStream out) throws IOException {
+		Writer writer = new OutputStreamWriter(out, Charset.defaultCharset());
+		int address = memory.readWord(BASIC_START);
+		int endAddress = memory.readWord(BASIC_END);
+		boolean finished = false;
+		while (!finished && address < endAddress) {
+			int nextLineAddress = memory.readWord(address);
+			if (nextLineAddress == 0) {
+				finished = true;
+			} else {
+				address += 2;
+				int lineNo = memory.readWord(address);
+				address += 2;
+				writer.append(String.format("%d ", lineNo));
+				while (address < nextLineAddress-1) {
+					int b = memory.readByte(address);
+					address++;
+					if (b < 0) {
+						b = b + 256;
+					}
+					if (b >= 0 && b < TOKEN_OFFSET) {
+						writer.append((char) b);
+					} else {
+						writer.append(TOKENS[b - TOKEN_OFFSET]);
+					}
+				}
+				address ++;
+				writer.append('\n');
+			}
+		}
+		writer.flush();
 	}
 }

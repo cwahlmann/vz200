@@ -55,7 +55,7 @@ public class VZ extends Computer {
 	protected boolean vz200;
 	protected int cyclesPerSecond = CYCLES_PER_SEC_VZ200;
 	protected Z80 z80; // This is different for VZ-200 and VZ-300
-	protected VZMemory memory = new VZMemory(this);
+	protected VZMemory memory = new VZMemory();
 	protected int cycles = 0;
 	protected int frameFlyback = 0x80;
 	protected int vdcLatch = 0x00;
@@ -257,7 +257,12 @@ public class VZ extends Computer {
 
 	public void loadSourceFile(InputStream is) throws Exception {
 		VzBasicLoader loader = new VzBasicLoader(getMemory());
-		loader.loadBasFile(is);
+		loader.importBasFile(is);
+	}
+
+	public void readBasicSource(OutputStream out) throws Exception {
+		VzBasicLoader loader = new VzBasicLoader(getMemory());
+		loader.exportBasFile(out);
 	}
 
 	public void loadBinaryFile(InputStream is) throws Exception {

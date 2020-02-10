@@ -12,12 +12,10 @@ import jemu.core.device.memory.Memory;
 
 public class VZMemory extends Memory {
 
-	protected VZ vz;
 	protected byte[] mem = new byte[65536];
 
-	public VZMemory(VZ vz) {
+	public VZMemory() {
 		super("VZ Memory");
-		this.vz = vz;
 	}
 
 	public int readByte(int address) {
