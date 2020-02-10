@@ -113,9 +113,20 @@ fdescribe('RESTserviceService', () => {
     service.downloadBasic().then(result => {
       expect(result).toContain(HELLOWORLD);
     });
-    const mockRequest = httpMock.expectOne(`${service.ROOT_URL}/printer/flush`);
+    const mockRequest = httpMock.expectOne(`${service.ROOT_URL}/bas`);
     expect(mockRequest.request.method).toBe('GET');
-    mockRequest.flush(HELLOWORLD, { headers: { 'Accept': 'text/plain' } });
+    mockRequest.flush(HELLOWORLD, { headers: { 'Accept': 'application/octet-stream' } });
+    httpMock.verify();
+  }));
+
+  it('should type text into the VZs command console', fakeAsync(() => {
+    const HELLOWORLD = 'LIST\n';
+    service.typeText(HELLOWORLD).then(result => {
+      expect(result).toContain('Text getippt.');
+    });
+    const mockRequest = httpMock.expectOne(`${service.ROOT_URL}/typetext`);
+    expect(mockRequest.request.method).toBe('POST');
+    mockRequest.flush('Text getippt.', { headers: { 'Content-type': 'application/octet-stream' } });
     httpMock.verify();
   }));
 

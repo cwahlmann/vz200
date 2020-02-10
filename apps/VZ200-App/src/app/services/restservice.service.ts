@@ -58,8 +58,16 @@ export class RESTserviceService {
   }
 
   public async downloadBasic(): Promise<String> {
-    const result = await this.http.get(`${this.ROOT_URL}/printer/flush`).toPromise();
+    const result = await this.http.get(`${this.ROOT_URL}/bas`).toPromise();
     return result as String;
+  }
+
+  /**
+   * Uploads Basic Code to the Emulator
+   * @param code Basic Code to upload
+   */
+  public typeText(text: string): Promise<string> { 
+    return this.http.post(`${this.ROOT_URL}/typetext`, text, {responseType: "text"} ).toPromise();
   }
 
 }
