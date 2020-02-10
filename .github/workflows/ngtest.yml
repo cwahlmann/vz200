@@ -1,12 +1,9 @@
 name: Mobile App Test
-on: 
-  push:
-    branches: 
-      - master
+on: [push]
 
 jobs:
   test:
-
+    name: Unit Test Test Mobile App
     runs-on: ubuntu-latest
 
     steps:
