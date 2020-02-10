@@ -16,7 +16,7 @@ jobs:
       run: cd apps/VZ200-App
       
     - name: Angular Github Actions
-    - uses: mayur-rawte/github-angular-actions@latest
+      uses: mayur-rawte/github-angular-actions@latest
       
     - name: install dependencies, test
       run: |
