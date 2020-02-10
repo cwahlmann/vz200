@@ -1,0 +1,27 @@
+name: Mobile App Test
+on: 
+  push:
+    branches: 
+      - master
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: '10.x'
+    - uses: actions/checkout@v2
+    - name: Enter App directory
+      run: cd apps/VZ200-App
+      
+    - name: Angular Github Actions
+    - uses: mayur-rawte/github-angular-actions@latest
+      
+    - name: install dependencies, test
+      run: |
+        npm ci
+        npm test
