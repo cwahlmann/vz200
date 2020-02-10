@@ -67,8 +67,7 @@ public abstract class VZUtils {
 			final char c = chars.charAt(i);
 			final AWTKeyStroke keyStroke = VZUtils.getKeyStroke(c);
 			final int keyCode = keyStroke.getKeyCode();
-			final boolean shift = false; // Character.isUpperCase(c) || keyStroke.getModifiers() == (SHIFT_DOWN_MASK
-											// + 1);
+			final boolean shift = Character.isUpperCase(c) || keyStroke.getModifiers() == (SHIFT_DOWN_MASK + 1);
 			if (shift) {
 				keyboard.keyPressed(KeyEvent.VK_SHIFT);
 			}

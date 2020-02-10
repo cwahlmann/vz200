@@ -171,20 +171,18 @@ public class JemuRestController {
 		return lines.stream().collect(Collectors.joining("\n"));
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/vz200/printer/bas/{timeout}")
-	public String getBas(@PathVariable(name = "timeout") Integer timeout) {
-		// TODO: Wait for READY to come up on the screen to make timeout obsolete
-		// Wait for the listing to be printed
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/typetext/", consumes = "text/plain;charset=UTF-8")
+	public String typeText(RequestEntity<String> entity) {
 		try {
-			VZUtils.type("LLIST\n", 250, computer().getKeyboard());
-			Thread.sleep(timeout != null ? timeout : 5000);
+			String text2Type = entity.getBody();
+			VZUtils.type(text2Type, 250, computer().getKeyboard());
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.warn("Warnung: Thread-Wartezeit wurde unterbrochen:", e);
+		} catch (Exception e) {
+			log.error("Fehler beim Einspielen des HEX-Dumps", e);
+			return "Fehler beim Einspielen des HEX-Dumps: " + e.getMessage();
 		}
-
-		List<String> lines = computer().flushPrinter();
-		return lines.stream().collect(Collectors.joining("\n"));
+		return "Test getippt.";
 	}
 
 	@RequestMapping(method = RequestMethod.GET, path = "/vz200/tape")
