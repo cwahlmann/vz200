@@ -12,15 +12,12 @@ jobs:
       with:
         node-version: '10.x'
     - uses: actions/checkout@v2
-    - name: Enter App directory
-      run: |
-        pwd
-        cd apps/VZ200-App
-      
+
     - name: Angular Github Actions
       uses: mayur-rawte/github-angular-actions@latest
       
     - name: install dependencies, test
+      working-directory: ./apps/VZ200-App
       run: |
         pwd
         ls
