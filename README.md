@@ -1,6 +1,8 @@
 # VZ200
 Nachbau eines VZ200-Color-Computers (1983)
 
+![Mobile App Test](https://github.com/cwahlmann/vz200/workflows/Mobile%20App%20Test/badge.svg)
+
 ![Prototyp](images/resized/VZ200-komplett-5Zoll-Monitor-TheHunter.jpg "VZ200 - 70%")
 
 * [Design und Druck der Bauteile](#druck)
