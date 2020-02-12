@@ -36,3 +36,11 @@ jobs:
       - name: run unit tests
         working-directory: ./apps/VZ200-App
         run: npm run test-ci
+       
+      - name: run Coverage
+        uses: paambaati/codeclimate-action@v2.4.0
+        env:
+          CC_TEST_REPORTER_ID: <code_climate_reporter_id>
+        with:
+          coverageCommand: npm run coverage
+          debug: true
