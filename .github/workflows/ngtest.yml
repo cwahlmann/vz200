@@ -16,10 +16,12 @@ jobs:
     - name: Angular Github Actions
       uses: mayur-rawte/github-angular-actions@latest
       
-    - name: install dependencies, test
+    - name: install dependencies
       working-directory: ./apps/VZ200-App
       run: |
-        pwd
-        ls
         npm ci
+
+    - name: run unit tests
+      working-directory: ./apps/VZ200-App
+      run: |
         npm test
