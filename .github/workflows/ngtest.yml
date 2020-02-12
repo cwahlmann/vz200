@@ -1,8 +1,8 @@
 name: Mobile App Unit Test
 on: 
-  push
-    paths:
-      - 'apps/VZ200-App/*
+  push:
+   paths:
+   - 'apps/VZ200-App/*'
 
 jobs:
    
@@ -35,4 +35,4 @@ jobs:
 
       - name: run unit tests
         working-directory: ./apps/VZ200-App
-        run: npm run test-ci
+        run: npm run coverage
