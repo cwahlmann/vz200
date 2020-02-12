@@ -1,5 +1,8 @@
-name: Mobile App Test
-on: [push]
+name: Mobile App Unit Test
+on: 
+  push
+    paths:
+      - 'apps/VZ200-App/*
 
 jobs:
    
@@ -13,7 +16,7 @@ jobs:
         id: cache
         uses: actions/cache@v1.1.2
         with: 
-          path: ./node_modules
+          path: ./apps/VZ200-App/node_modules
           key: mobileUnitTests
     
       - name: Setup Node

@@ -9,6 +9,7 @@
     "build": "ng build",
     "test": "ng test",
     "test-ci": "ng test --watch=false --progress false",
+    "coverage": "ng test --watch=false --progress false --codeCoverage=true",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
@@ -44,6 +45,7 @@
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "~8.9.4",
     "codelyzer": "^5.0.0",
+    "handlebars": "~4.5.3",
     "jasmine-core": "~3.4.0",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "~4.1.0",
