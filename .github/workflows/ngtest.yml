@@ -32,4 +32,4 @@ jobs:
 
       - name: run unit tests
         working-directory: ./apps/VZ200-App
-        run: npm test
+        run: npm run test-ci
