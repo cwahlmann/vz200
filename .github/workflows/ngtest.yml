@@ -1,25 +1,38 @@
-name: Mobile App Test
-on: [push]
+name: Mobile App Unit Test
+on: 
+  push:
+   paths:
+   - 'apps/VZ200-App/*'
 
 jobs:
+   
   test:
+    timeout-minutes: 5
     name: Unit Test Test Mobile App
     runs-on: ubuntu-latest
 
     steps:
-    - name: Setup Node
-      uses: actions/setup-node@v1
-      with:
-        node-version: '10.x'
-    - uses: actions/checkout@v2
+      - name: Cache
+        id: cache
+        uses: actions/cache@v1.1.2
+        with: 
+          path: ./apps/VZ200-App/node_modules
+          key: mobileUnitTests
+    
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+      - uses: actions/checkout@v2
 
-    - name: Angular Github Actions
-      uses: mayur-rawte/github-angular-actions@latest
-      
-    - name: install dependencies, test
-      working-directory: ./apps/VZ200-App
-      run: |
-        pwd
-        ls
-        npm ci
-        npm test
+      - name: Angular Github Actions
+        uses: mayur-rawte/github-angular-actions@latest
+
+      - name: install dependencies
+        working-directory: ./apps/VZ200-App
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: run unit tests
+        working-directory: ./apps/VZ200-App
+        run: npm run coverage

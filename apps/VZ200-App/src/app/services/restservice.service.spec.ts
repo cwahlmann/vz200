@@ -3,7 +3,7 @@ import { TestBed, getTestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RESTserviceService } from './restservice.service';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
-fdescribe('RESTserviceService', () => {
+describe('RESTserviceService', () => {
   let service: any;
   let httpMock: HttpTestingController;
   let injector: TestBed;
