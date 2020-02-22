@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jemu.system.vz.VZ;
 import jemu.system.vz.VZTapeDevice;
+import jemu.system.vz.VzDirectory;
+import jemu.system.vz.VzFileInfo;
 import jemu.ui.JemuUi;
 import jemu.util.vz.VZUtils;
 
@@ -31,6 +34,9 @@ public class JemuRestController {
 
 	@Autowired
 	private JemuUi jemuUi;
+
+	@Autowired
+	private VzDirectory vzDirectory;
 
 	private VZ computer() {
 		return (VZ) jemuUi.getComputer();
@@ -63,7 +69,7 @@ public class JemuRestController {
 		return "Daten eingespielt.";
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/vz200/vz", consumes = "application/octet-stream;charset=UTF-8")
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/vz", produces = "application/octet-stream;charset=UTF-8")
 	public void readVz(@RequestParam(defaultValue = "") String range,
 			@RequestParam(defaultValue = "false") Boolean autorun, HttpServletResponse response) {
 		// Set the content type and attachment header.
@@ -77,6 +83,13 @@ public class JemuRestController {
 		} catch (Exception e) {
 			log.error("Fehler beim Schreiben", e);
 		}
+	}
+
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/vz/dir", produces = "application/json;charset=UTF-8")
+	public Set<VzFileInfo> readVzDir(HttpServletResponse response) {
+		// Set the content type and attachment header.
+		response.setContentType("application/json");
+		return vzDirectory.readFileInfos();
 	}
 
 	@RequestMapping(method = RequestMethod.POST, path = "/vz200/bas", consumes = "application/octet-stream;charset=UTF-8")
@@ -100,7 +113,7 @@ public class JemuRestController {
 			return "Fehler beim Exportieren des Basis-Programms: " + e.getMessage();
 		}
 	}
-	
+
 	@RequestMapping(method = RequestMethod.POST, path = "/vz200/asm", consumes = "application/octet-stream;charset=UTF-8")
 	public String loadAsm(@RequestParam(defaultValue = "True") Boolean autorun, RequestEntity<InputStream> entity) {
 		try (InputStream is = entity.getBody()) {

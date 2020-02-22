@@ -78,7 +78,7 @@ public class VZ extends Computer {
 	private final JemuConfiguration config;
 
 	@Autowired
-	public VZ(JemuConfiguration config) {
+	public VZ(JemuConfiguration config, VzDirectory vzDirectory) {
 		super("VZ200");
 		this.config = config;
 		vz200 = true;
@@ -107,7 +107,7 @@ public class VZ extends Computer {
 		this.printer.register(z80);
 		this.tapeDevice = new VZTapeDevice(this);
 		this.tapeDevice.register(z80);
-		this.loaderDevice = new VZLoaderDevice(this);
+		this.loaderDevice = new VZLoaderDevice(this, vzDirectory);
 		this.loaderDevice.register(z80);
 		this.audioDevice = new VzAudioDevice(this);
 		this.audioDevice.register(z80);

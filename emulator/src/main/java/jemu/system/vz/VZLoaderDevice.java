@@ -1,8 +1,16 @@
 package jemu.system.vz;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +33,13 @@ public class VZLoaderDevice extends Device {
 	public static final int COMMAND_SAVE = 0b11111101;
 	public static final int FIRST_WRITABLE_VZ = 100; // 0x60;
 
-	private VZ vz;
+	private final VZ vz;
+	private final VzDirectory vzDirectory;
 
-	public VZLoaderDevice(VZ vz) {
+	public VZLoaderDevice(VZ vz, VzDirectory vzDirectory) {
 		super(DEVICE_ID);
 		this.vz = vz;
+		this.vzDirectory = vzDirectory;
 	}
 
 	public void register(Z80 z80) {
@@ -43,7 +53,7 @@ public class VZLoaderDevice extends Device {
 		int p = port & 0xff;
 		if (p == COMMAND_LOAD) {
 			try {
-				String filename = getFilename(value);
+				String filename = VzDirectory.getFilename(value);
 				log.info("Load program [{}] from [{}]", value, filename);
 				vz.loadBinaryFile(filename);
 				vz.alert(String.format("vz-program #%03d loaded", value));
@@ -59,7 +69,7 @@ public class VZLoaderDevice extends Device {
 				return;
 			}
 			try {
-				String filename = getFilename(value);
+				String filename = VzDirectory.getFilename(value);
 				log.info("Save program [{}] to [{}]", value, filename);
 				vz.saveFile(filename, "", false);
 				vz.alert(String.format("vz-program #%03d saved", value));
@@ -69,11 +79,5 @@ public class VZLoaderDevice extends Device {
 			}
 		}
 
-	}
-
-	private String getFilename(int value) throws IOException {
-		String dir = System.getProperty("user.home") + "/vz200/vz";
-		Files.createDirectories(Paths.get(dir));
-		return dir + "/" + String.format("vzfile_%03d.vz", value);
 	}
 }
