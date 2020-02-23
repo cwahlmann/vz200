@@ -57,14 +57,14 @@ public class VZ extends Computer {
 	protected boolean vz200;
 	protected int cyclesPerSecond = CYCLES_PER_SEC_VZ200;
 	protected Z80 z80; // This is different for VZ-200 and VZ-300
-	protected VZMemory memory = new VZMemory();
+	protected VZMemory memory;
 	protected int cycles = 0;
 	protected int frameFlyback = 0x80;
 	protected int vdcLatch = 0x00;
-	protected SimpleRenderer renderer = new FullRenderer(memory);
-	protected Keyboard keyboard = new Keyboard();
-	protected Disassembler disassembler = new DissZ80();
-	protected SoundPlayer player = SoundUtil.getSoundPlayer(441, false);
+	protected SimpleRenderer renderer;
+	protected Keyboard keyboard;
+	protected Disassembler disassembler;
+	protected SoundPlayer player;
 	protected VzPrinterDevice printer;
 	protected int soundBit = 1;
 	protected int soundUpdate = 0;
@@ -77,12 +77,21 @@ public class VZ extends Computer {
 	protected VZTapeDevice tapeDevice;
 	protected VZLoaderDevice loaderDevice;
 	protected VzAudioDevice audioDevice;
+	protected VzIpDevice ipDevice;
 	private final JemuConfiguration config;
 
 	@Autowired
 	public VZ(JemuConfiguration config, VzDirectory vzDirectory) {
 		super("VZ200");
 		this.config = config;
+
+		this.memory = new VZMemory(true); // with 16k Expansion
+		this.renderer = new FullRenderer(memory);
+
+		keyboard = new Keyboard();
+		disassembler = new DissZ80();
+		player = SoundUtil.getSoundPlayer(441, false);
+
 		vz200 = true;
 		if (vz200) {
 			cyclesPerSecond = CYCLES_PER_SEC_VZ200;
@@ -99,6 +108,7 @@ public class VZ extends Computer {
 		cyclesPerFrame = CYCLES_PER_SCAN * scansPerFrame;
 		cyclesToFlyback = cyclesPerFrame - (CYCLES_PER_SCAN * scansOfFlyback);
 		audioAdd = player.getClockAdder(AUDIO_TEST, cyclesPerSecond - JavaSound.SAMPLE_RATE);
+
 		z80.setMemoryDevice(this);
 		z80.setCycleDevice(this);
 		z80.setInterruptDevice(this);
@@ -113,7 +123,8 @@ public class VZ extends Computer {
 		this.loaderDevice.register(z80);
 		this.audioDevice = new VzAudioDevice(this);
 		this.audioDevice.register(z80);
-		startIpAddressThread();
+		this.ipDevice = new VzIpDevice();
+		this.ipDevice.register(z80);
 	}
 
 	public void initialise() {
@@ -183,12 +194,6 @@ public class VZ extends Computer {
 	}
 
 	public int readByte(int address) {
-		if (address >= 0xfffc && address <= 0xffff) {
-			return ipAddress[address - 0xfffc];
-		}
-		if (address >= 0xd000) {
-			return 0;
-		}
 		if (address >= 0x7000 || address < 0x6800) {
 			return memory.readByte(address);
 		}
@@ -198,26 +203,6 @@ public class VZ extends Computer {
 			return frameFlyback | (keyboard.readByte(address) & 0x7f);
 		}
 		return vdcLatch & 0x40; // cassette input
-	}
-
-	private int[] ipAddress = new int[] { 0, 0, 0, 0 };
-
-	public void startIpAddressThread() {
-		new Thread(() -> {
-			while (!Thread.currentThread().isInterrupted()) {
-				try {
-					byte[] ip = InetAddress.getLocalHost().getAddress();
-					for (int i = 0; i < 4; i++) {
-						ipAddress[i] = (int) (ip[i] & 0xff);
-					}
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-					return;
-				} catch (UnknownHostException e) {
-					log.error("error to determine ip-address of localhost");
-				}
-			}
-		}).start();
 	}
 
 	public int getVdcLatch() {

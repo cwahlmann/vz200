@@ -478,15 +478,16 @@ Reset-Taste: [ESC]
 ## IP-Adresse:
 
 ```basic
-REM 65532 TO 65535
-FOR I=-4 TO -1:PRINT PEEK(i);:NEXT
+OUT 250,0
+FOR I=1 TO 4:PRINT INP(250);:NEXT
 192 168 1 79
 READY
 ```
 
-ADDRESS | IN / OUT | Beschreibung
---------|----------|-------------
-0xfffc-0xffff / 65532-65535 | IN | ungenutzte Speicherregion; aktuelle IP4-Adresse der Rechners
+PORT | IN / OUT | Beschreibung
+-----|----------|-------------
+250  | OUT (n)  | setzt Index für IP-Adressteil auf 0
+250  | IN       | lese IP-Adressteil; erhöhe Index um 1
 
 ## Erweiterung laden / speichern von .vz:
 

@@ -34,7 +34,7 @@ public class VZBasicLoaderTest {
 	private VzBasicLoader loader;
 
 	public VZBasicLoaderTest() {
-		this.memory = new VZMemory();
+		this.memory = new VZMemory(true);
 		this.loader = new VzBasicLoader(memory);
 	}
 
