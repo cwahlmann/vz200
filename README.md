@@ -486,7 +486,7 @@ READY
 
 PORT | IN / OUT | Beschreibung
 -----|----------|-------------
-250  | OUT (n)  | setzt Index für IP-Adressteil auf 0
+250  | OUT (n)  | setzt Index für IP-Adressteil auf n (0-3)
 250  | IN       | lese IP-Adressteil; erhöhe Index um 1
 
 ## Erweiterung laden / speichern von .vz:
