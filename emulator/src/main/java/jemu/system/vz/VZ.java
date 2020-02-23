@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -111,6 +113,7 @@ public class VZ extends Computer {
 		this.loaderDevice.register(z80);
 		this.audioDevice = new VzAudioDevice(this);
 		this.audioDevice.register(z80);
+		startIpAddressThread();
 	}
 
 	public void initialise() {
@@ -123,7 +126,7 @@ public class VZ extends Computer {
 		super.initialise();
 		this.setVolume(config.getInt(Constants.SOUND_VOLUME));
 	}
-	
+
 	@Override
 	public void softReset() {
 		z80.reset();
@@ -145,7 +148,7 @@ public class VZ extends Computer {
 		return z80;
 	}
 
-	public Keyboard getKeyboard(){
+	public Keyboard getKeyboard() {
 		return keyboard;
 	}
 
@@ -180,6 +183,9 @@ public class VZ extends Computer {
 	}
 
 	public int readByte(int address) {
+		if (address >= 0x782d && address <= 0x7830) {
+			return ipAddress[address - 0x782d];
+		}
 		if (address >= 0x7000 || address < 0x6800) {
 			return memory.readByte(address);
 		}
@@ -189,6 +195,26 @@ public class VZ extends Computer {
 			return frameFlyback | (keyboard.readByte(address) & 0x7f);
 		}
 		return vdcLatch & 0x40; // cassette input
+	}
+
+	private int[] ipAddress = new int[] { 0, 0, 0, 0 };
+
+	public void startIpAddressThread() {
+		new Thread(() -> {
+			while (!Thread.currentThread().isInterrupted()) {
+				try {
+					byte[] ip = InetAddress.getLocalHost().getAddress();
+					for (int i = 0; i < 4; i++) {
+						ipAddress[i] = (int) (ip[i] & 0xff);
+					}
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					return;
+				} catch (UnknownHostException e) {
+					log.error("error to determine ip-address of localhost");
+				}
+			}
+		}).start();
 	}
 
 	public int getVdcLatch() {
