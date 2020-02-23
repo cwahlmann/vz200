@@ -486,7 +486,7 @@ READY
 
 ADDRESS | IN / OUT | Beschreibung
 --------|----------|-------------
-0xfffc-0xffff / 65532-65535 | IN | unused variabe region; actual IP4-network address
+0xfffc-0xffff / 65532-65535 | IN | ungenutzte Speicherregion; aktuelle IP4-Adresse der Rechners
 
 ## Erweiterung laden / speichern von .vz:
 
