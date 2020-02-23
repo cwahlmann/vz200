@@ -16,6 +16,12 @@ public class VZMemory extends Memory {
 
 	public VZMemory() {
 		super("VZ Memory");
+		for (int i=0; i < 0x10000; i+=4) {
+			mem[i] = 0;
+			mem[i+1] = 0;
+			mem[i+2] = -1;
+			mem[i+3] = -1;
+		}
 	}
 
 	public int readByte(int address) {

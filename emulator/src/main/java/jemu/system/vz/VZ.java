@@ -183,8 +183,11 @@ public class VZ extends Computer {
 	}
 
 	public int readByte(int address) {
-		if (address >= 0x782d && address <= 0x7830) {
-			return ipAddress[address - 0x782d];
+		if (address >= 0xfffc && address <= 0xffff) {
+			return ipAddress[address - 0xfffc];
+		}
+		if (address >= 0xd000) {
+			return 0;
 		}
 		if (address >= 0x7000 || address < 0x6800) {
 			return memory.readByte(address);

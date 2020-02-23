@@ -475,6 +475,19 @@ server.port = 10101
 
 Reset-Taste: [ESC]
 
+## IP-Adresse:
+
+```basic
+REM 65532 TO 65535
+FOR I=-4 TO -1:PRINT PEEK(i);:NEXT
+192 168 1 79
+READY
+```
+
+ADDRESS | IN / OUT | Beschreibung
+--------|----------|-------------
+0xfffc-0xffff / 65532-65535 | IN | unused variabe region; actual IP4-network address
+
 ## Erweiterung laden / speichern von .vz:
 
 ```basic
