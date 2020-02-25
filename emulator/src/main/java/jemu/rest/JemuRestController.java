@@ -1,19 +1,28 @@
 package jemu.rest;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.websocket.server.PathParam;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,25 +80,16 @@ public class JemuRestController {
 
 	@RequestMapping(method = RequestMethod.GET, path = "/vz200/vz", produces = "application/octet-stream;charset=UTF-8")
 	public void readVz(@RequestParam(defaultValue = "") String range,
-			@RequestParam(defaultValue = "false") Boolean autorun, HttpServletResponse response) {
+			@RequestParam(defaultValue = "false") Boolean autorun, HttpServletResponse response) throws IOException {
 		// Set the content type and attachment header.
 		response.addHeader("Content-disposition", "attachment;filename=myprogram.vz");
 		response.setContentType("application/octet-stream");
 
 		// Copy the stream to the response's output stream.
-		try {
-			computer().saveFile(response.getOutputStream(), range, autorun);
+		try (OutputStream out = response.getOutputStream()){
+			computer().saveFile(out, range, autorun);
 			response.flushBuffer();
-		} catch (Exception e) {
-			log.error("Fehler beim Schreiben", e);
 		}
-	}
-
-	@RequestMapping(method = RequestMethod.GET, path = "/vz200/vz/dir", produces = "application/json;charset=UTF-8")
-	public Set<VzFileInfo> readVzDir(HttpServletResponse response) {
-		// Set the content type and attachment header.
-		response.setContentType("application/json");
-		return vzDirectory.readFileInfos();
 	}
 
 	@RequestMapping(method = RequestMethod.POST, path = "/vz200/bas", consumes = "application/octet-stream;charset=UTF-8")
@@ -276,5 +276,46 @@ public class JemuRestController {
 		return regs.stream().sorted((a, b) -> a.getLeft().compareTo(b.getLeft()))
 				.map(p -> String.format("\"%s\": \"%04X\"", p.getLeft(), p.getRight()))
 				.collect(Collectors.joining(", ", "{", "}"));
+	}
+
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/dir", produces = "application/json;charset=UTF-8")
+	public Set<VzFileInfo> getDir(HttpServletResponse response) {
+		// Set the content type and attachment header.
+		response.setContentType("application/json");
+		return vzDirectory.readFileInfos();
+	}
+
+	@RequestMapping(method = RequestMethod.GET, path = "/vz200/dir/{id}/vz", produces = "application/octet-stream;charset=UTF-8")
+	public void getVzFileFromDir(@PathParam("id") int id, HttpServletResponse response) throws IOException {
+		// Set the content type and attachment header.
+		String filename = String.format(VzDirectory.VZFILE_NAME_FORMAT, id);
+		response.addHeader("Content-disposition", "attachment;filename=" + filename);
+		response.setContentType("application/octet-stream");
+		try (OutputStream out = response.getOutputStream()) {
+			Path path = Paths.get(VzDirectory.getFilename(id));
+			if (!Files.exists(path)) {
+				response.sendError(HttpStatus.NOT_FOUND.value(), "vzfile " + id + " does not exist");
+				return;
+			}
+			Files.copy(path, out);
+			response.flushBuffer();
+		}
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, path = "/vz200/dir/{id}/vz", consumes = "application/octet-stream;charset=UTF-8")
+	public void postVzFileToDir(@PathParam("id") int id, RequestEntity<InputStream> entity) throws IOException {
+		try (InputStream is = entity.getBody()) {
+			Files.copy(is, Paths.get(VzDirectory.getFilename(id)), StandardCopyOption.REPLACE_EXISTING);
+		}
+	}
+
+	@RequestMapping(method = RequestMethod.DELETE, path = "/vz200/dir/{id}/vz")
+	public void deleteVzFileFromDir(@PathParam("id") int id, HttpServletResponse response) throws IOException {
+		Path path = Paths.get(VzDirectory.getFilename(id));
+		if (!Files.exists(path)) {
+			response.sendError(HttpStatus.NOT_FOUND.value(), "vzfile " + id + " does not exist");
+			return;
+		}
+		Files.delete(path);
 	}
 }

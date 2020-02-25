@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -332,7 +333,6 @@ public class VZ extends Computer {
 				if (indexAddress > 0) {
 					String startString = line.substring(0, indexAddress).trim();
 					hfa.address = Integer.valueOf(startString, 16);
-					System.out.println(String.format("Adress = %04x", hfa.address));
 					if (hfa.start < 0) {
 						hfa.start = hfa.address;
 					}
@@ -340,7 +340,6 @@ public class VZ extends Computer {
 				}
 				for (String b : bytes.split(" ")) {
 					memory.writeByte(hfa.address, Integer.valueOf(b.trim(), 16).intValue());
-					System.out.println(b);
 					hfa.address = (hfa.address + 1) & 0xffff;
 				}
 			});
@@ -390,7 +389,7 @@ public class VZ extends Computer {
 		}
 	}
 
-	public void saveFile(OutputStream os, String range, Boolean autorun) throws Exception {
+	public void saveFile(OutputStream os, String range, Boolean autorun) throws IOException {
 		int type = autorun ? 0xf1 : 0xf0;
 		int endOfBasicPointer;
 		int startOfBasicPointer;

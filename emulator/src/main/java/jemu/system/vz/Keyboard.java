@@ -64,14 +64,12 @@ public class Keyboard extends MatrixKeyboard {
   }
 
   protected void keyChanged(int col, int row, int oldValue, int newValue) {
-//    System.out.println("keyChanged: " + col + ", " + row + " " + oldValue + " => " + newValue);
     if (oldValue == 0) {
       if (newValue != 0)
         bytes[row] &= (0x01 << col) ^ 0x3f;
     }
     else if (newValue == 0)
       bytes[row] |= (0x01 << col);
-//    System.out.println("Bytes[" + row + "] = " + Util.hex((byte)bytes[row]));
   }
 
   public int readByte(int address) {
@@ -83,7 +81,6 @@ public class Keyboard extends MatrixKeyboard {
     if ((address & 0x20) == 0) result &= bytes[5];
     if ((address & 0x40) == 0) result &= bytes[6];
     if ((address & 0x80) == 0) result &= bytes[7];
-//    System.out.println("Address: " + Util.hex((short)address) + " = " + Util.hex((byte)result));
     return result;
   }
 
