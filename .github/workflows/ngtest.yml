@@ -35,4 +35,4 @@ jobs:
 
       - name: run unit tests
         working-directory: ./apps/VZ200-App
-        run: npm run coverage
+        run: ng test --watch=false --progress false --code-coverage -- --browsers ChromeHeadless
