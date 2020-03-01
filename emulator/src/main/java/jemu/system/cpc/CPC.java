@@ -118,16 +118,8 @@ public class CPC extends Computer {
     return z80;
   }
 
-  public Dimension getDisplaySize(boolean large) {
-    return gateArray.getDisplaySize(large);
-  }
-  
-  public Dimension getDisplayScale(boolean large) {
-    return large ? Display.SCALE_1x2 : Display.SCALE_1;
-  }
-  
-  public void setLarge(boolean value) {
-    gateArray.setHalfSize(!value);
+  public Dimension getDisplaySize() {
+    return gateArray.getDisplaySize(true);
   }
 
   public Disassembler getDisassembler() {

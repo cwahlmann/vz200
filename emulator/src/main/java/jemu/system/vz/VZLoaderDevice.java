@@ -1,17 +1,5 @@
 package jemu.system.vz;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.stream.StreamSupport;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +43,7 @@ public class VZLoaderDevice extends Device {
 			try {
 				String filename = VzDirectory.getFilename(value);
 				log.info("Load program [{}] from [{}]", value, filename);
-				vz.loadBinaryFile(filename);
+				vz.importVzFileToMemory(filename);
 				vz.alert(String.format("vz-program #%03d loaded", value));
 			} catch (Exception e) {
 				vz.alert(String.format("error loading vz-program #%03d", value));
@@ -71,7 +59,7 @@ public class VZLoaderDevice extends Device {
 			try {
 				String filename = VzDirectory.getFilename(value);
 				log.info("Save program [{}] to [{}]", value, filename);
-				vz.saveFile(filename, "", false);
+				vz.saveVzFile(filename, "", false);
 				vz.alert(String.format("vz-program #%03d saved", value));
 			} catch (Exception e) {
 				vz.alert(String.format("error saving vz-program #%03d", value));

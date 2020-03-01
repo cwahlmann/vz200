@@ -9,9 +9,6 @@
 
 package jemu.system.bbc;
 
-import java.awt.Dimension;
-import java.awt.event.KeyEvent;
-
 import jemu.core.Util;
 import jemu.core.cpu.MC6502;
 import jemu.core.cpu.Processor;
@@ -26,6 +23,9 @@ import jemu.core.device.sound.SN76489;
 import jemu.ui.Display;
 import jemu.util.diss.Disassembler;
 import jemu.util.diss.Diss6502;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
 
 /**
  *
@@ -294,14 +294,9 @@ public class BBC extends Computer {
     video.setPixels(display.getPixels());
   }
 
-  public Dimension getDisplaySize(boolean large) {
-    return large ? FULL_DISPLAY_SIZE : HALF_DISPLAY_SIZE;
-  }
-  
-  public Dimension getDisplayScale(boolean large) {
-    return Display.SCALE_1;
-  }
-  
+  public Dimension getDisplaySize() {
+    return FULL_DISPLAY_SIZE;  }
+
   public void processKeyEvent(KeyEvent e) {
     if (mode == RUN) {
       if (e.getID() == KeyEvent.KEY_PRESSED) {

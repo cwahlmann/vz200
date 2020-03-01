@@ -6,13 +6,8 @@
  */
 package jemu.util.assembler.z80;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,6 +55,12 @@ public class Assembler {
 
 	public String assemble(Path path) {
 		parseFile(path);
+		resolveOpenTokens();
+		return String.format("%04x-%04x", runAddress, maxCursorAddress);
+	}
+
+	public String assemble(String s) {
+		parseStream(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)));
 		resolveOpenTokens();
 		return String.format("%04x-%04x", runAddress, maxCursorAddress);
 	}
@@ -112,11 +113,9 @@ public class Assembler {
 			ZipEntry entry = zis.getNextEntry();
 			while (entry != null) {
 				Path entryPath = tempPath.resolve(entry.getName());
-				System.out.println("======>>>>> Entry: "+entryPath.toString());
 				if (entry.isDirectory()) {
 					Files.createDirectories(entryPath);
 				} else {	
-//					Files.createDirectories(entryPath.getParent());
 					FileOutputStream fos = new FileOutputStream(entryPath.toFile());
 					int len;
 					while ((len = zis.read(buffer)) > 0) {
@@ -318,6 +317,14 @@ public class Assembler {
 
 	public int getCursorAddress() {
 		return cursorAddress;
+	}
+
+	public int getMaxCursorAddress() {
+		return maxCursorAddress;
+	}
+
+	public int getMinCursorAddress() {
+		return minCursorAddress;
 	}
 
 	public void setCursorAddress(int cursorAddress) {

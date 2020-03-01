@@ -118,7 +118,7 @@ public class ZX extends Computer {
     renderer.setDisplay(value);
   }
 
-  public Dimension getDisplaySize(boolean large) {
+  public Dimension getDisplaySize() {
     return new Dimension(320,216);
   }
 

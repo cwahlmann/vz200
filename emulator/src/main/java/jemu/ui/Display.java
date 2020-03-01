@@ -25,8 +25,6 @@ public class Display extends JComponent {
 	public static final int CENTER = 0;
 
 	public static final Dimension SCALE_1 = new Dimension(1, 1);
-	public static final Dimension SCALE_2 = new Dimension(2, 2);
-	public static final Dimension SCALE_1x2 = new Dimension(1, 2);
 
 	protected BufferedImage image;
 	protected WritableRaster raster;

@@ -20,7 +20,6 @@ public class JemuContext {
 		config.setIfMissing(Constants.LAST_WORKING_DIR, System.getProperty("user.home"));
 		config.setIfMissing(Constants.SCREEN_WIDTH, "800");
 		config.setIfMissing(Constants.SCREEN_HEIGHT, "480");
-		config.setIfMissing(Constants.FULLSCREEN, "true");
 		config.setIfMissing(Constants.SOUND_VOLUME, "100");
 		config.setIfMissing(Constants.ENABLE_DOS_ROM, "false");
 		return config;
