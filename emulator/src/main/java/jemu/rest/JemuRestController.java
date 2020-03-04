@@ -50,9 +50,9 @@ public class JemuRestController {
         return computer().getTapeDevice();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/vz200/info", produces = "application/json;charset=UTF-8")
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/version", produces = "application/json;charset=UTF-8")
     public String info() {
-        return Jemu.VERSION;
+        return "{\n\"version\": \""+Jemu.VERSION+"\"\n}";
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/reset")
