@@ -1,5 +1,6 @@
 package jemu.system.vz.export;
 
+import com.google.common.primitives.Chars;
 import jemu.core.device.memory.Memory;
 import jemu.rest.VzSource;
 import org.slf4j.Logger;
@@ -118,16 +119,27 @@ public class VzBasicLoader extends Loader<VzBasicLoader> {
                 int lineNo = memory.readWord(address);
                 address += 2;
                 writer.append(String.format("%d ", lineNo));
+                boolean isString = false;
                 while (address < nextLineAddress - 1) {
                     int b = memory.readByte(address);
                     address++;
                     if (b < 0) {
                         b = b + 256;
                     }
-                    if (b >= 0 && b < TOKEN_OFFSET) {
-                        writer.append((char) b);
+                    if (isString) {
+                        if (b == 0x22 || b == 0x62) {
+                            isString = false;
+                        }
+                        writer.append(Charset.ascToString(b));
                     } else {
-                        writer.append(TOKENS[b - TOKEN_OFFSET]);
+                        if (b >= 0 && b < TOKEN_OFFSET) {
+                            if (b == 0x22 || b == 0x62) {
+                                isString = true;
+                            }
+                            writer.append((char) b);
+                        } else {
+                            writer.append(TOKENS[b - TOKEN_OFFSET]);
+                        }
                     }
                 }
                 address++;
@@ -184,7 +196,15 @@ public class VzBasicLoader extends Loader<VzBasicLoader> {
                     destination.address++;
                 }
             } else {
-                destination.memory.writeByte(destination.address, sourceLine.text.charAt(sourceLine.index));
+                String cc = "" + c;
+                if (Charset.INVERS_PREF.equals(cc) && sourceLine.text.length() >= sourceLine.index + 2) {
+                    cc = sourceLine.text.substring(sourceLine.index , sourceLine.index + 2);
+                    sourceLine.index++;
+                } else if (Charset.ASC_PREF.equals(cc) && sourceLine.text.length() >= sourceLine.index + 3) {
+                    cc = sourceLine.text.substring(sourceLine.index , sourceLine.index + 3);
+                    sourceLine.index += 2;
+                }
+                destination.memory.writeByte(destination.address, Charset.stringToAsc(cc));
                 destination.address++;
             }
             sourceLine.index++;

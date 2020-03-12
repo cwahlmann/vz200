@@ -1,18 +1,16 @@
 package jemu;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import jemu.config.Constants;
 import jemu.config.JemuConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @EnableWebMvc
 @Configuration

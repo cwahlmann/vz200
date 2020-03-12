@@ -1,15 +1,15 @@
 package jemu.rest;
 
+import io.swagger.annotations.ApiOperation;
 import jemu.Jemu;
+import jemu.core.device.memory.Memory;
 import jemu.exception.JemuException;
-import jemu.system.vz.VZ;
-import jemu.system.vz.VZTapeDevice;
-import jemu.system.vz.VzDirectory;
-import jemu.system.vz.VzFileInfo;
+import jemu.system.vz.*;
 import jemu.system.vz.export.Loader;
 import jemu.system.vz.export.StaticLoaderFactory;
 import jemu.ui.JemuUi;
 import jemu.util.vz.VZUtils;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,17 +20,15 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 public class JemuRestController {
@@ -51,30 +49,18 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/version", produces = "application/json;charset=UTF-8")
-    public String info() {
-        return "{\n\"version\": \""+Jemu.VERSION+"\"\n}";
+    @ApiOperation(value = "get version of emulator", response = JemuVersion.class,
+                  produces = "application/json;charset=UTF-8")
+    public JemuVersion getVersion() {
+        return new JemuVersion(Jemu.VERSION);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/reset")
-    public ResponseEntity reset() {
-        jemuUi.softReset();
-        return ResponseEntity.ok().build();
-    }
+    // memory read / write
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/memory/{type}",
-                    consumes = "application/json;charset=UTF-8")
-    public ResponseEntity importVzSource(@PathVariable("type") VzSource.SourceType type, @RequestBody VzSource source) {
-        Loader<?> loader = StaticLoaderFactory.create(type, computer().getMemory()).orElse(null);
-        if (loader == null) {
-            throw new JemuException(String.format("no loader found for source type [%s]", type.name()));
-        }
-        loader.withName(source.getName()).withAutorun(source.isAutorun());
-        loader.importData(source);
-        return ResponseEntity.ok().build();
-    }
-
-    @RequestMapping(method = RequestMethod.GET, path = "/vz200/memory/{type}", produces = "application/json;charset=UTF-8")
-    public VzSource exportVzSource(
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/memory/{type}",
+                    produces = "application/json;charset=UTF-8")
+    @ApiOperation(value = "read data from systems memory", produces = "application/json;charset=UTF-8")
+    public VzSource memoryRead(
             @PathVariable(name = "type") VzSource.SourceType type,
             @RequestParam(name = "from", defaultValue = "", required = false) String from,
             @RequestParam(name = "to", defaultValue = "", required = false) String to,
@@ -94,8 +80,24 @@ public class JemuRestController {
         return loader.exportData().withAutorun(false).withName(name);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/asmzip",
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/memory/{type}",
+                    consumes = "application/json;charset=UTF-8")
+    @ApiOperation(value = "write data to systems memory", consumes = "application/json;charset=UTF-8")
+    public ResponseEntity memoryWrite(@PathVariable("type") VzSource.SourceType type, @RequestBody VzSource source) {
+        Loader<?> loader = StaticLoaderFactory.create(type, computer().getMemory()).orElse(null);
+        if (loader == null) {
+            throw new JemuException(String.format("no loader found for source type [%s]", type.name()));
+        }
+        loader.withName(source.getName()).withAutorun(source.isAutorun());
+        loader.importData(source);
+        return ResponseEntity.ok().build();
+    }
+
+    // TODO: umstellen auf VzSource!
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/memory/asmzip",
                     consumes = "application/octet-stream;charset=UTF-8")
+    @ApiOperation(value = "compile and write zipped assembler data to the systems memory",
+                  produces = "application/json;charset=UTF-8")
     public String loadAsmZip(@RequestParam(defaultValue = "True") Boolean autorun, RequestEntity<InputStream> entity) {
         try (InputStream is = entity.getBody()) {
             return computer().loadAsmZipFile(is, autorun);
@@ -104,14 +106,120 @@ public class JemuRestController {
         }
     }
 
+    // ------------ vz dir read / write
+
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/dir", produces = "application/json;charset=UTF-8")
+    @ApiOperation(value = "read fileinfos of all vz-files in the vz directory",
+                  produces = "application/json;charset=UTF-8")
+    public Set<VzFileInfo> dirGetVzFileInfos(HttpServletResponse response) {
+        // Set the content type and attachment header.
+        response.setContentType("application/json");
+        return vzDirectory.readFileInfos();
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, path = "/vz200/dir/{id}", consumes = "application/json;charset=UTF-8")
+    @ApiOperation(value = "write data as vz-file to the vz directory", consumes = "application/json;charset=UTF-8")
+    public ResponseEntity dirWriteData(@PathVariable("id") int id, @RequestBody VzSource source) throws IOException {
+        Memory memory = new VZMemory(true);
+        Loader<?> loaderFrom = StaticLoaderFactory.create(source.getType(), memory).orElse(null);
+        if (loaderFrom == null) {
+            throw new JemuException(String.format("no loader found for source type [%s]", source.getType().name()));
+        }
+        loaderFrom.withName(source.getName()).withAutorun(source.isAutorun());
+        loaderFrom.importData(source);
+
+        Loader<?> loaderTo = StaticLoaderFactory.create(VzSource.SourceType.vz, memory).orElse(null)
+                                                .withName(source.getName()).withAutorun(source.isAutorun())
+                                                .withStartAddress(loaderFrom.getStartAddress())
+                                                .withEndAddress(loaderFrom.getEndAddress());
+        VzSource vz = loaderTo.exportData();
+
+        try (InputStream is = new ByteArrayInputStream(Base64.getDecoder().decode(vz.getSource()))) {
+            Files.copy(is, Paths.get(VzDirectory.getFilename(id)), StandardCopyOption.REPLACE_EXISTING);
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/dir/{type}/{id}",
+                    produces = "application/json;charset=UTF-8")
+    @ApiOperation(value = "read data from the given vz-file in the vz-directory",
+                  produces = "application/json;charset=UTF-8")
+    public VzSource dirReadData(
+            @PathVariable(name = "type") VzSource.SourceType type,
+            @PathVariable(name = "id") int id, HttpServletResponse response) throws IOException {
+        // Set the content type and attachment header.
+        String filename = String.format(VzDirectory.VZFILE_NAME_FORMAT, id);
+        File file = Paths.get(filename).toFile();
+        if (!file.exists()) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
+
+        VzSource source = new VzSource()
+                .withSource(Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(file)))
+                .withType(VzSource.SourceType.vz);
+
+        Memory memory = new VZMemory(true);
+
+        Loader<?> loaderFrom = StaticLoaderFactory.create(VzSource.SourceType.vz, memory).orElse(null);
+        loaderFrom.importData(source);
+
+        Loader<?> loaderTo = StaticLoaderFactory.create(type, memory).orElse(null);
+        if (loaderTo == null) {
+            throw new JemuException(String.format("no loader found for source type [%s]", type));
+        }
+
+        loaderTo.withName(source.getName()).withAutorun(source.isAutorun())
+                .withStartAddress(loaderFrom.getStartAddress()).withEndAddress(loaderFrom.getEndAddress());
+        return loaderTo.exportData();
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/vz200/dir/{id}")
+    @ApiOperation(value = "delete given vz-file from the vz-directory", produces = "application/json;charset=UTF-8")
+    public void deleteVzFileFromDir(@PathVariable("id") int id, HttpServletResponse response) throws IOException {
+        Path path = Paths.get(VzDirectory.getFilename(id));
+        if (!Files.exists(path)) {
+            response.sendError(HttpStatus.NOT_FOUND.value(), "vzfile " + id + " does not exist");
+            return;
+        }
+        Files.delete(path);
+    }
+
+    // ------------ data conversion
+
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/convert/{fromtype}/{totype}",
+                    consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
+    //@ApiOperation(value = "convert data from one type to another", consumes = "application/json;charset=UTF-8",
+    //            produces = "application/json;charset=UTF-8", response = VzSource.class)
+    public VzSource convertSource(
+            @PathVariable("fromtype") VzSource.SourceType fromtype,
+            @PathVariable("totype") VzSource.SourceType totype, @RequestBody VzSource source) {
+        Memory memory = new VZMemory(true);
+        Loader<?> from = StaticLoaderFactory.create(fromtype, memory).orElse(null);
+        Loader<?> to = StaticLoaderFactory.create(totype, memory).orElse(null);
+        from.importData(source);
+        to.withName(from.getName());
+        to.withAutorun(from.isAutorun());
+        to.withStartAddress(from.getStartAddress());
+        to.withEndAddress(from.getEndAddress());
+        return to.exportData();
+    }
+
+    // ------------ printer
+
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/printer/flush",
                     produces = "application/json;charset=UTF-8")
-    public List<String> flushPrinter() {
+    @ApiOperation(value = "flush the buffered printer output", produces = "application/json;charset=UTF-8",
+                  response = List.class)
+    public List<String> printerFlush() {
         return computer().flushPrinter();
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/typetext/", consumes = "text/plain;charset=UTF-8")
-    public ResponseEntity typeText(RequestEntity<String> entity) {
+    // ------------ keyboard
+
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/keyboard", consumes = "text/plain;charset=UTF-8")
+    @ApiOperation(value = "type some text to the systems keyboard", produces = "application/json;charset=UTF-8")
+    public ResponseEntity keyboardType(RequestEntity<String> entity) {
         try {
             String text2Type = entity.getBody();
             VZUtils.type(text2Type, 250, computer().getKeyboard());
@@ -123,60 +231,110 @@ public class JemuRestController {
         return ResponseEntity.ok().build();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/vz200/tape", produces = "application/json;charset=UTF-8")
-    public String getTapeName() {
-        return tape().getTapeName();
+    // ------------ tapes
+
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/tapes", produces = "application/json;charset=UTF-8")
+    @ApiOperation(value = "get infos about all available tapes", produces = "application/json;charset=UTF-8",
+                  response = List.class)
+    public List<TapeInfo> tapeGetAllInfos() {
+        // TODO
+        return null;
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/tape/{tapename}")
-    public ResponseEntity setTapeName(@PathVariable(name = "tapename") String tapename) {
-        tape().changeTape(tapename);
-        return ResponseEntity.ok().build();
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/tape/{tapename}")
+    @ApiOperation(value = "get infos about the given tape", produces = "application/json;charset=UTF-8",
+                  response = TapeInfo.class)
+    public TapeInfo tapeGetInfo(@PathVariable(name = "tapename") String tapename) {
+        // TODO
+        return null;
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/vz200/tape/slot", produces = "application/json;charset=UTF-8")
-    public int getTapeSlot() {
-        return tape().slot();
+    @RequestMapping(method = RequestMethod.PUT, path = "/vz200/tape/{tapename}")
+    @ApiOperation(value = "create a new tape", produces = "application/json;charset=UTF-8", response = TapeInfo.class)
+    public TapeInfo tapeCreate(@PathVariable(name = "tapename") String tapename) {
+        // TODO
+        return null;
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/tape/slot/{id}")
-    public ResponseEntity setTapeSlot(@PathVariable(name = "id") int id) {
-        tape().slot(id);
-        return ResponseEntity.ok().build();
+    @RequestMapping(method = RequestMethod.DELETE, path = "/vz200/tape/{tapename}")
+    @ApiOperation(value = "delete a tape", produces = "application/json;charset=UTF-8", response = TapeInfo.class)
+    public ResponseEntity tapeDelete(@PathVariable(name = "tapename") String tapename) {
+        // TODO
+        return null;
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/tape/play", produces = "application/json;charset=UTF-8")
-    public int playTape() {
-        tape().play();
-        return tape().slot();
+    // ------------ player control
+
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/player", produces = "application/json;charset=UTF-8")
+    @ApiOperation(value = "get info about the current tape", produces = "application/json;charset=UTF-8",
+                  response = TapeInfo.class)
+    public TapeInfo playerGetInfo() {
+        // TODO
+        return null;
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/tape/record",
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/{tapename}")
+    @ApiOperation(value = "insert tape with the given name", produces = "application/json;charset=UTF-8",
+                  response = TapeInfo.class)
+    public TapeInfo playerInsertTape(@PathVariable(name = "tapename") String tapename) {
+        // TODO
+        return null;
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/play",
                     produces = "application/json;charset=UTF-8")
-    public int recordTape() {
-        tape().record();
-        return tape().slot();
+    @ApiOperation(value = "start playing current tape", produces = "application/json;charset=UTF-8",
+                  response = TapeInfo.class)
+    public TapeInfo playerStartReading() {
+        // TODO
+        return null;
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/tape/stop", produces = "application/json;charset=UTF-8")
-    public int stopType() {
-        tape().stop();
-        return tape().slot();
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/record",
+                    produces = "application/json;charset=UTF-8")
+    @ApiOperation(value = "start recording current tape", produces = "application/json;charset=UTF-8",
+                  response = TapeInfo.class)
+    public TapeInfo playerStartRecording() {
+        // TODO
+        return null;
     }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/reel",
+                    produces = "application/json;charset=UTF-8")
+    @ApiOperation(value = "reel current tape to given position", produces = "application/json;charset=UTF-8",
+                  response = TapeInfo.class)
+    public TapeInfo playerMoveToPosition(int position) {
+        // TODO
+        return null;
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/stop",
+                    produces = "application/json;charset=UTF-8")
+    @ApiOperation(value = "stop playing current tape", produces = "application/json;charset=UTF-8",
+                  response = TapeInfo.class)
+    public TapeInfo playerStop() {
+        // TODO
+        return null;
+    }
+
+    // ------------ sound control
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/sound/{volume}")
-    public ResponseEntity setVolume(@PathVariable(name = "volume") int volume) {
+    ResponseEntity soundSetVolume(@PathVariable(name = "volume") int volume) {
         computer().setVolume(volume);
         return ResponseEntity.ok().build();
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/sound", produces = "application/json;charset=UTF-8")
-    public int getVolume() {
+    int soundGetVolume() {
         return computer().getVolume();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/vz200/registers", produces = "application/json;charset=UTF-8")
-    public Map<String, Integer> getRegisters() {
+    // ------------ cpu control
+
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/cpu/registers",
+                    produces = "application/json;charset=UTF-8")
+    Map<String, Integer> cpuGetRegisters() {
         Map<String, Integer> regs = new HashMap<>();
         String[] names = computer().getProcessor().getRegisterNames();
         for (int i = 0; i < names.length; i++) {
@@ -185,46 +343,10 @@ public class JemuRestController {
         return regs;
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/vz200/dir", produces = "application/json;charset=UTF-8")
-    public Set<VzFileInfo> getDir(HttpServletResponse response) {
-        // Set the content type and attachment header.
-        response.setContentType("application/json");
-        return vzDirectory.readFileInfos();
-    }
-
-    @RequestMapping(method = RequestMethod.GET, path = "/vz200/dir/{id}",
-                    produces = "application/octet-stream;" + "charset=UTF-8")
-    public void getVzFileFromDir(@PathVariable("id") int id, HttpServletResponse response) throws IOException {
-        // Set the content type and attachment header.
-        String filename = String.format(VzDirectory.VZFILE_NAME_FORMAT, id);
-        response.addHeader("Content-disposition", "attachment;filename=" + filename);
-        response.setContentType("application/octet-stream");
-        try (OutputStream out = response.getOutputStream()) {
-            Path path = Paths.get(VzDirectory.getFilename(id));
-            if (!Files.exists(path)) {
-                response.sendError(HttpStatus.NOT_FOUND.value(), "vzfile " + id + " does not exist");
-                return;
-            }
-            Files.copy(path, out);
-            response.flushBuffer();
-        }
-    }
-
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/dir/{id}",
-                    consumes = "application/octet-stream;" + "charset=UTF-8")
-    public void postVzFileToDir(@PathVariable("id") int id, RequestEntity<InputStream> entity) throws IOException {
-        try (InputStream is = entity.getBody()) {
-            Files.copy(is, Paths.get(VzDirectory.getFilename(id)), StandardCopyOption.REPLACE_EXISTING);
-        }
-    }
-
-    @RequestMapping(method = RequestMethod.DELETE, path = "/vz200/dir/{id}")
-    public void deleteVzFileFromDir(@PathVariable("id") int id, HttpServletResponse response) throws IOException {
-        Path path = Paths.get(VzDirectory.getFilename(id));
-        if (!Files.exists(path)) {
-            response.sendError(HttpStatus.NOT_FOUND.value(), "vzfile " + id + " does not exist");
-            return;
-        }
-        Files.delete(path);
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/cpu/reset")
+    @ApiOperation(value = "soft reset the system")
+    ResponseEntity cpuReset() {
+        jemuUi.softReset();
+        return ResponseEntity.ok().build();
     }
 }
