@@ -10,14 +10,12 @@ import jemu.core.device.sound.JavaSound;
 import jemu.core.device.sound.SoundPlayer;
 import jemu.core.device.sound.SoundUtil;
 import jemu.rest.VzSource;
-import jemu.system.vz.export.VzAsmLoader;
-import jemu.system.vz.export.VzBasicLoader;
 import jemu.system.vz.export.VzFileLoader;
-import jemu.system.vz.export.VzHexLoader;
 import jemu.ui.Display;
 import jemu.util.assembler.z80.Assembler;
 import jemu.util.diss.Disassembler;
 import jemu.util.diss.DissZ80;
+import jemu.util.vz.KeyboardController;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -28,9 +26,7 @@ import org.springframework.stereotype.Component;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
 
@@ -80,9 +76,10 @@ public class VZ extends Computer {
     protected VzAudioDevice audioDevice;
     protected VzIpDevice ipDevice;
     private final JemuConfiguration config;
+    private final KeyboardController keyboardController;
 
     @Autowired
-    public VZ(JemuConfiguration config, VzDirectory vzDirectory) {
+    public VZ(JemuConfiguration config, VzDirectory vzDirectory, KeyboardController keyboardController) {
         super("VZ200");
         this.config = config;
 
@@ -92,6 +89,8 @@ public class VZ extends Computer {
         keyboard = new Keyboard();
         disassembler = new DissZ80();
         player = SoundUtil.getSoundPlayer(441, false);
+
+        this.keyboardController = keyboardController.withKeyboard(keyboard);
 
         vz200 = true;
         if (vz200) {
@@ -141,6 +140,7 @@ public class VZ extends Computer {
 
     @Override
     public void softReset() {
+        keyboardController.clearCache();
         z80.reset();
     }
 

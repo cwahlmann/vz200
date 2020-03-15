@@ -2,13 +2,14 @@ package jemu.rest;
 
 import io.swagger.annotations.ApiOperation;
 import jemu.Jemu;
+import jemu.core.cpu.Z80;
 import jemu.core.device.memory.Memory;
 import jemu.exception.JemuException;
 import jemu.system.vz.*;
 import jemu.system.vz.export.Loader;
 import jemu.system.vz.export.StaticLoaderFactory;
 import jemu.ui.JemuUi;
-import jemu.util.vz.VZUtils;
+import jemu.util.vz.KeyboardController;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,9 @@ public class JemuRestController {
         return computer().getTapeDevice();
     }
 
+    @Autowired
+    private KeyboardController keyboardController;
+
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/version", produces = "application/json;charset=UTF-8")
     @ApiOperation(value = "get version of emulator", response = JemuVersion.class,
                   produces = "application/json;charset=UTF-8")
@@ -80,16 +84,20 @@ public class JemuRestController {
         return loader.exportData().withAutorun(false).withName(name);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/memory/{type}",
-                    consumes = "application/json;charset=UTF-8")
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/memory", consumes = "application/json;charset=UTF-8")
     @ApiOperation(value = "write data to systems memory", consumes = "application/json;charset=UTF-8")
-    public ResponseEntity memoryWrite(@PathVariable("type") VzSource.SourceType type, @RequestBody VzSource source) {
-        Loader<?> loader = StaticLoaderFactory.create(type, computer().getMemory()).orElse(null);
+    public ResponseEntity memoryWrite(@RequestBody VzSource source) {
+        Loader<?> loader = StaticLoaderFactory.create(source.getType(), computer().getMemory()).orElse(null);
         if (loader == null) {
-            throw new JemuException(String.format("no loader found for source type [%s]", type.name()));
+            throw new JemuException(String.format("no loader found for source type [%s]", source.getType().name()));
         }
         loader.withName(source.getName()).withAutorun(source.isAutorun());
         loader.importData(source);
+        if (loader.isAutorun() && source.getType() != VzSource.SourceType.basic) {
+            ((Z80) computer().getProcessor()).jp(loader.getStartAddress());
+        } else {
+            this.keyboardType(KeyboardInput.of("run\n"));
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -148,7 +156,7 @@ public class JemuRestController {
             @PathVariable(name = "type") VzSource.SourceType type,
             @PathVariable(name = "id") int id, HttpServletResponse response) throws IOException {
         // Set the content type and attachment header.
-        String filename = String.format(VzDirectory.VZFILE_NAME_FORMAT, id);
+        String filename = String.format(VzDirectory.getFilename(id));
         File file = Paths.get(filename).toFile();
         if (!file.exists()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -191,11 +199,9 @@ public class JemuRestController {
                     consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
     //@ApiOperation(value = "convert data from one type to another", consumes = "application/json;charset=UTF-8",
     //            produces = "application/json;charset=UTF-8", response = VzSource.class)
-    public VzSource convertSource(
-            @PathVariable("fromtype") VzSource.SourceType fromtype,
-            @PathVariable("totype") VzSource.SourceType totype, @RequestBody VzSource source) {
+    public VzSource convertSource(@PathVariable("totype") VzSource.SourceType totype, @RequestBody VzSource source) {
         Memory memory = new VZMemory(true);
-        Loader<?> from = StaticLoaderFactory.create(fromtype, memory).orElse(null);
+        Loader<?> from = StaticLoaderFactory.create(source.getType(), memory).orElse(null);
         Loader<?> to = StaticLoaderFactory.create(totype, memory).orElse(null);
         from.importData(source);
         to.withName(from.getName());
@@ -217,17 +223,18 @@ public class JemuRestController {
 
     // ------------ keyboard
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/keyboard", consumes = "text/plain;charset=UTF-8")
-    @ApiOperation(value = "type some text to the systems keyboard", produces = "application/json;charset=UTF-8")
-    public ResponseEntity keyboardType(RequestEntity<String> entity) {
-        try {
-            String text2Type = entity.getBody();
-            VZUtils.type(text2Type, 250, computer().getKeyboard());
-        } catch (InterruptedException e) {
-            log.warn("Warnung: Thread-Wartezeit wurde unterbrochen:", e);
-        } catch (Exception e) {
-            throw new JemuException("Fehler beim Einspielen des HEX-Dumps", e);
-        }
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/keyboard", consumes = "application/json;charset=UTF-8")
+    @ApiOperation(value = "type some text to the systems keyboard")
+    public ResponseEntity keyboardType(@RequestBody KeyboardInput keyboardInput) {
+        new Thread(() -> {
+            try {
+                keyboardController.type(keyboardInput.getValue());
+            } catch (InterruptedException e) {
+                log.warn("Warnung: Thread-Wartezeit wurde unterbrochen beim Übermitteln an den Keyboard-Controller:", e);
+            } catch (Exception e) {
+                log.error("Fehler beim Übermitteln an den Keyboard-Controller", e);
+            }
+        }).start();
         return ResponseEntity.ok().build();
     }
 
@@ -319,13 +326,13 @@ public class JemuRestController {
 
     // ------------ sound control
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/sound/{volume}")
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/volume/{volume}")
     ResponseEntity soundSetVolume(@PathVariable(name = "volume") int volume) {
         computer().setVolume(volume);
         return ResponseEntity.ok().build();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/vz200/sound", produces = "application/json;charset=UTF-8")
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/volume", produces = "application/json;charset=UTF-8")
     int soundGetVolume() {
         return computer().getVolume();
     }
