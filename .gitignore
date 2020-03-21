@@ -25,3 +25,4 @@ hs_err_pid*
 *.classpath
 emulator/bin/
 3d-model/videos/
+emulator/.idea/
