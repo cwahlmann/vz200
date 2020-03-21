@@ -1,5 +1,6 @@
 package jemu.system.vz;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jemu.core.cpu.Z80;
 import jemu.core.device.Device;
 import jemu.core.device.DeviceMapping;
@@ -7,10 +8,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -29,8 +26,6 @@ public class VZTapeDevice extends Device {
     public static final int COMMAND_STOP = 0x00;
     public static final int COMMAND_PLAY = 0x01;
     public static final int COMMAND_RECORD = 0x10;
-    public static final int QUERY_POS_H = 0x01;
-    public static final int QUERY_POS_L = 0x02;
 
     public static final int OUTPUT_MASK = 0x06;
     public static final int INPUT_MASK = 0x40;
@@ -39,30 +34,33 @@ public class VZTapeDevice extends Device {
     public static final int LATCH = 0x6800;
 
     private int value = 0;
-    private static final int maxCount = Integer.MAX_VALUE - 1;
+    private static final int maxCount = 65535;
     private int count = 1;
-    private Mode mode = Mode.idle;
+    private Mode mode;
 
     private VZ vz;
-    private VZTape tapeSlot;
+    private VzTape tape;
     private String tapeName;
-    private int slot;
+    private boolean unsavedChanges;
+
+    private ObjectMapper mapper = new ObjectMapper();
 
     public VZTapeDevice(VZ vz) {
         super(DEVICE_ID);
         this.vz = vz;
+        mode = Mode.idle;
         reset();
     }
 
     @Override
     public void reset() {
         if (this.mode == Mode.record) {
-            saveSlot();
+            saveTape();
         }
-        this.slot = 0;
         this.tapeName = "default";
-        loadSlot();
         this.mode = Mode.idle;
+        this.unsavedChanges = false;
+        loadTape();
     }
 
     public void register(Z80 z80) {
@@ -70,40 +68,57 @@ public class VZTapeDevice extends Device {
         z80.addOutputDeviceMapping(new DeviceMapping(this, OUT_PORT_MASK, OUT_PORT_TEST));
     }
 
-    private void loadSlot() {
-        // path
-        Path path = getTapePath();
-        if (!path.toFile().exists()) {
-            this.tapeSlot = new VZTape();
-            return;
-        }
-        this.tapeSlot = new VZTape();
-        try (InputStream is = new FileInputStream(path.toFile())) {
-            this.tapeSlot.read(is);
-        } catch (Exception e) {
-            log.error("unable to read tape slot {} at path {}", slot, path.toString());
-        }
-    }
-
-    private void saveSlot() {
-        // path
-        Path path = getTapePath();
-        try (OutputStream os = new FileOutputStream(path.toFile())) {
-            this.tapeSlot.write(os);
-        } catch (Exception e) {
-            log.error("unable to read tape slot {} at path {}", slot, path.toString());
-        }
+    private VzTapeSlot tapeSlot() {
+        return tape.getSlot();
     }
 
     private Path getTapePath() {
-        Path path = Paths.get(System.getProperty("user.home"), "vz200", "tape", tapeName);
+        Path path = Paths.get(System.getProperty("user.home"), "vz200", "tape");
         if (!path.toFile().exists()) {
             path.toFile().mkdirs();
         }
-        return path.resolve(String.format("tape_%05d.data", slot));
+        return path.resolve(tapeName + ".json");
     }
-    // -------- manage output --
 
+    // -------- load / save --
+
+    private void loadTape() {
+        // path
+        Path path = getTapePath();
+        if (!path.toFile().exists()) {
+            this.tape = new VzTape();
+            return;
+        }
+
+        try {
+            this.tape = mapper.readValue(path.toFile(), VzTape.class);
+        } catch (Exception e) {
+            log.error("unable to read tape at path {}", path.toString(), e);
+        }
+
+    }
+
+    private void saveTape() {
+        // path
+        Path path = getTapePath();
+        try {
+            mapper.writeValue(path.toFile(), this.tape);
+        } catch (Exception e) {
+            log.error("unable to read tape at path {}", path.toString());
+        }
+    }
+
+    // -------- manage ports --
+
+    /**
+     * Listens to Ports 0xfe und 0xff
+     * <p>
+     * - Port 0xfe: set state (0 = stop, 1 = read, 2 = write)
+     * - Port 0xff: set slot position
+     *
+     * @param port
+     * @param value
+     */
     @Override
     public void writePort(int port, int value) {
         int p = port & 0xff;
@@ -111,14 +126,14 @@ public class VZTapeDevice extends Device {
             switch (value) {
                 case COMMAND_STOP:
                     stop();
-                    vz.alert(String.format("stopped tape at #%05d", slot));
+                    vz.alert(String.format("stopped tape at #%05d", tape.getPosition()));
                     break;
                 case COMMAND_PLAY:
-                    vz.alert(String.format("play tape at #%05d", slot));
+                    vz.alert(String.format("play tape at #%05d", tape.getPosition()));
                     play();
                     break;
                 case COMMAND_RECORD:
-                    vz.alert(String.format("record tape at #%05d", slot));
+                    vz.alert(String.format("record tape at #%05d", tape.getPosition()));
                     record();
                     break;
                 default:
@@ -126,48 +141,74 @@ public class VZTapeDevice extends Device {
             return;
         }
         vz.alert(String.format("rewind to #%05d", value));
-        slot(value);
+        setPosition(value);
     }
 
+    /**
+     * Listens to Ports 0xfe und 0xff
+     * <p>
+     * - Port 0xfe: return state (0 = stopped, 1 = read, 2 = write)
+     * - Port 0xff: return slot position
+     *
+     * @param port
+     * @return
+     */
     @Override
     public int readPort(int port) {
         int p = port & 0xff;
         if (p == 0xfe) {
-            return slot & 0xff;
+            switch (mode) {
+                case play:
+                    return 1;
+                case record:
+                    return 16;
+                case idle:
+                default:
+                    return 0;
+            }
         }
-        return (slot / 256) & 0xff;
+        return tape.getPosition() & 0xff;
     }
 
-    //
+    // -------- controls --
 
-    public int slot() {
-        return slot;
+    /**
+     * returns current slot position
+     *
+     * @return slot position
+     */
+    public int getPosition() {
+        return tape.getPosition();
     }
 
-    public void slot(int slot) {
+    /**
+     * set slot position
+     *
+     * @param slot
+     */
+    public void setPosition(int slot) {
         stop();
-        this.slot = slot;
+        tape.setPosition(slot);
         log.info("rewind tape to slot {}", slot);
-        loadSlot();
     }
 
-    public VZTapeDevice tapeSlot(VZTape tape) {
-        this.tapeSlot = tape;
-        return this;
-    }
-
-    public VZTape tapeSlot() {
-        return tapeSlot;
-    }
-
+    /**
+     * save current tape and insert another
+     *
+     * @param tapeName
+     */
     public void changeTape(String tapeName) {
         stop();
         log.info("change tape to [{}]", tapeName);
         this.tapeName = tapeName;
-        this.slot = 0;
-        loadSlot();
+        loadTape();
     }
 
+    /**
+     * get name of current tape
+     *
+     * @return
+     */
     public String getTapeName() {
         return this.tapeName;
     }
@@ -177,10 +218,9 @@ public class VZTapeDevice extends Device {
             return;
         }
         this.mode = Mode.idle;
-        saveSlot();
-        slot++;
-        loadSlot();
-        log.info("Stop tape at slot [{}]", slot);
+        saveTape();
+        tape.nextPosition();
+        log.info("Stop tape at slot [{}]", tape.getPosition());
     }
 
     public void play() {
@@ -189,22 +229,30 @@ public class VZTapeDevice extends Device {
         this.countDownTime = 0;
         this.countPause = 15000000;
         this.mode = Mode.play;
-        log.info("Started tape at slot [{}]", slot);
+        log.info("Started tape at slot [{}]", tape.getPosition());
     }
 
     public void record() {
         stop();
-        this.tapeSlot = new VZTape();
+        tapeSlot().clear();
         this.mode = Mode.record;
         this.count = 0;
         this.recordingStarted = false;
-        log.info("Start RECORD for tape at slot [{}]", slot);
+        log.info("Start RECORD for tape at slot [{}]", tape.getPosition());
     }
 
+    // -------- tape emulator --
+
+    /**
+     * processor cycle hook: liest und schreibt das output-Latch, je nach Status des Tape-Devices
+     * <p>
+     * - record: lauscht auf Signale des Tape-Ausgangs; schneidet sie mit und routet sie auf den Lautsprecher
+     * zum Mithören
+     * - read: routet die gespeicherten, mitgeschnittenen Signale auf den Tape-Eingang und auf den Lautsprecher zum
+     * Mithören
+     * - idle: nichts zu tun
+     */
     public void cycle() {
-        if (tapeSlot == null) {
-            return;
-        }
         switch (mode) {
             case record:
                 handleRecord();
@@ -248,7 +296,7 @@ public class VZTapeDevice extends Device {
             this.value = value;
             this.count = 0;
             if (recordingStarted) {
-                tapeSlot.write(Pair.of(upTime, downTime));
+                tapeSlot().write(upTime, downTime);
             }
         }
     }
@@ -261,7 +309,7 @@ public class VZTapeDevice extends Device {
         if (countPause > 0) {
             countPause--;
             if (countPause == 0) {
-                Pair<Integer, Integer> v = tapeSlot.read();
+                Pair<Integer, Integer> v = tapeSlot().read();
                 if (v == null) {
                     stop();
                     return;
@@ -284,7 +332,7 @@ public class VZTapeDevice extends Device {
         if (countDownTime == 0) {
             playDoUp();
 
-            Pair<Integer, Integer> v = tapeSlot.read();
+            Pair<Integer, Integer> v = tapeSlot().read();
             if (v == null) {
                 stop();
                 return;
