@@ -1,19 +1,18 @@
 package jemu.rest;
 
+import jemu.system.vz.VZTapeDevice;
+
 public class TapeInfo {
-    public enum State {
-        stopped, reading, writing
-    }
     private String name;
     private int position;
     private int positionCount;
-    private State state;
+    private VZTapeDevice.Mode mode;
 
-    public TapeInfo(String name, int position, int positionCount, State state) {
+    public TapeInfo(String name, int position, int positionCount, VZTapeDevice.Mode mode) {
         this.name = name;
         this.position = position;
         this.positionCount = positionCount;
-        this.state = state;
+        this.mode = mode;
     }
 
     public String getName() {
@@ -28,7 +27,7 @@ public class TapeInfo {
         return positionCount;
     }
 
-    public State getState() {
-        return state;
+    public VZTapeDevice.Mode getMode() {
+        return mode;
     }
 }

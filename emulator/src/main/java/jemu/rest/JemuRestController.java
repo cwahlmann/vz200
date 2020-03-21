@@ -276,16 +276,19 @@ public class JemuRestController {
     @ApiOperation(value = "get info about the current tape", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
     public TapeInfo playerGetInfo() {
-        // TODO
-        return null;
+        String tapename = computer().getTapeDevice().getTapeName();
+        int position = computer().getTapeDevice().getPosition();
+        int positionCount = computer().getTapeDevice().getPositionSize();
+        VZTapeDevice.Mode mode = computer().getTapeDevice().getMode();
+        return  new TapeInfo(tapename, position, positionCount, mode);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/{tapename}")
     @ApiOperation(value = "insert tape with the given name", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
     public TapeInfo playerInsertTape(@PathVariable(name = "tapename") String tapename) {
-        // TODO
-        return null;
+        computer().getTapeDevice().changeTape(tapename);
+        return playerGetInfo();
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/play",
@@ -293,8 +296,8 @@ public class JemuRestController {
     @ApiOperation(value = "start playing current tape", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
     public TapeInfo playerStartReading() {
-        // TODO
-        return null;
+        computer().getTapeDevice().play();
+        return playerGetInfo();
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/record",
@@ -302,8 +305,8 @@ public class JemuRestController {
     @ApiOperation(value = "start recording current tape", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
     public TapeInfo playerStartRecording() {
-        // TODO
-        return null;
+        computer().getTapeDevice().record();
+        return playerGetInfo();
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/reel",
@@ -311,8 +314,8 @@ public class JemuRestController {
     @ApiOperation(value = "reel current tape to given position", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
     public TapeInfo playerMoveToPosition(int position) {
-        // TODO
-        return null;
+        computer().getTapeDevice().setPosition(position);
+        return playerGetInfo();
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/stop",
@@ -320,8 +323,8 @@ public class JemuRestController {
     @ApiOperation(value = "stop playing current tape", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
     public TapeInfo playerStop() {
-        // TODO
-        return null;
+        computer().getTapeDevice().stop();
+        return playerGetInfo();
     }
 
     // ------------ sound control

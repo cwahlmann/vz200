@@ -172,6 +172,11 @@ public class VZTapeDevice extends Device {
 
     // -------- controls --
 
+
+    public Mode getMode() {
+        return mode;
+    }
+
     /**
      * returns current slot position
      *
@@ -211,6 +216,10 @@ public class VZTapeDevice extends Device {
      */
     public String getTapeName() {
         return this.tapeName;
+    }
+
+    public int getPositionSize() {
+        return tape.getSize();
     }
 
     public void stop() {
