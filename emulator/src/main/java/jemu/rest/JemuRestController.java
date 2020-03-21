@@ -32,6 +32,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @RestController
+@RequestMapping("/api")
 public class JemuRestController {
     private static final Logger log = LoggerFactory.getLogger(JemuRestController.class);
 
@@ -230,7 +231,8 @@ public class JemuRestController {
             try {
                 keyboardController.type(keyboardInput.getValue());
             } catch (InterruptedException e) {
-                log.warn("Warnung: Thread-Wartezeit wurde unterbrochen beim Übermitteln an den Keyboard-Controller:", e);
+                log.warn("Warnung: Thread-Wartezeit wurde unterbrochen beim Übermitteln an den Keyboard-Controller:",
+                         e);
             } catch (Exception e) {
                 log.error("Fehler beim Übermitteln an den Keyboard-Controller", e);
             }
@@ -240,34 +242,32 @@ public class JemuRestController {
 
     // ------------ tapes
 
-    @RequestMapping(method = RequestMethod.GET, path = "/vz200/tapes", produces = "application/json;charset=UTF-8")
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/tape", produces = "application/json;charset=UTF-8")
     @ApiOperation(value = "get infos about all available tapes", produces = "application/json;charset=UTF-8",
                   response = List.class)
     public List<TapeInfo> tapeGetAllInfos() {
-        // TODO
-        return null;
+        return computer().getTapeDevice().readTapeInfos();
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/tape/{tapename}")
     @ApiOperation(value = "get infos about the given tape", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
     public TapeInfo tapeGetInfo(@PathVariable(name = "tapename") String tapename) {
-        // TODO
-        return null;
+        return computer().getTapeDevice().readTapeInfo(tapename);
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/vz200/tape/{tapename}")
     @ApiOperation(value = "create a new tape", produces = "application/json;charset=UTF-8", response = TapeInfo.class)
     public TapeInfo tapeCreate(@PathVariable(name = "tapename") String tapename) {
-        // TODO
-        return null;
+        computer().getTapeDevice().createTape(tapename);
+        return new TapeInfo(tapename, 0, 0, VZTapeDevice.Mode.idle);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/vz200/tape/{tapename}")
-    @ApiOperation(value = "delete a tape", produces = "application/json;charset=UTF-8", response = TapeInfo.class)
+    @ApiOperation(value = "delete a tape")
     public ResponseEntity tapeDelete(@PathVariable(name = "tapename") String tapename) {
-        // TODO
-        return null;
+        computer().getTapeDevice().deleteTape(tapename);
+        return ResponseEntity.ok().build();
     }
 
     // ------------ player control
@@ -278,9 +278,9 @@ public class JemuRestController {
     public TapeInfo playerGetInfo() {
         String tapename = computer().getTapeDevice().getTapeName();
         int position = computer().getTapeDevice().getPosition();
-        int positionCount = computer().getTapeDevice().getPositionSize();
+        int positionCount = computer().getTapeDevice().getSlotsSize();
         VZTapeDevice.Mode mode = computer().getTapeDevice().getMode();
-        return  new TapeInfo(tapename, position, positionCount, mode);
+        return new TapeInfo(tapename, position, positionCount, mode);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/{tapename}")

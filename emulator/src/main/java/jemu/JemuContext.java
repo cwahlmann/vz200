@@ -17,27 +17,27 @@ import java.nio.file.Paths;
 @Import(SpringFoxConfig.class)
 public class JemuContext implements WebMvcConfigurer {
 
-	@Bean
-	public JemuConfiguration jemuConfiguration() {
-		Path propertiesPath = Paths.get(System.getProperty("user.home") + "/.jemu");
-		JemuConfiguration config = new JemuConfiguration(propertiesPath).updateImmediatliy();
-		config.setIfMissing(Constants.LAST_WORKING_DIR, System.getProperty("user.home"));
-		config.setIfMissing(Constants.SCREEN_WIDTH, "800");
-		config.setIfMissing(Constants.SCREEN_HEIGHT, "480");
-		config.setIfMissing(Constants.SOUND_VOLUME, "100");
-		config.setIfMissing(Constants.ENABLE_DOS_ROM, "false");
-		return config;
-	};
+    @Bean
+    public JemuConfiguration jemuConfiguration() {
+        Path propertiesPath = Paths.get(System.getProperty("user.home") + "/.jemu");
+        JemuConfiguration config = new JemuConfiguration(propertiesPath).updateImmediatliy();
+        config.setIfMissing(Constants.LAST_WORKING_DIR, System.getProperty("user.home"));
+        config.setIfMissing(Constants.SCREEN_WIDTH, "800");
+        config.setIfMissing(Constants.SCREEN_HEIGHT, "480");
+        config.setIfMissing(Constants.SOUND_VOLUME, "100");
+        config.setIfMissing(Constants.ENABLE_DOS_ROM, "false");
+        return config;
+    }
+
+    ;
 
 
-	@Override
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		registry.addResourceHandler("swagger-ui.html")
-				.addResourceLocations("classpath:/META-INF/resources/");
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
 
-		registry.addResourceHandler("/webjars/**")
-				.addResourceLocations("classpath:/META-INF/resources/webjars/");
-	}
+        registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
+    }
 
 
 }

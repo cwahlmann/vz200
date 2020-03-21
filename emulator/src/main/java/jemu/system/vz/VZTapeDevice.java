@@ -4,12 +4,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jemu.core.cpu.Z80;
 import jemu.core.device.Device;
 import jemu.core.device.DeviceMapping;
+import jemu.exception.JemuException;
+import jemu.rest.TapeInfo;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class VZTapeDevice extends Device {
     private static final Logger log = LoggerFactory.getLogger(VZTapeDevice.class);
@@ -72,19 +79,11 @@ public class VZTapeDevice extends Device {
         return tape.getSlot();
     }
 
-    private Path getTapePath() {
-        Path path = Paths.get(System.getProperty("user.home"), "vz200", "tape");
-        if (!path.toFile().exists()) {
-            path.toFile().mkdirs();
-        }
-        return path.resolve(tapeName + ".json");
-    }
-
     // -------- load / save --
 
     private void loadTape() {
         // path
-        Path path = getTapePath();
+        Path path = getTapePath(tapeName);
         if (!path.toFile().exists()) {
             this.tape = new VzTape();
             return;
@@ -100,7 +99,7 @@ public class VZTapeDevice extends Device {
 
     private void saveTape() {
         // path
-        Path path = getTapePath();
+        Path path = getTapePath(tapeName);
         try {
             mapper.writeValue(path.toFile(), this.tape);
         } catch (Exception e) {
@@ -172,9 +171,61 @@ public class VZTapeDevice extends Device {
 
     // -------- controls --
 
+    public List<TapeInfo> readTapeInfos() {
+        List<String> tapenames = new ArrayList<>();
+        try {
+            Files.newDirectoryStream(getTapeDir(), "*.json")
+                 .forEach(path -> tapenames.add(path.getFileName().toString()));
+        } catch (IOException e) {
+            throw new JemuException("error reading path directory", e);
+        }
+        return tapenames.stream().filter(name -> name.matches("tape_.+\\.json"))
+                        .map(filename -> filename.substring(5, filename.length() - 5)).map(this::readTapeInfo)
+                        .collect(Collectors.toList());
+    }
+
+    public TapeInfo readTapeInfo(String tapename) {
+        try {
+            Path path = getTapePath(tapename);
+            VzTape tape = mapper.readValue(path.toFile(), VzTape.class);
+            return new TapeInfo(tapename, tape.getPosition(), tape.getSize(), Mode.idle);
+        } catch (Exception e) {
+            throw new JemuException(String.format("error reading tape with name %s", tapename), e);
+        }
+    }
+
+    public VzTape createTape(String tapename) {
+        VzTape tape = new VzTape();
+        Path path = VZTapeDevice.getTapePath(tapename);
+        try {
+            mapper.writeValue(path.toFile(), tape);
+        } catch (Exception e) {
+            throw new JemuException(String.format("unable to create tape file %s", path.toString()));
+        }
+        return tape;
+    }
+
+    public void deleteTape(String tapename) {
+        Path path = VZTapeDevice.getTapePath(tapename);
+        if (!path.toFile().delete()) {
+            throw new JemuException(String.format("unable to delete tape file %s", path.toString()));
+        }
+    }
 
     public Mode getMode() {
         return mode;
+    }
+
+    public static Path getTapePath(String tapeName) {
+        Path path = getTapeDir();
+        if (!path.toFile().exists()) {
+            path.toFile().mkdirs();
+        }
+        return path.resolve("tape_" + tapeName + ".json");
+    }
+
+    public static Path getTapeDir() {
+        return Paths.get(System.getProperty("user.home"), "vz200", "tape");
     }
 
     /**
@@ -218,7 +269,7 @@ public class VZTapeDevice extends Device {
         return this.tapeName;
     }
 
-    public int getPositionSize() {
+    public int getSlotsSize() {
         return tape.getSize();
     }
 
