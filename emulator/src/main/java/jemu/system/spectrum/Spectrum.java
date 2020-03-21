@@ -98,14 +98,10 @@ public class Spectrum extends Computer {
     return disassembler;
   }
 
-  public Dimension getDisplaySize(boolean large) {
-    return video.getDisplaySize(large);
+  public Dimension getDisplaySize() {
+    return video.getDisplaySize(true);
   }
-  
-  public Dimension getDisplayScale(boolean large) {
-    return large ? Display.SCALE_2 : Display.SCALE_1;
-  }
-  
+
   public void setDisplay(Display value) {
     super.setDisplay(value);
     video.setDisplay(value);

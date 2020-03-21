@@ -475,6 +475,20 @@ server.port = 10101
 
 Reset-Taste: [ESC]
 
+## IP-Adresse:
+
+```basic
+OUT 250,0
+FOR I=1 TO 4:PRINT INP(250);:NEXT
+192 168 1 79
+READY
+```
+
+PORT | IN / OUT | Beschreibung
+-----|----------|-------------
+250  | OUT (n)  | setzt Index für IP-Adressteil auf n (0-3)
+250  | IN       | lese IP-Adressteil; erhöhe Index um 1
+
 ## Erweiterung laden / speichern von .vz:
 
 ```basic
