@@ -175,8 +175,9 @@ public class VZ extends Computer {
         } else if (cycles == cyclesPerFrame) {
             cycles = 0;
             frameFlyback = 0x80;
-            if (frameSkip == 0)
+            if (frameSkip == 0) {
                 renderer.renderScreen(memory);
+            }
             syncProcessor();
         }
         this.tapeDevice.cycle();
@@ -186,8 +187,9 @@ public class VZ extends Computer {
             player.writeMono(soundLevel);
         }
 
-        if (frameSkip == 0)
+        if (frameSkip == 0) {
             renderer.cycle();
+        }
     }
 
     public void setInterrupt(int mask) {
@@ -199,8 +201,8 @@ public class VZ extends Computer {
             return memory.readByte(address);
         }
         int lsb = address & 0xff;
-        if (lsb == 0xfe || lsb == 0xfd || lsb == 0xfb || lsb == 0xf7 || lsb == 0xef || lsb == 0xdf || lsb == 0xbf
-                || lsb == 0x7f) {
+        if (lsb == 0xfe || lsb == 0xfd || lsb == 0xfb || lsb == 0xf7 || lsb == 0xef || lsb == 0xdf || lsb == 0xbf ||
+            lsb == 0x7f) {
             return frameFlyback | (keyboard.readByte(address) & 0x7f);
         }
         return vdcLatch & 0x40; // cassette input
@@ -211,15 +213,14 @@ public class VZ extends Computer {
     }
 
     public int writeByte(int address, int value) {
-        if (address >= 0x7800)
+        if (address >= 0x7800) {
             return memory.writeByte(address, value);
-        else if (address >= 0x7000)
+        } else if (address >= 0x7000) {
             return renderer.setData(memory.writeByte(address, value));
-        else if (address >= 0x6800) {
-
+        } else if (address >= 0x6800) {
             // check sound
-            boolean audiolatch1 = (vdcLatch & 0x20) != 0;
-            boolean audiolatch2 = (vdcLatch & 0x01) != 0;
+            boolean audiolatch1 = (value & 0x20) != 0;
+            boolean audiolatch2 = (value & 0x01) != 0;
             if (audiolatch1 && !audiolatch2) {
                 soundLevel = SOUND_LEVEL;
             } else if (audiolatch2 && !audiolatch1) {
@@ -258,10 +259,11 @@ public class VZ extends Computer {
         } else if (e.getExtendedKeyCode() == 0x010000df) { // ß
             keyCode = KeyEvent.VK_MINUS;
         }
-        if (e.getID() == KeyEvent.KEY_PRESSED)
+        if (e.getID() == KeyEvent.KEY_PRESSED) {
             keyboard.keyPressed(keyCode);
-        else if (e.getID() == KeyEvent.KEY_RELEASED)
+        } else if (e.getID() == KeyEvent.KEY_RELEASED) {
             keyboard.keyReleased(keyCode);
+        }
     }
 
     public void loadVzFile(InputStream is) throws IOException {
@@ -295,11 +297,11 @@ public class VZ extends Computer {
         VzFileLoader loader = new VzFileLoader(memory).withAutorun(autorun);
         if (!StringUtils.isEmpty(range)) {
             loader.withStartAddress(Integer.valueOf(range.split("-")[0], 16))
-                    .withEndAddress(Integer.valueOf(range.split("-")[1], 16));
+                  .withEndAddress(Integer.valueOf(range.split("-")[1], 16));
         }
         VzSource source = loader.exportData();
         os.write(Base64.getDecoder().decode(source.getSource().getBytes(StandardCharsets.UTF_8)));
-   }
+    }
 
     public List<String> flushPrinter() {
         return printer.flush();
