@@ -1,4 +1,4 @@
-package jemu.rest;
+package jemu.rest.dto;
 
 import jemu.system.vz.VZTapeDevice;
 

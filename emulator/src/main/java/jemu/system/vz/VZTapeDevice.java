@@ -5,9 +5,8 @@ import jemu.core.cpu.Z80;
 import jemu.core.device.Device;
 import jemu.core.device.DeviceMapping;
 import jemu.exception.JemuException;
-import jemu.rest.TapeInfo;
+import jemu.rest.dto.TapeInfo;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

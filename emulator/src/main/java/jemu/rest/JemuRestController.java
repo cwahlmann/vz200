@@ -5,6 +5,8 @@ import jemu.Jemu;
 import jemu.core.cpu.Z80;
 import jemu.core.device.memory.Memory;
 import jemu.exception.JemuException;
+import jemu.rest.dto.*;
+import jemu.rest.security.SecurityService;
 import jemu.system.vz.*;
 import jemu.system.vz.export.Loader;
 import jemu.system.vz.export.StaticLoaderFactory;
@@ -20,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -32,15 +35,23 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api")
 public class JemuRestController {
     private static final Logger log = LoggerFactory.getLogger(JemuRestController.class);
 
-    @Autowired
     private JemuUi jemuUi;
+    private VzDirectory vzDirectory;
+    private SecurityService securityService;
+    private KeyboardController keyboardController;
 
     @Autowired
-    private VzDirectory vzDirectory;
+    public JemuRestController(JemuUi jemuUi, VzDirectory vzDirectory, SecurityService securityService, KeyboardController keyboardController) {
+        this.jemuUi = jemuUi;
+        this.vzDirectory = vzDirectory;
+        this.securityService = securityService;
+        this.keyboardController = keyboardController;
+    }
 
     private VZ computer() {
         return (VZ) jemuUi.getComputer();
@@ -50,13 +61,23 @@ public class JemuRestController {
         return computer().getTapeDevice();
     }
 
-    @Autowired
-    private KeyboardController keyboardController;
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/token", produces = "application/json;charset=UTF-8")
+    public Token createToken(HttpServletRequest request) {
+        String ip = request.getRemoteAddr();
+        UUID id = UUID.randomUUID();
+        String token = securityService.createToken(id);
+        int n = securityService.newAuthorizationRequest(ip, id);
+        computer().alert(String.format("OUT(249,%d) TO GRANT ACCESS FOR\n%s", n,
+                                       securityService.getRequest(n).getSplitIp()));
+        return new Token().withValue(token);
+    }
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/version", produces = "application/json;charset=UTF-8")
     @ApiOperation(value = "get version of emulator", response = JemuVersion.class,
                   produces = "application/json;charset=UTF-8")
-    public JemuVersion getVersion() {
+    public JemuVersion getVersion(@RequestHeader String token) {
+        securityService.validateToken(token);
+
         return new JemuVersion(Jemu.VERSION);
     }
 
@@ -69,8 +90,10 @@ public class JemuRestController {
             @PathVariable(name = "type") VzSource.SourceType type,
             @RequestParam(name = "from", defaultValue = "", required = false) String from,
             @RequestParam(name = "to", defaultValue = "", required = false) String to,
-            @RequestParam(name = "name", defaultValue = "DEFAULT", required = false)
-                    String name, HttpServletResponse response) throws IOException {
+            @RequestParam(name = "name", defaultValue = "DEFAULT", required = false) String name,
+            @RequestHeader String token) {
+        securityService.validateToken(token);
+
         Loader<?> loader = StaticLoaderFactory.create(type, computer().getMemory()).orElse(null);
         if (loader == null) {
             throw new JemuException(String.format("no loader found for source type [%s]", type.name()));
@@ -87,7 +110,9 @@ public class JemuRestController {
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/memory", consumes = "application/json;charset=UTF-8")
     @ApiOperation(value = "write data to systems memory", consumes = "application/json;charset=UTF-8")
-    public ResponseEntity memoryWrite(@RequestBody VzSource source) {
+    public ResponseEntity memoryWrite(@RequestBody VzSource source, @RequestHeader String token) {
+        securityService.validateToken(token);
+
         Loader<?> loader = StaticLoaderFactory.create(source.getType(), computer().getMemory()).orElse(null);
         if (loader == null) {
             throw new JemuException(String.format("no loader found for source type [%s]", source.getType().name()));
@@ -97,7 +122,7 @@ public class JemuRestController {
         if (loader.isAutorun() && source.getType() != VzSource.SourceType.basic) {
             ((Z80) computer().getProcessor()).jp(loader.getStartAddress());
         } else {
-            this.keyboardType(KeyboardInput.of("run\n"));
+            this.keyboardType(KeyboardInput.of("run\n"), token);
         }
         return ResponseEntity.ok().build();
     }
@@ -107,7 +132,11 @@ public class JemuRestController {
                     consumes = "application/octet-stream;charset=UTF-8")
     @ApiOperation(value = "compile and write zipped assembler data to the systems memory",
                   produces = "application/json;charset=UTF-8")
-    public String loadAsmZip(@RequestParam(defaultValue = "True") Boolean autorun, RequestEntity<InputStream> entity) {
+    public String loadAsmZip(
+            @RequestParam(defaultValue = "True") Boolean autorun, RequestEntity<InputStream> entity,
+            @RequestHeader String token) {
+        securityService.validateToken(token);
+
         try (InputStream is = entity.getBody()) {
             return computer().loadAsmZipFile(is, autorun);
         } catch (IOException e) {
@@ -120,7 +149,9 @@ public class JemuRestController {
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/dir", produces = "application/json;charset=UTF-8")
     @ApiOperation(value = "read fileinfos of all vz-files in the vz directory",
                   produces = "application/json;charset=UTF-8")
-    public Set<VzFileInfo> dirGetVzFileInfos(HttpServletResponse response) {
+    public Set<VzFileInfo> dirGetVzFileInfos(@RequestHeader String token, HttpServletResponse response) {
+        securityService.validateToken(token);
+
         // Set the content type and attachment header.
         response.setContentType("application/json");
         return vzDirectory.readFileInfos();
@@ -128,7 +159,10 @@ public class JemuRestController {
 
     @RequestMapping(method = RequestMethod.PUT, path = "/vz200/dir/{id}", consumes = "application/json;charset=UTF-8")
     @ApiOperation(value = "write data as vz-file to the vz directory", consumes = "application/json;charset=UTF-8")
-    public ResponseEntity dirWriteData(@PathVariable("id") int id, @RequestBody VzSource source) throws IOException {
+    public ResponseEntity dirWriteData(
+            @PathVariable("id") int id, @RequestBody VzSource source, @RequestHeader String token) throws IOException {
+        securityService.validateToken(token);
+
         Memory memory = new VZMemory(true);
         Loader<?> loaderFrom = StaticLoaderFactory.create(source.getType(), memory).orElse(null);
         if (loaderFrom == null) {
@@ -155,7 +189,10 @@ public class JemuRestController {
                   produces = "application/json;charset=UTF-8")
     public VzSource dirReadData(
             @PathVariable(name = "type") VzSource.SourceType type,
-            @PathVariable(name = "id") int id, HttpServletResponse response) throws IOException {
+            @PathVariable(name = "id") int id,
+            @RequestHeader String token, HttpServletResponse response) throws IOException {
+        securityService.validateToken(token);
+
         // Set the content type and attachment header.
         String filename = String.format(VzDirectory.getFilename(id));
         File file = Paths.get(filename).toFile();
@@ -185,7 +222,10 @@ public class JemuRestController {
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/vz200/dir/{id}")
     @ApiOperation(value = "delete given vz-file from the vz-directory", produces = "application/json;charset=UTF-8")
-    public void deleteVzFileFromDir(@PathVariable("id") int id, HttpServletResponse response) throws IOException {
+    public void deleteVzFileFromDir(
+            @PathVariable("id") int id, @RequestHeader String token, HttpServletResponse response) throws IOException {
+        securityService.validateToken(token);
+
         Path path = Paths.get(VzDirectory.getFilename(id));
         if (!Files.exists(path)) {
             response.sendError(HttpStatus.NOT_FOUND.value(), "vzfile " + id + " does not exist");
@@ -200,7 +240,11 @@ public class JemuRestController {
                     consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
     //@ApiOperation(value = "convert data from one type to another", consumes = "application/json;charset=UTF-8",
     //            produces = "application/json;charset=UTF-8", response = VzSource.class)
-    public VzSource convertSource(@PathVariable("totype") VzSource.SourceType totype, @RequestBody VzSource source) {
+    public VzSource convertSource(
+            @PathVariable("totype") VzSource.SourceType totype,
+            @RequestBody VzSource source, @RequestHeader String token) {
+        securityService.validateToken(token);
+
         Memory memory = new VZMemory(true);
         Loader<?> from = StaticLoaderFactory.create(source.getType(), memory).orElse(null);
         Loader<?> to = StaticLoaderFactory.create(totype, memory).orElse(null);
@@ -218,7 +262,9 @@ public class JemuRestController {
                     produces = "application/json;charset=UTF-8")
     @ApiOperation(value = "flush the buffered printer output", produces = "application/json;charset=UTF-8",
                   response = List.class)
-    public List<String> printerFlush() {
+    public List<String> printerFlush(@RequestHeader String token) {
+        securityService.validateToken(token);
+
         return computer().flushPrinter();
     }
 
@@ -226,7 +272,9 @@ public class JemuRestController {
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/keyboard", consumes = "application/json;charset=UTF-8")
     @ApiOperation(value = "type some text to the systems keyboard")
-    public ResponseEntity keyboardType(@RequestBody KeyboardInput keyboardInput) {
+    public ResponseEntity keyboardType(@RequestBody KeyboardInput keyboardInput, @RequestHeader String token) {
+        securityService.validateToken(token);
+
         new Thread(() -> {
             try {
                 keyboardController.type(keyboardInput.getValue());
@@ -245,27 +293,35 @@ public class JemuRestController {
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/tape", produces = "application/json;charset=UTF-8")
     @ApiOperation(value = "get infos about all available tapes", produces = "application/json;charset=UTF-8",
                   response = List.class)
-    public List<TapeInfo> tapeGetAllInfos() {
+    public List<TapeInfo> tapeGetAllInfos(@RequestHeader String token) {
+        securityService.validateToken(token);
+
         return computer().getTapeDevice().readTapeInfos();
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/tape/{tapename}")
     @ApiOperation(value = "get infos about the given tape", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
-    public TapeInfo tapeGetInfo(@PathVariable(name = "tapename") String tapename) {
+    public TapeInfo tapeGetInfo(@PathVariable(name = "tapename") String tapename, @RequestHeader String token) {
+        securityService.validateToken(token);
+
         return computer().getTapeDevice().readTapeInfo(tapename);
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/vz200/tape/{tapename}")
     @ApiOperation(value = "create a new tape", produces = "application/json;charset=UTF-8", response = TapeInfo.class)
-    public TapeInfo tapeCreate(@PathVariable(name = "tapename") String tapename) {
+    public TapeInfo tapeCreate(@PathVariable(name = "tapename") String tapename, @RequestHeader String token) {
+        securityService.validateToken(token);
+
         computer().getTapeDevice().createTape(tapename);
         return new TapeInfo(tapename, 0, 0, VZTapeDevice.Mode.idle);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/vz200/tape/{tapename}")
     @ApiOperation(value = "delete a tape")
-    public ResponseEntity tapeDelete(@PathVariable(name = "tapename") String tapename) {
+    public ResponseEntity tapeDelete(@PathVariable(name = "tapename") String tapename, @RequestHeader String token) {
+        securityService.validateToken(token);
+
         computer().getTapeDevice().deleteTape(tapename);
         return ResponseEntity.ok().build();
     }
@@ -275,7 +331,13 @@ public class JemuRestController {
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/player", produces = "application/json;charset=UTF-8")
     @ApiOperation(value = "get info about the current tape", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
-    public TapeInfo playerGetInfo() {
+    public TapeInfo playerGetInfo(@RequestHeader String token) {
+        securityService.validateToken(token);
+
+        return playerGetInfo();
+    }
+
+    private TapeInfo playerGetInfo() {
         String tapename = computer().getTapeDevice().getTapeName();
         int position = computer().getTapeDevice().getPosition();
         int positionCount = computer().getTapeDevice().getSlotsSize();
@@ -286,7 +348,9 @@ public class JemuRestController {
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/{tapename}")
     @ApiOperation(value = "insert tape with the given name", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
-    public TapeInfo playerInsertTape(@PathVariable(name = "tapename") String tapename) {
+    public TapeInfo playerInsertTape(@PathVariable(name = "tapename") String tapename, @RequestHeader String token) {
+        securityService.validateToken(token);
+
         computer().getTapeDevice().changeTape(tapename);
         return playerGetInfo();
     }
@@ -295,7 +359,9 @@ public class JemuRestController {
                     produces = "application/json;charset=UTF-8")
     @ApiOperation(value = "start playing current tape", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
-    public TapeInfo playerStartReading() {
+    public TapeInfo playerStartReading(@RequestHeader String token) {
+        securityService.validateToken(token);
+
         computer().getTapeDevice().play();
         return playerGetInfo();
     }
@@ -304,7 +370,9 @@ public class JemuRestController {
                     produces = "application/json;charset=UTF-8")
     @ApiOperation(value = "start recording current tape", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
-    public TapeInfo playerStartRecording() {
+    public TapeInfo playerStartRecording(@RequestHeader String token) {
+        securityService.validateToken(token);
+
         computer().getTapeDevice().record();
         return playerGetInfo();
     }
@@ -313,7 +381,9 @@ public class JemuRestController {
                     produces = "application/json;charset=UTF-8")
     @ApiOperation(value = "reel current tape to given position", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
-    public TapeInfo playerMoveToPosition(int position) {
+    public TapeInfo playerMoveToPosition(int position, @RequestHeader String token) {
+        securityService.validateToken(token);
+
         computer().getTapeDevice().setPosition(position);
         return playerGetInfo();
     }
@@ -322,7 +392,9 @@ public class JemuRestController {
                     produces = "application/json;charset=UTF-8")
     @ApiOperation(value = "stop playing current tape", produces = "application/json;charset=UTF-8",
                   response = TapeInfo.class)
-    public TapeInfo playerStop() {
+    public TapeInfo playerStop(@RequestHeader String token) {
+        securityService.validateToken(token);
+
         computer().getTapeDevice().stop();
         return playerGetInfo();
     }
@@ -330,13 +402,16 @@ public class JemuRestController {
     // ------------ sound control
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/volume/{volume}")
-    ResponseEntity soundSetVolume(@PathVariable(name = "volume") int volume) {
+    ResponseEntity soundSetVolume(@PathVariable(name = "volume") int volume, @RequestHeader String token) {
+        securityService.validateToken(token);
+
         computer().setVolume(volume);
         return ResponseEntity.ok().build();
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/volume", produces = "application/json;charset=UTF-8")
-    int soundGetVolume() {
+    int soundGetVolume(@RequestHeader String token) {
+        securityService.validateToken(token);
         return computer().getVolume();
     }
 
@@ -344,7 +419,9 @@ public class JemuRestController {
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/cpu/registers",
                     produces = "application/json;charset=UTF-8")
-    Map<String, Integer> cpuGetRegisters() {
+    Map<String, Integer> cpuGetRegisters(@RequestHeader String token) {
+        securityService.validateToken(token);
+
         Map<String, Integer> regs = new HashMap<>();
         String[] names = computer().getProcessor().getRegisterNames();
         for (int i = 0; i < names.length; i++) {
@@ -355,7 +432,9 @@ public class JemuRestController {
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/cpu/reset")
     @ApiOperation(value = "soft reset the system")
-    ResponseEntity cpuReset() {
+    ResponseEntity cpuReset(@RequestHeader String token) {
+        securityService.validateToken(token);
+
         jemuUi.softReset();
         return ResponseEntity.ok().build();
     }

@@ -40,37 +40,4 @@ public class VZBasicLoaderTest {
 		this.loader = new VzBasicLoader(memory);
 	}
 
-	@Test
-	@Ignore
-	public void testImportBasic() throws IOException {
-		try (InputStream is = new ByteArrayInputStream(SOURCE_CODE.getBytes(Charset.defaultCharset()))) {
-//			loader.importData(is);
-		}
-		int start = memory.readWord(VzBasicLoader.BASIC_START);
-		assertEquals(start, VzBasicLoader.ADR);
-		int end = memory.readWord(VzBasicLoader.BASIC_END);
-		// StringBuilder result = new StringBuilder();
-		for (int a = start; a < end; a++) {
-			assertEquals(BYTE_CODE[a - start], memory.readByte(a));
-		}
-	}
-
-	@Test
-	@Ignore
-	public void testExportBasic() throws IOException {
-		int address = VzBasicLoader.ADR;
-		memory.writeWord(VzBasicLoader.BASIC_START, address);
-		for (int b : BYTE_CODE) {
-			memory.writeByte(address, b);
-			address++;
-		}
-		memory.writeWord(VzBasicLoader.BASIC_END, address);
-
-		try (ByteArrayOutputStream out = new ByteArrayOutputStream(256)) {
-//			loader.exportData(out);
-			String exported = new String(out.toByteArray(), Charset.defaultCharset());
-			assertEquals(EXPECTED_CODE, exported);
-		}
-	}
-
 }

@@ -1,7 +1,7 @@
 package jemu.system.vz.export;
 
 import jemu.core.device.memory.Memory;
-import jemu.rest.VzSource;
+import jemu.rest.dto.VzSource;
 
 import java.io.BufferedReader;
 import java.io.StringReader;

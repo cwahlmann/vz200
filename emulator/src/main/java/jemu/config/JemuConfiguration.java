@@ -79,6 +79,17 @@ public class JemuConfiguration {
 		return Integer.parseInt(get(key));
 	}
 
+	public long getLong(String key) {
+		return getLong(key, 0);
+	}
+
+	public long getLong(String key, long defaultValue) {
+		if (!contains(key)) {
+			return defaultValue;
+		}
+		return Long.parseLong(get(key));
+	}
+
 	public boolean getBoolean(String key) {
 		return getBoolean(key, false);
 	}

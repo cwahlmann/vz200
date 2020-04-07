@@ -9,7 +9,8 @@ import jemu.core.device.memory.Memory;
 import jemu.core.device.sound.JavaSound;
 import jemu.core.device.sound.SoundPlayer;
 import jemu.core.device.sound.SoundUtil;
-import jemu.rest.VzSource;
+import jemu.rest.dto.VzSource;
+import jemu.rest.security.SecurityService;
 import jemu.system.vz.export.VzFileLoader;
 import jemu.ui.Display;
 import jemu.util.assembler.z80.Assembler;
@@ -75,13 +76,18 @@ public class VZ extends Computer {
     protected VZLoaderDevice loaderDevice;
     protected VzAudioDevice audioDevice;
     protected VzIpDevice ipDevice;
+    private SecurityDevice securityDevice;
     private final JemuConfiguration config;
     private final KeyboardController keyboardController;
+    private final SecurityService securityService;
 
     @Autowired
-    public VZ(JemuConfiguration config, VzDirectory vzDirectory, KeyboardController keyboardController) {
+    public VZ(JemuConfiguration config, VzDirectory vzDirectory, KeyboardController keyboardController,
+              SecurityService securityService) {
         super("VZ200");
         this.config = config;
+
+        this.securityService = securityService;
 
         this.memory = new VZMemory(true); // with 16k Expansion
         this.renderer = new FullRenderer(memory);
@@ -125,6 +131,8 @@ public class VZ extends Computer {
         this.audioDevice.register(z80);
         this.ipDevice = new VzIpDevice();
         this.ipDevice.register(z80);
+        this.securityDevice = new SecurityDevice(this, securityService);
+        this.securityDevice.register(z80);
     }
 
     public void initialise() {
@@ -331,10 +339,15 @@ public class VZ extends Computer {
     }
 
     public void alert(String s) {
-        for (int i = 0; i < 32; i++) {
-            writeByte(0x71e0 + i, 0x60);
+        String[] lines = s.split("\n");
+        for (int l = 0; l < lines.length; l++) {
+            int y = 16 - lines.length + l;
+            String line = lines[l];
+            for (int i = 0; i < 32; i++) {
+                writeByte(0x7000 + y * 32 + i, 0x60);
+            }
+            printAt(16 - line.length() / 2, y, line, true);
         }
-        printAt(16 - s.length() / 2, 15, s, true);
     }
 
     public void printAt(int x, int y, String s, boolean inverse) {
