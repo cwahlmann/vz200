@@ -3,6 +3,16 @@ package jemu.system.vz.export;
 import jemu.core.device.memory.Memory;
 import jemu.rest.dto.VzSource;
 
+/**
+ * This file is part of JemuVz200, an enhanced VZ200 emulator,
+ * based on the works of Richard Wilson (2002) - see http://jemu.winape.net
+ * <p>
+ * The software is open source by the conditions of the GNU General Public Licence 3.0. See the copy of the GPL 3.0
+ * (gpl-3.0.txt) you received with this software.
+ *
+ * @author Christian Wahlmann
+ */
+
 public abstract class Loader<T extends Loader> {
     public static final int ADR = 0x7ae9;
     public static final int BASIC_START = 0x78a4;
