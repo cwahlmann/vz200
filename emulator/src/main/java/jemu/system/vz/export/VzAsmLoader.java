@@ -1,7 +1,7 @@
 package jemu.system.vz.export;
 
 import jemu.core.device.memory.Memory;
-import jemu.rest.VzSource;
+import jemu.rest.dto.VzSource;
 import jemu.util.assembler.z80.Assembler;
 import jemu.util.diss.DissZ80;
 

@@ -1,8 +1,7 @@
 package jemu.system.vz.export;
 
-import com.google.common.primitives.Chars;
 import jemu.core.device.memory.Memory;
-import jemu.rest.VzSource;
+import jemu.rest.dto.VzSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

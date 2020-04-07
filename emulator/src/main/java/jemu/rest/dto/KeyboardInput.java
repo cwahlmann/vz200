@@ -1,4 +1,4 @@
-package jemu.rest;
+package jemu.rest.dto;
 
 public class KeyboardInput {
     private String value;

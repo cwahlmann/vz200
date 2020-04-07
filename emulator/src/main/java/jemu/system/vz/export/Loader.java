@@ -1,9 +1,7 @@
 package jemu.system.vz.export;
 
 import jemu.core.device.memory.Memory;
-import jemu.rest.VzSource;
-
-import java.io.IOException;
+import jemu.rest.dto.VzSource;
 
 public abstract class Loader<T extends Loader> {
     public static final int ADR = 0x7ae9;
