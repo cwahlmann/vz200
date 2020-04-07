@@ -74,5 +74,5 @@ task createVZ200Zip(type: Zip) {
         include 'vz200.desktop'
         include 'desktop-wallpaper.png'
     })
-    archiveName 'JemuVZ200.zip'
+    archiveName "JemuVZ200-${version}.zip"
 }

@@ -17,6 +17,16 @@ import jemu.config.Constants;
 import jemu.config.JemuConfiguration;
 import jemu.ui.JemuUi;
 
+/**
+ * This file is part of JemuVz200, an enhanced VZ200 emulator,
+ * based on the works of Richard Wilson (2002) - see http://jemu.winape.net
+ * <p>
+ * The software is open source by the conditions of the GNU General Public Licence 3.0. See the copy of the GPL 3.0
+ * (gpl-3.0.txt) you received with this software.
+ *
+ * @author Christian Wahlmann
+ */
+
 @Component
 public class Emulator {
 
@@ -53,10 +63,9 @@ public class Emulator {
         frame.getContentPane().add(jemuUi, BorderLayout.CENTER);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setUndecorated(true);
-        frame.setCursor(java.awt.Toolkit.getDefaultToolkit().createCustomCursor(
-                new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR),
-                new java.awt.Point(0, 0),
-                "NOCURSOR"));
+        frame.setCursor(java.awt.Toolkit.getDefaultToolkit()
+                                        .createCustomCursor(new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR),
+                                                            new java.awt.Point(0, 0), "NOCURSOR"));
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         frame.setLocation((d.width - frame.getSize().width) / 2, (d.height - frame.getSize().height) / 2);
         jemuUi.start();

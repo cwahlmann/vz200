@@ -14,12 +14,15 @@ import java.util.*;
  */
 
 /**
- * This class provides the background processing required to implement timed
- * Events using the Counter class.
+ * This file is part of JemuVz200, an enhanced VZ200 emulator,
+ * based on the works of Richard Wilson (2002) - see http://jemu.winape.net
+ * <p>
+ * The software is open source by the conditions of the GNU General Public Licence 3.0. See the copy of the GPL 3.0
+ * (gpl-3.0.txt) you received with this software.
  *
- * @author Richard Wilson
- * @version 1.0
+ * @author Christian Wahlmann
  */
+
 public class Timer extends Component implements Runnable {
 	private static final long serialVersionUID = 1L;
 
