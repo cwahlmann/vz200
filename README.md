@@ -1,6 +1,8 @@
 # VZ200
 ##Nachbau eines VZ200-Color-Computers (1983)
 
+Mit einem funktionstüchtigen Nachbau des "VZ200 Color Computer" von 1983 lassen wir die Welt der 8-Bit Computer wieder auferstehen.
+
 __Autoren:__ Jürgen Wahlmann & Christian Wahlmann
 
 ![Mobile App Test](https://github.com/cwahlmann/vz200/workflows/Mobile%20App%20Test/badge.svg)
