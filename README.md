@@ -1,5 +1,5 @@
 # VZ200
-##Nachbau eines VZ200-Color-Computers (1983)
+## Nachbau eines VZ200-Color-Computers (1983)
 
 Mit einem funktionstüchtigen Nachbau des "VZ200 Color Computer" von 1983 lassen wir die Welt der 8-Bit Computer wieder auferstehen.
 
