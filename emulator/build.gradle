@@ -66,7 +66,7 @@ task createVZ200Zip(type: Zip) {
     })
     into('/vz200', {
         from 'build/libs'
-        include 'vz200-all.jar'
+        include "vz200-${version}-all.jar"
     })
     into('/', {
         from '.'
