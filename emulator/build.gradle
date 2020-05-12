@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.5.RELEASE")    
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.5.RELEASE")
         classpath 'com.github.jengelman.gradle.plugins:shadow:5.1.0'
     }
 }
@@ -20,51 +20,61 @@ repositories {
 }
 
 dependencies {
-	compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.4.RELEASE'
-	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
-	compile group: 'org.apache.commons', name: 'commons-text', version: '1.6'
-	compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.5.RELEASE'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
+    compile group: 'org.apache.commons', name: 'commons-text', version: '1.6'
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+    compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
 
-	testCompile 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
-	testCompile 'org.junit.jupiter:junit-jupiter-api:5.4.2'
-	testCompile 'org.junit.platform:junit-platform-launcher:1.4.2'
+    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+    testCompile 'org.junit.platform:junit-platform-launcher:1.4.2'
+    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
 
-	jar {
-	    manifest {
-	        attributes 'Main-Class': 'jemu.Jemu'
-	    }
-	}
+    jar {
+        manifest {
+            attributes 'Main-Class': 'jemu.Jemu'
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
 }
 
 task createVZ200Zip(type: Zip) {
-	dependsOn shadowJar
-	group = 'build'
-	description = "build and pack the VZ200-Emulator and all neccessary files into one ZIP-File"
-	
-	into ('/vz200/system/vz/rom', { 
-   		from 'system/vz/rom'
-	   	include 'README.txt'
-	   	include 'VZ.CHR'
-	   	include 'VZBAS12.ROM'
-	})
-	into ('/vz200/tape', { 
-   		from 'tape'
-	   	include 'README.txt'
-   		include 'default/README.txt'
-	})
-	into ('/vz200/vz', { 
-   		from 'vz'
-	   	include 'README.txt'
-	})
-   	into ('/vz200', { 
-   		from 'build/libs'
-	   	include 'vz200-all.jar'
-	})
-	into ('/', {
-	   	from '.'
-	   	include 'vz200.sh'
-	   	include 'vz200.desktop'
-	   	include 'desktop-wallpaper.png'
-	})
-	archiveName 'JemuVZ200.zip'
+    dependsOn shadowJar
+    group = 'build'
+    description = "build and pack the VZ200-Emulator and all neccessary files into one ZIP-File"
+
+    into('/vz200/system/vz/rom', {
+        from 'system/vz/rom'
+        include 'README.txt'
+        include 'VZ.CHR'
+        include 'VZBAS12.ROM'
+    })
+    into('/vz200/tape', {
+        from 'tape'
+        include 'README.txt'
+        include 'default/README.txt'
+    })
+    into('/vz200/vz', {
+        from 'vz'
+        include 'README.txt'
+    })
+    into('/vz200', {
+        from 'build/libs'
+        include "vz200-${version}-all.jar"
+    })
+    into('/', {
+        from '.'
+        include 'vz200.sh'
+        include 'vz200.desktop'
+        include 'desktop-wallpaper.png'
+        include 'gpl-3.0.txt'
+        include 'README.txt'
+    })
+    archiveName "JemuVZ200-${version}.zip"
 }

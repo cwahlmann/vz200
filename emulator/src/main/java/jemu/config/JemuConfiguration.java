@@ -8,6 +8,16 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This file is part of JemuVz200, an enhanced VZ200 emulator,
+ * based on the works of Richard Wilson (2002) - see http://jemu.winape.net
+ * <p>
+ * The software is open source by the conditions of the GNU General Public Licence 3.0. See the copy of the GPL 3.0
+ * (gpl-3.0.txt) you received with this software.
+ *
+ * @author Christian Wahlmann
+ */
+
 public class JemuConfiguration {
 	private final static Logger log = LoggerFactory.getLogger(JemuConfiguration.class);
 
@@ -77,6 +87,17 @@ public class JemuConfiguration {
 			return defaultValue;
 		}
 		return Integer.parseInt(get(key));
+	}
+
+	public long getLong(String key) {
+		return getLong(key, 0);
+	}
+
+	public long getLong(String key, long defaultValue) {
+		if (!contains(key)) {
+			return defaultValue;
+		}
+		return Long.parseLong(get(key));
 	}
 
 	public boolean getBoolean(String key) {

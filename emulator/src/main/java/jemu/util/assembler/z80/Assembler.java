@@ -6,13 +6,8 @@
  */
 package jemu.util.assembler.z80;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,9 +32,15 @@ import jemu.core.device.memory.Memory;
 import jemu.util.assembler.z80.Constants.StatementToken;
 
 /**
+ * This file is part of JemuVz200, an enhanced VZ200 emulator,
+ * based on the works of Richard Wilson (2002) - see http://jemu.winape.net
+ * <p>
+ * The software is open source by the conditions of the GNU General Public Licence 3.0. See the copy of the GPL 3.0
+ * (gpl-3.0.txt) you received with this software.
  *
- * @author christian Wahlmann
+ * @author Christian Wahlmann
  */
+
 public class Assembler {
 	private static final Logger log = LoggerFactory.getLogger(Assembler.class);
 
@@ -60,6 +61,12 @@ public class Assembler {
 
 	public String assemble(Path path) {
 		parseFile(path);
+		resolveOpenTokens();
+		return String.format("%04x-%04x", runAddress, maxCursorAddress);
+	}
+
+	public String assemble(String s) {
+		parseStream(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)));
 		resolveOpenTokens();
 		return String.format("%04x-%04x", runAddress, maxCursorAddress);
 	}
@@ -112,11 +119,9 @@ public class Assembler {
 			ZipEntry entry = zis.getNextEntry();
 			while (entry != null) {
 				Path entryPath = tempPath.resolve(entry.getName());
-				System.out.println("======>>>>> Entry: "+entryPath.toString());
 				if (entry.isDirectory()) {
 					Files.createDirectories(entryPath);
 				} else {	
-//					Files.createDirectories(entryPath.getParent());
 					FileOutputStream fos = new FileOutputStream(entryPath.toFile());
 					int len;
 					while ((len = zis.read(buffer)) > 0) {
@@ -318,6 +323,14 @@ public class Assembler {
 
 	public int getCursorAddress() {
 		return cursorAddress;
+	}
+
+	public int getMaxCursorAddress() {
+		return maxCursorAddress;
+	}
+
+	public int getMinCursorAddress() {
+		return minCursorAddress;
 	}
 
 	public void setCursorAddress(int cursorAddress) {

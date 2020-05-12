@@ -1,308 +1,433 @@
 package jemu.system.vz;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jemu.core.cpu.Z80;
+import jemu.core.device.Device;
+import jemu.core.device.DeviceMapping;
+import jemu.exception.JemuException;
+import jemu.rest.dto.TapeInfo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jemu.core.cpu.Z80;
-import jemu.core.device.Device;
-import jemu.core.device.DeviceMapping;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * This file is part of JemuVz200, an enhanced VZ200 emulator,
+ * based on the works of Richard Wilson (2002) - see http://jemu.winape.net
+ * <p>
+ * The software is open source by the conditions of the GNU General Public Licence 3.0. See the copy of the GPL 3.0
+ * (gpl-3.0.txt) you received with this software.
+ *
+ * @author Christian Wahlmann
+ */
 
 public class VZTapeDevice extends Device {
-	private static final Logger log = LoggerFactory.getLogger(VZTapeDevice.class);
-	private static final String DEVICE_ID = "VZ Tape Device";
+    private static final Logger log = LoggerFactory.getLogger(VZTapeDevice.class);
+    private static final String DEVICE_ID = "VZ Tape Device";
 
-	public static enum Mode {
-		idle, record, play
-	}
+    public static enum Mode {
+        idle, record, play
+    }
 
-	public static final int IN_PORT_MASK = 0xfe;
-	public static final int IN_PORT_TEST = 0xfe;
-	public static final int OUT_PORT_MASK = 0xfe;
-	public static final int OUT_PORT_TEST = 0xfe;
-	public static final int COMMAND_STOP = 0x00;
-	public static final int COMMAND_PLAY = 0x01;
-	public static final int COMMAND_RECORD = 0x10;
-	public static final int QUERY_POS_H = 0x01;
-	public static final int QUERY_POS_L = 0x02;
+    public static final int IN_PORT_MASK = 0xfe;
+    public static final int IN_PORT_TEST = 0xfe;
+    public static final int OUT_PORT_MASK = 0xfe;
+    public static final int OUT_PORT_TEST = 0xfe;
+    public static final int COMMAND_STOP = 0x00;
+    public static final int COMMAND_PLAY = 0x01;
+    public static final int COMMAND_RECORD = 0x10;
 
-	public static final int OUTPUT_MASK = 0x06;
-	public static final int INPUT_MASK = 0x40;
-	public static final int SOUND_MASK = 0x21;
-	public static final int SOUND_MASK_1 = 0x01;
-	public static final int SOUND_MASK_2 = 0x20;
-	public static final int LATCH = 0x6800;
+    public static final int OUTPUT_MASK = 0x06;
+    public static final int INPUT_MASK = 0x40;
+    public static final int SOUND_MASK_1 = 0x01;
+    public static final int SOUND_MASK_2 = 0x20;
+    public static final int LATCH = 0x6800;
 
-	private int value = 0;
-	private static final int maxCount = Integer.MAX_VALUE - 1;
-	private int count = 1;
-	private Mode mode = Mode.idle;
+    private int value = 0;
+    private static final int maxCount = 65535;
+    private int count = 1;
+    private Mode mode;
 
-	private VZ vz;
-	private VZTape tapeSlot;
-	private String tapeName;
-	private int slot;
+    private VZ vz;
+    private VzTape tape;
+    private String tapeName;
+    private boolean unsavedChanges;
 
-	public VZTapeDevice(VZ vz) {
-		super(DEVICE_ID);
-		this.vz = vz;
-		reset();
-	}
+    private ObjectMapper mapper = new ObjectMapper();
 
-	@Override
-	public void reset() {
-		if (this.mode == Mode.record) {
-			saveSlot();
-		}
-		this.slot = 0;
-		this.tapeName = "default";
-		loadSlot();
-		this.mode = Mode.idle;
-	}
-	
-	public void register(Z80 z80) {
-		z80.addInputDeviceMapping(new DeviceMapping(this, IN_PORT_MASK, IN_PORT_TEST));
-		z80.addOutputDeviceMapping(new DeviceMapping(this, OUT_PORT_MASK, OUT_PORT_TEST));
-	}
+    public VZTapeDevice(VZ vz) {
+        super(DEVICE_ID);
+        this.vz = vz;
+        mode = Mode.idle;
+        reset();
+    }
 
-	private void loadSlot() {
-		// path
-		Path path = getTapePath();
-		if (!path.toFile().exists()) {
-			this.tapeSlot = new VZTape();
-			return;
-		}
-		this.tapeSlot = new VZTape();
-		try (InputStream is = new FileInputStream(path.toFile())) {
-			this.tapeSlot.read(is);
-		} catch (Exception e) {
-			log.error("unable to read tape slot {} at path {}", slot, path.toString());
-		}
-	}
-	
-	private void saveSlot() {
-		// path
-		Path path = getTapePath();
-		try (OutputStream os = new FileOutputStream(path.toFile())) {
-			this.tapeSlot.write(os);
-		} catch (Exception e) {
-			log.error("unable to read tape slot {} at path {}", slot, path.toString());
-		}
-	}
+    @Override
+    public void reset() {
+        if (this.mode == Mode.record) {
+            saveTape();
+        }
+        this.tapeName = "default";
+        this.mode = Mode.idle;
+        this.unsavedChanges = false;
+        loadTape();
+    }
 
-	private Path getTapePath() {
-		Path path = Paths.get(System.getProperty("user.home"), "vz200", "tape", tapeName);
-		if (!path.toFile().exists()) {
-			path.toFile().mkdirs();
-		}
-		return path.resolve(String.format("tape_%05d.data", slot));
-	}
-	// -------- manage output --
+    public void register(Z80 z80) {
+        z80.addInputDeviceMapping(new DeviceMapping(this, IN_PORT_MASK, IN_PORT_TEST));
+        z80.addOutputDeviceMapping(new DeviceMapping(this, OUT_PORT_MASK, OUT_PORT_TEST));
+    }
 
-	@Override
-	public void writePort(int port, int value) {
-		int p = port & 0xff;
-		if (p == 0xfe) {
-			switch (value) {
-			case COMMAND_STOP:
-				stop();
-				vz.alert(String.format("stopped tape at #%05d", slot));
-				break;
-			case COMMAND_PLAY:
-				vz.alert(String.format("play tape at #%05d", slot));
-				play();
-				break;
-			case COMMAND_RECORD:
-				vz.alert(String.format("record tape at #%05d", slot));
-				record();
-				break;
-			default:
-			}
-			return;
-		}
-		vz.alert(String.format("rewind to #%05d", value));
-		slot(value);
-	}
+    private VzTapeSlot tapeSlot() {
+        return tape.getSlot();
+    }
 
-	@Override
-	public int readPort(int port) {
-		int p = port & 0xff;
-		if (p == 0xfe) {
-			return slot & 0xff;
-		}
-		return (slot / 256) & 0xff;
-	}
+    // -------- load / save --
 
-	//
+    private void loadTape() {
+        // path
+        Path path = getTapePath(tapeName);
+        if (!path.toFile().exists()) {
+            this.tape = new VzTape();
+            return;
+        }
 
-	public int slot() {
-		return slot;
-	}
-	
-	public void slot(int slot) {
-		stop();
-		this.slot = slot;
-		log.info("rewind tape to slot {}", slot);
-		loadSlot();
-	}
-	
-	public VZTapeDevice tapeSlot(VZTape tape) {
-		this.tapeSlot = tape;
-		return this;
-	}
+        try {
+            this.tape = mapper.readValue(path.toFile(), VzTape.class);
+        } catch (Exception e) {
+            log.error("unable to read tape at path {}", path.toString(), e);
+        }
 
-	public VZTape tapeSlot() {
-		return tapeSlot;
-	}
+    }
 
-	public void changeTape(String tapeName) {
-		stop();
-		log.info("change tape to [{}]", tapeName);
-		this.tapeName = tapeName;
-		this.slot = 0;
-		loadSlot();
-	}
-	
-	public String getTapeName() {
-		return this.tapeName;
-	}
-	
-	public void stop() {
-		if (this.mode == Mode.idle) {
-			return;
-		}
-		this.mode = Mode.idle;
-		saveSlot();
-		slot++;
-		loadSlot();
-		log.info("Stop tape at slot [{}]", slot);
-	}
+    private void saveTape() {
+        // path
+        Path path = getTapePath(tapeName);
+        try {
+            mapper.writeValue(path.toFile(), this.tape);
+        } catch (Exception e) {
+            log.error("unable to read tape at path {}", path.toString());
+        }
+    }
 
-	public void play() {
-		stop();
-		this.countUpTime = 0;
-		this.countDownTime = 0;
-		this.countPause = 15000000;
-		this.mode = Mode.play;
-		log.info("Started tape at slot [{}]", slot);
-	}
+    // -------- manage ports --
 
-	public void record() {
-		stop();
-		this.tapeSlot = new VZTape();
-		this.mode = Mode.record;
-		this.count = 0;
-		this.recordingStarted = false;
-		log.info("Start RECORD for tape at slot [{}]", slot);
-	}
+    /**
+     * Listens to Ports 0xfe und 0xff
+     * <p>
+     * - Port 0xfe: set state (0 = stop, 1 = read, 2 = write)
+     * - Port 0xff: set slot position
+     *
+     * @param port
+     * @param value
+     */
+    @Override
+    public void writePort(int port, int value) {
+        int p = port & 0xff;
+        if (p == 0xfe) {
+            switch (value) {
+                case COMMAND_STOP:
+                    stop();
+                    vz.alert(String.format("stopped tape at #%05d", tape.getPosition()));
+                    break;
+                case COMMAND_PLAY:
+                    vz.alert(String.format("play tape at #%05d", tape.getPosition()));
+                    play();
+                    break;
+                case COMMAND_RECORD:
+                    vz.alert(String.format("record tape at #%05d", tape.getPosition()));
+                    record();
+                    break;
+                default:
+            }
+            return;
+        }
+        vz.alert(String.format("rewind to #%05d", value));
+        setPosition(value);
+    }
 
-	public void cycle() {
-		if (tapeSlot == null) {
-			return;
-		}
-		switch (mode) {
-		case record:
-			handleRecord();
-			return;
-		case play:
-			handlePlay();
-			return;
-		case idle:
-			return;
-		default:
-		}
-	}
+    /**
+     * Listens to Ports 0xfe und 0xff
+     * <p>
+     * - Port 0xfe: return state (0 = stopped, 1 = read, 2 = write)
+     * - Port 0xff: return slot position
+     *
+     * @param port
+     * @return
+     */
+    @Override
+    public int readPort(int port) {
+        int p = port & 0xff;
+        if (p == 0xfe) {
+            switch (mode) {
+                case play:
+                    return 1;
+                case record:
+                    return 16;
+                case idle:
+                default:
+                    return 0;
+            }
+        }
+        return tape.getPosition() & 0xff;
+    }
 
-	private boolean recordingStarted;
-	private int upTime;
-	private int downTime;
+    // -------- controls --
 
-	private void handleRecord() {
-		int l = vz.getVdcLatch();
-		int value = l & OUTPUT_MASK;
+    public List<TapeInfo> readTapeInfos() {
+        List<String> tapenames = new ArrayList<>();
+        try {
+            Files.newDirectoryStream(getTapeDir(), "*.json")
+                 .forEach(path -> tapenames.add(path.getFileName().toString()));
+        } catch (IOException e) {
+            throw new JemuException("error reading path directory", e);
+        }
+        return tapenames.stream().filter(name -> name.matches("tape_.+\\.json"))
+                        .map(filename -> filename.substring(5, filename.length() - 5)).map(this::readTapeInfo)
+                        .collect(Collectors.toList());
+    }
 
-		this.count++;
-		if (this.count >= maxCount) {
-			this.count = 0;
-		}
+    public TapeInfo readTapeInfo(String tapename) {
+        try {
+            Path path = getTapePath(tapename);
+            VzTape tape = mapper.readValue(path.toFile(), VzTape.class);
+            return new TapeInfo(tapename, tape.getPosition(), tape.getSize(), Mode.idle);
+        } catch (Exception e) {
+            throw new JemuException(String.format("error reading tape with name %s", tapename), e);
+        }
+    }
 
-		if (this.value != 0 && value == 0) {
-			// handle UP -> DOWN count
-			vz.writeByte(LATCH, l & (0xff - SOUND_MASK_1) | SOUND_MASK_2);
+    public VzTape createTape(String tapename) {
+        VzTape tape = new VzTape();
+        Path path = VZTapeDevice.getTapePath(tapename);
+        try {
+            mapper.writeValue(path.toFile(), tape);
+        } catch (Exception e) {
+            throw new JemuException(String.format("unable to create tape file %s", path.toString()));
+        }
+        return tape;
+    }
 
-			recordingStarted = true;
-			upTime = count;
-			this.value = value;
-			this.count = 0;
+    public void deleteTape(String tapename) {
+        Path path = VZTapeDevice.getTapePath(tapename);
+        if (!path.toFile().delete()) {
+            throw new JemuException(String.format("unable to delete tape file %s", path.toString()));
+        }
+    }
 
-		} else if (this.value == 0 && value != 0) {
-			// handle DOWN -> UP
-			vz.writeByte(LATCH, l & (0xff - SOUND_MASK_2) | SOUND_MASK_1);
+    public Mode getMode() {
+        return mode;
+    }
 
-			downTime = count;
-			this.value = value;
-			this.count = 0;
-			if (recordingStarted) {
-				tapeSlot.write(Pair.of(upTime, downTime));
-			}
-		}
-	}
+    public static Path getTapePath(String tapeName) {
+        Path path = getTapeDir();
+        if (!path.toFile().exists()) {
+            path.toFile().mkdirs();
+        }
+        return path.resolve("tape_" + tapeName + ".json");
+    }
 
-	private int countUpTime;
-	private int countDownTime;
-	private int countPause;
+    public static Path getTapeDir() {
+        return Paths.get(System.getProperty("user.home"), "vz200", "tape");
+    }
 
-	private void handlePlay() {
-		if (countPause > 0) {
-			countPause--;
-			if (countPause == 0) {
-				Pair<Integer, Integer> v = tapeSlot.read();
-				if (v == null) {
-					stop();
-					return;
-				}
-				countUpTime = v.getLeft();
-				countDownTime = v.getRight();
-				// first up!
-				doUp();
-			}
-			return;
-		}
-		if (countUpTime > 0) {
-			countUpTime--;
-			if (countUpTime == 0) {
-				doDown();
-			}
-			return;
-		}
-		countDownTime--;
-		if (countDownTime == 0) {
-			doUp();
+    /**
+     * returns current slot position
+     *
+     * @return slot position
+     */
+    public int getPosition() {
+        return tape.getPosition();
+    }
 
-			Pair<Integer, Integer> v = tapeSlot.read();
-			if (v == null) {
-				stop();
-				return;
-			}
-			countUpTime = v.getLeft();
-			countDownTime = v.getRight();
-		}
-	}
+    /**
+     * set slot position
+     *
+     * @param slot
+     */
+    public void setPosition(int slot) {
+        stop();
+        tape.setPosition(slot);
+        log.info("rewind tape to slot {}", slot);
+    }
 
-	private void doDown() {
-		int l = vz.getVdcLatch();
-		vz.writeByte(LATCH, ((l | INPUT_MASK) & (0xff - SOUND_MASK_2)) | SOUND_MASK_1);
-	}
+    /**
+     * save current tape and insert another
+     *
+     * @param tapeName
+     */
+    public void changeTape(String tapeName) {
+        stop();
+        log.info("change tape to [{}]", tapeName);
+        this.tapeName = tapeName;
+        loadTape();
+    }
 
-	private void doUp() {
-		int l = vz.getVdcLatch();
-		vz.writeByte(LATCH, (l & (0xff - INPUT_MASK) & (0xff - SOUND_MASK_1)) | SOUND_MASK_2);
-	}
+    /**
+     * get name of current tape
+     *
+     * @return
+     */
+    public String getTapeName() {
+        return this.tapeName;
+    }
+
+    public int getSlotsSize() {
+        return tape.getSize();
+    }
+
+    public void stop() {
+        if (this.mode == Mode.idle) {
+            return;
+        }
+        this.mode = Mode.idle;
+        saveTape();
+        tape.nextPosition();
+        log.info("Stop tape at slot [{}]", tape.getPosition());
+    }
+
+    public void play() {
+        stop();
+        this.countUpTime = 0;
+        this.countDownTime = 0;
+        this.countPause = 15000000;
+        this.mode = Mode.play;
+        log.info("Started tape at slot [{}]", tape.getPosition());
+    }
+
+    public void record() {
+        stop();
+        tapeSlot().clear();
+        this.mode = Mode.record;
+        this.count = 0;
+        this.recordingStarted = false;
+        log.info("Start RECORD for tape at slot [{}]", tape.getPosition());
+    }
+
+    // -------- tape emulator --
+
+    /**
+     * processor cycle hook: liest und schreibt das output-Latch, je nach Status des Tape-Devices
+     * <p>
+     * - record: lauscht auf Signale des Tape-Ausgangs; schneidet sie mit und routet sie auf den Lautsprecher
+     * zum Mithören
+     * - read: routet die gespeicherten, mitgeschnittenen Signale auf den Tape-Eingang und auf den Lautsprecher zum
+     * Mithören
+     * - idle: nichts zu tun
+     */
+    public void cycle() {
+        switch (mode) {
+            case record:
+                handleRecord();
+                return;
+            case play:
+                handlePlay();
+                return;
+            case idle:
+                return;
+            default:
+        }
+    }
+
+    private boolean recordingStarted;
+    private int upTime;
+    private int downTime;
+
+    private void handleRecord() {
+        int l = vz.getVdcLatch();
+        int value = l & OUTPUT_MASK;
+
+        this.count++;
+        if (this.count >= maxCount) {
+            this.count = 0;
+        }
+
+        if (this.value != 0 && value == 0) {
+            // handle UP -> DOWN count
+            recDoDown();
+
+            recordingStarted = true;
+            upTime = count;
+            this.value = value;
+            this.count = 0;
+
+        } else if (this.value == 0 && value != 0) {
+            // handle DOWN -> UP
+            recDoUp();
+
+            downTime = count;
+            this.value = value;
+            this.count = 0;
+            if (recordingStarted) {
+                tapeSlot().write(upTime, downTime);
+            }
+        }
+    }
+
+    private int countUpTime;
+    private int countDownTime;
+    private int countPause;
+
+    private void handlePlay() {
+        if (countPause > 0) {
+            countPause--;
+            if (countPause == 0) {
+                Pair<Integer, Integer> v = tapeSlot().read();
+                if (v == null) {
+                    stop();
+                    return;
+                }
+                countUpTime = v.getLeft();
+                countDownTime = v.getRight();
+                // first up!
+                playDoUp();
+            }
+            return;
+        }
+        if (countUpTime > 0) {
+            countUpTime--;
+            if (countUpTime == 0) {
+                playDoDown();
+            }
+            return;
+        }
+        countDownTime--;
+        if (countDownTime == 0) {
+            playDoUp();
+
+            Pair<Integer, Integer> v = tapeSlot().read();
+            if (v == null) {
+                stop();
+                return;
+            }
+            countUpTime = v.getLeft();
+            countDownTime = v.getRight();
+        }
+    }
+
+    private void playDoDown() {
+        int l = vz.getVdcLatch();
+        vz.writeByte(LATCH, ((l | INPUT_MASK) & (0xff - SOUND_MASK_2)) | SOUND_MASK_1);
+    }
+
+    private void playDoUp() {
+        int l = vz.getVdcLatch();
+        vz.writeByte(LATCH, (l & (0xff - INPUT_MASK) & (0xff - SOUND_MASK_1)) | SOUND_MASK_2);
+    }
+
+    private void recDoDown() {
+        int l = vz.getVdcLatch();
+        vz.writeByte(LATCH, (l & (0xff - OUTPUT_MASK) & (0xff - SOUND_MASK_2)) | SOUND_MASK_1);
+    }
+
+    private void recDoUp() {
+        int l = vz.getVdcLatch();
+        vz.writeByte(LATCH, ((l | OUTPUT_MASK) & (0xff - SOUND_MASK_1)) | SOUND_MASK_2);
+    }
 }

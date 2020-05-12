@@ -1,14 +1,15 @@
 package jemu.core.cpu;
 
 import jemu.core.*;
-import jemu.core.device.*;
 
 /**
- * Title: JEMU Description: The Java Emulation Platform Copyright: Copyright (c)
- * 2002 Company:
- * 
- * @author Richard Wilson
- * @version 1.0
+ * This file is part of JemuVz200, an enhanced VZ200 emulator,
+ * based on the works of Richard Wilson (2002) - see http://jemu.winape.net
+ * <p>
+ * The software is open source by the conditions of the GNU General Public Licence 3.0. See the copy of the GPL 3.0
+ * (gpl-3.0.txt) you received with this software.
+ *
+ * @author Christian Wahlmann
  */
 
 public class Z80 extends Processor {
@@ -162,6 +163,8 @@ public class Z80 extends Processor {
 	// Extra execute time for special or non-constant execution times
 	protected byte[] timeExtra = new byte[2];
 
+	private volatile int requestJp = -1;
+
 	// Parity values
 	protected static int[] PARITY = new int[256];
 	static {
@@ -241,11 +244,15 @@ public class Z80 extends Processor {
 	}
 
 	private volatile boolean resetRequested = false;
-	
+
+	public void jp(int address) {
+		this.requestJp = address;
+	}
+
 	public void reset() {
 		resetRequested = true;
 	}
-	
+
 	private void doReset() {
 		super.reset();
 		for (int i = 0; i < reg.length; i++)
@@ -308,6 +315,10 @@ public class Z80 extends Processor {
 		if (resetRequested) {
 			doReset();
 			resetRequested = false;
+		}
+		if (requestJp >= 0) {
+			setPC(requestJp);
+			requestJp = -1;
 		}
 		if (interruptExecute)
 			doInterrupt();

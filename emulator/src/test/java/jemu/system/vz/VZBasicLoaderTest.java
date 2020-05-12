@@ -8,9 +8,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
+import jdk.nashorn.internal.ir.annotations.Ignore;
+import jemu.system.vz.export.VzBasicLoader;
 import org.junit.jupiter.api.Test;
 
 import jemu.core.device.memory.Memory;
+
+/**
+ * This file is part of JemuVz200, an enhanced VZ200 emulator,
+ * based on the works of Richard Wilson (2002) - see http://jemu.winape.net
+ * <p>
+ * The software is open source by the conditions of the GNU General Public Licence 3.0. See the copy of the GPL 3.0
+ * (gpl-3.0.txt) you received with this software.
+ *
+ * @author Christian Wahlmann
+ */
 
 public class VZBasicLoaderTest {
 
@@ -34,39 +46,8 @@ public class VZBasicLoaderTest {
 	private VzBasicLoader loader;
 
 	public VZBasicLoaderTest() {
-		this.memory = new VZMemory();
+		this.memory = new VZMemory(true);
 		this.loader = new VzBasicLoader(memory);
-	}
-
-	@Test
-	public void testImportBasic() throws IOException {
-		try (InputStream is = new ByteArrayInputStream(SOURCE_CODE.getBytes(Charset.defaultCharset()))) {
-			loader.importBasFile(is);
-		}
-		int start = memory.readWord(VzBasicLoader.BASIC_START);
-		assertEquals(start, VzBasicLoader.ADR);
-		int end = memory.readWord(VzBasicLoader.BASIC_END);
-		// StringBuilder result = new StringBuilder();
-		for (int a = start; a < end; a++) {
-			assertEquals(BYTE_CODE[a - start], memory.readByte(a));
-		}
-	}
-
-	@Test
-	public void testExportBasic() throws IOException {
-		int address = VzBasicLoader.ADR;
-		memory.writeWord(VzBasicLoader.BASIC_START, address);
-		for (int b : BYTE_CODE) {
-			memory.writeByte(address, b);
-			address++;
-		}
-		memory.writeWord(VzBasicLoader.BASIC_END, address);
-
-		try (ByteArrayOutputStream out = new ByteArrayOutputStream(256)) {
-			loader.exportBasFile(out);
-			String exported = new String(out.toByteArray(), Charset.defaultCharset());
-			assertEquals(EXPECTED_CODE, exported);
-		}
 	}
 
 }

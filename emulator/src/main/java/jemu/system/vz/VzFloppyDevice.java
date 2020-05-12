@@ -7,6 +7,16 @@ import jemu.core.cpu.Z80;
 import jemu.core.device.Device;
 import jemu.core.device.DeviceMapping;
 
+/**
+ * This file is part of JemuVz200, an enhanced VZ200 emulator,
+ * based on the works of Richard Wilson (2002) - see http://jemu.winape.net
+ * <p>
+ * The software is open source by the conditions of the GNU General Public Licence 3.0. See the copy of the GPL 3.0
+ * (gpl-3.0.txt) you received with this software.
+ *
+ * @author Christian Wahlmann
+ */
+
 public class VzFloppyDevice extends Device {
 	private static final Logger log = LoggerFactory.getLogger(VzFloppyDevice.class);
 	private static final String DEVICE_ID = "VZ Floppy Device";
@@ -44,7 +54,6 @@ public class VzFloppyDevice extends Device {
 	}
 
 	public void register(Z80 z80) {
-		System.out.println("===>>> register {}...");
 		z80.addOutputDeviceMapping(new DeviceMapping(this, OUT_PORT_MASK, OUT_PORT_TEST));
 		z80.addInputDeviceMapping(new DeviceMapping(this, OUT_PORT_MASK, OUT_PORT_TEST));
 	}
@@ -86,24 +95,19 @@ public class VzFloppyDevice extends Device {
 						poll ? "poll" : "    ",
 						readWriteProtected ? "read writeProtect" : ""
 				);
-//		log.info(result);
 	}
 
 	private void processStepperMotor(int phase) {
 		if (phase == 0) {
 			return;
 		}
-//		System.out.println(
-//				String.format("===>>> STEPPER: %s -> %s", toBinary(actualStepperMotorPhase, 4), toBinary(phase, 4)));
 		if (phase == 1 || phase == 2 || phase == 4 || phase == 8) {
 			int vDown = ((actualStepperMotorPhase & 0x01) * 8) + (actualStepperMotorPhase / 2);
 			int vUp = (actualStepperMotorPhase / 8) + ((actualStepperMotorPhase * 2) & 0x0f);
 			if (vDown == phase && track > 0) {
 				track--;
-//				System.out.println("===>>> NEW TRACK: " + track);
 			} else if (vUp == phase && track < 79) {
 				track++;
-//				System.out.println("===>>> NEW TRACK: " + track);
 			}
 			this.actualStepperMotorPhase = phase;
 		}
@@ -114,7 +118,6 @@ public class VzFloppyDevice extends Device {
 	@Override
 	public int readPort(int port) {
 		int p = port & 0xff;
-//		System.out.println(String.format("===>>> FLOPPY CTRL READ PORT: %02X", p));
 		switch (p) {
 		case PORT_DATA:
 			log(0, false,false, 0, true, false, false);
@@ -127,7 +130,6 @@ public class VzFloppyDevice extends Device {
 			log(0, false,false, 0, false, true, false);
 			poll = !poll;
 			return 0x00;
-//			return poll ? 0x80 : 0x00; // TODO
 		case PORT_WRITE_PROTECT_STATUS:
 			log(0, false,false, 0, false, false, false);
 			return writeProtected[drive] ? 1 : 0;

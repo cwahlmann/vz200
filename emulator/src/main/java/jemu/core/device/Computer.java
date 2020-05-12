@@ -25,11 +25,13 @@ import jemu.ui.Display;
 import jemu.util.diss.Disassembler;
 
 /**
- * Title: JEMU Description: The Java Emulation Platform Copyright: Copyright (c)
- * 2002 Company:
- * 
- * @author
- * @version 1.0
+ * This file is part of JemuVz200, an enhanced VZ200 emulator,
+ * based on the works of Richard Wilson (2002) - see http://jemu.winape.net
+ * <p>
+ * The software is open source by the conditions of the GNU General Public Licence 3.0. See the copy of the GPL 3.0
+ * (gpl-3.0.txt) you received with this software.
+ *
+ * @author Christian Wahlmann
  */
 
 public abstract class Computer extends Device implements Runnable {
@@ -211,57 +213,50 @@ public abstract class Computer extends Device implements Runnable {
 
 	public abstract void processKeyEvent(KeyEvent e);
 
-	public void loadHexFile(String name) throws Exception {
-		loadHexFile(new FileInputStream(name));
+	public void inputHexFile(String name) throws Exception {
+		inputHexFile(new FileInputStream(name));
 	}
 
-	public void loadHexFile(InputStream is) throws Exception {
+	public void inputHexFile(InputStream is) throws Exception {
 	}
 
-	public String loadAsmFile(String name, Boolean autorun) throws Exception {
-		return loadAsmFile(new FileInputStream(name), autorun);
+	public String inputAsmFile(String name, Boolean autorun) throws Exception {
+		return inputAsmFile(new FileInputStream(name), autorun);
 	}
 
-	public String loadAsmFile(InputStream is, Boolean autorun) throws Exception {
+	public String inputAsmFile(InputStream is, Boolean autorun) throws Exception {
 		return "";
 	}
 
-	public String loadAsmZip(InputStream is, Boolean autorun) throws Exception {
+	public String loadAsmZipFile(InputStream is, Boolean autorun) throws Exception {
 		return "";
 	}
 
-	public void loadBinaryFile(String name) throws Exception {
-		loadBinaryFile(new FileInputStream(name));
+	public void importVzFileToMemory(String name) throws Exception {
+		loadVzFile(new FileInputStream(name));
 	}
 
-	public void loadBinaryFile(InputStream is) throws Exception {
+	public void loadVzFile(InputStream is) throws Exception {
 	}
 
-	public void loadSourceFile(String name) throws Exception {
-		loadBinaryFile(new FileInputStream(name));
+	public void inputSourceFile(String name) throws Exception {
+		inputSourceFile(new FileInputStream(name));
 	}
 
-	public void loadSourceFile(InputStream is) throws Exception {
+	public void inputSourceFile(InputStream is) throws Exception {
 	}
 
-	public void saveFile(String name) throws Exception {
+	public void saveVzFile(String name) throws Exception {
 	}
 
-	public void saveFile(OutputStream os, String range, Boolean autorun) throws Exception {
+	public void saveVzFile(OutputStream os, String range, Boolean autorun) throws Exception {
 	}
 
 	public List<String> flushPrinter() {
 		return Collections.emptyList();
 	}
 
-	public abstract Dimension getDisplaySize(boolean large);
-
-	public void setLarge(boolean value) {
-	}
-
-	public Dimension getDisplayScale(boolean large) {
-		return large ? Display.SCALE_2 : Display.SCALE_1;
-	}
+	public abstract Dimension getDisplaySize();
 
 	public void start() {
 		setAction(RUN);

@@ -5,12 +5,13 @@ import java.awt.event.KeyEvent;
 import jemu.core.device.keyboard.MatrixKeyboard;
 
 /**
- * Title:        JEMU
- * Description:  The Java Emulation Platform
- * Copyright:    Copyright (c) 2002
- * Company:
- * @author
- * @version 1.0
+ * This file is part of JemuVz200, an enhanced VZ200 emulator,
+ * based on the works of Richard Wilson (2002) - see http://jemu.winape.net
+ * <p>
+ * The software is open source by the conditions of the GNU General Public Licence 3.0. See the copy of the GPL 3.0
+ * (gpl-3.0.txt) you received with this software.
+ *
+ * @author Christian Wahlmann
  */
 
 public class Keyboard extends MatrixKeyboard {
@@ -64,14 +65,12 @@ public class Keyboard extends MatrixKeyboard {
   }
 
   protected void keyChanged(int col, int row, int oldValue, int newValue) {
-//    System.out.println("keyChanged: " + col + ", " + row + " " + oldValue + " => " + newValue);
     if (oldValue == 0) {
       if (newValue != 0)
         bytes[row] &= (0x01 << col) ^ 0x3f;
     }
     else if (newValue == 0)
       bytes[row] |= (0x01 << col);
-//    System.out.println("Bytes[" + row + "] = " + Util.hex((byte)bytes[row]));
   }
 
   public int readByte(int address) {
@@ -83,7 +82,6 @@ public class Keyboard extends MatrixKeyboard {
     if ((address & 0x20) == 0) result &= bytes[5];
     if ((address & 0x40) == 0) result &= bytes[6];
     if ((address & 0x80) == 0) result &= bytes[7];
-//    System.out.println("Address: " + Util.hex((short)address) + " = " + Util.hex((byte)result));
     return result;
   }
 
