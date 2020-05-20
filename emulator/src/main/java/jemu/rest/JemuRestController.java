@@ -19,17 +19,12 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -488,5 +483,23 @@ public class JemuRestController {
 
         jemuUi.softReset();
         return ResponseEntity.ok().build();
+    }
+
+    @RequestMapping(method=RequestMethod.GET, path="/vz200/screen")
+    @ApiOperation(value="get a screenshot", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> getScreenshot() throws IOException {
+        byte[] data;
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            computer().exportScreenshot(out);
+            out.flush();
+            data = out.toByteArray();
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.setContentType(MediaType.valueOf(MediaType.IMAGE_PNG_VALUE));
+            responseHeaders.setContentLength(data.length);
+            responseHeaders.set("Content-disposition", "attachment; filename=screenshot.png");
+            return new ResponseEntity<byte[]>(data, responseHeaders, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<byte[]>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
