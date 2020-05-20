@@ -27,6 +27,7 @@ dependencies {
     compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
     compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
     compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+    compile group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.4.0'
 
     testCompile 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.4.2'

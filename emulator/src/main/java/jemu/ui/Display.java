@@ -8,7 +8,10 @@ import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.io.IOException;
+import java.io.OutputStream;
 
+import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 
 /**
@@ -175,4 +178,7 @@ public class Display extends JComponent {
 			System.out.println("Display Lost Focus");
 	}
 
+	public BufferedImage getImage() {
+		return this.image;
+	}
 }

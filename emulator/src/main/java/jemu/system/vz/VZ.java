@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
@@ -366,5 +367,9 @@ public class VZ extends Computer {
             }
             writeByte(adr + i, inverse ? c | 0x40 : c);
         }
+    }
+
+    public void exportScreenshot(OutputStream out) throws IOException {
+        ImageIO.write(renderer.getImage(), "png", out);
     }
 }
