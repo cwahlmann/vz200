@@ -24,7 +24,7 @@ public class VzAsmLoader extends Loader<VzAsmLoader> {
     @Override
     public void importData(VzSource source) {
         Assembler asm = new Assembler(memory);
-        asm.assemble(source.getSource());
+        asm.assembleSource(source);
         withStartAddress(asm.getMinCursorAddress()).withEndAddress(asm.getMaxCursorAddress()).withName(source.getName());
     }
 

@@ -1,5 +1,9 @@
 package jemu.rest.dto;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -16,6 +20,7 @@ public class VzSource {
     private String name;
     private boolean autorun;
     private String source;
+    private List<Lib> libs = new ArrayList<>();
     private SourceType type;
 
     public enum SourceType {
@@ -33,6 +38,29 @@ public class VzSource {
         public static SourceType findByExtension(String extension) {
             return Stream.of(SourceType.values()).filter(v -> v.extension.equals(extension)).findAny()
                          .orElse(SourceType.UNDEF);
+        }
+    }
+
+    public static class Lib {
+        private String name;
+        private String source;
+
+        public String getName() {
+            return name;
+        }
+
+        public Lib withName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public String getSource() {
+            return source;
+        }
+
+        public Lib withSource(String source) {
+            this.source = source;
+            return this;
         }
     }
 
@@ -69,6 +97,15 @@ public class VzSource {
 
     public VzSource withSource(String source) {
         this.source = source;
+        return this;
+    }
+
+    public List<Lib> getLibs() {
+        return libs;
+    }
+
+    public VzSource withLib(String name, String source) {
+        libs.add(new Lib().withName(name).withSource(source));
         return this;
     }
 }
