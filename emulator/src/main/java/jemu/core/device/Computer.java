@@ -228,10 +228,6 @@ public abstract class Computer extends Device implements Runnable {
 		return "";
 	}
 
-	public String loadAsmZipFile(InputStream is, Boolean autorun) throws Exception {
-		return "";
-	}
-
 	public void importVzFileToMemory(String name) throws Exception {
 		loadVzFile(new FileInputStream(name));
 	}
