@@ -6,32 +6,23 @@
  */
 package jemu.util.assembler.z80;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
+import jemu.core.device.memory.Memory;
 import jemu.exception.JemuException;
 import jemu.rest.dto.VzSource;
+import jemu.util.assembler.z80.Constants.StatementToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jemu.core.device.memory.Memory;
-import jemu.util.assembler.z80.Constants.StatementToken;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * This file is part of JemuVz200, an enhanced VZ200 emulator,
@@ -109,31 +100,6 @@ public class Assembler {
         }
     }
 
-    public String assembleZipStream(InputStream in) {
-        File propertiesFile = null;
-        Path tempPath = null;
-        try {
-            tempPath = createTempPath();
-            propertiesFile = unzip(tempPath, in);
-            Properties properties = new Properties();
-            if (propertiesFile != null) {
-                properties.load(new FileReader(propertiesFile));
-            }
-            Path mainAsm = tempPath.resolve(propertiesFile.toPath().getParent())
-                                   .resolve(properties.getProperty("main", "main.asm"));
-            log.info("assemble main file: {}", mainAsm);
-            parseFile(mainAsm);
-            resolveOpenTokens();
-            return String.format("%04x-%04x", runAddress, maxCursorAddress);
-        } catch (IOException e) {
-            return "ERROR: " + e.getMessage();
-        } finally {
-            if (tempPath != null) {
-                deleteTempDir(tempPath);
-            }
-        }
-    }
-
     private Path createTempPath() throws IOException {
         Path temp = Paths.get(System.getProperty("user.home"), "/jemu/temp_" + UUID.randomUUID().toString());
         Files.createDirectories(temp);
@@ -142,32 +108,6 @@ public class Assembler {
 
     private void deleteTempDir(Path tempPath) {
         FileUtils.deleteQuietly(tempPath.toFile());
-    }
-
-    private File unzip(Path tempPath, InputStream is) throws IOException {
-        File propertiesFile = null;
-        byte[] buffer = new byte[1024];
-        try (ZipInputStream zis = new ZipInputStream(is)) {
-            ZipEntry entry = zis.getNextEntry();
-            while (entry != null) {
-                Path entryPath = tempPath.resolve(entry.getName());
-                if (entry.isDirectory()) {
-                    Files.createDirectories(entryPath);
-                } else {
-                    FileOutputStream fos = new FileOutputStream(entryPath.toFile());
-                    int len;
-                    while ((len = zis.read(buffer)) > 0) {
-                        fos.write(buffer, 0, len);
-                    }
-                    fos.close();
-                    if (entry.getName().endsWith("asm.properties")) {
-                        propertiesFile = entryPath.toFile();
-                    }
-                }
-                entry = zis.getNextEntry();
-            }
-        }
-        return propertiesFile;
     }
 
     private void parseFile(Path path) {

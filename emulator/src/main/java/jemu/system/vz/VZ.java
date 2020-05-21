@@ -292,17 +292,6 @@ public class VZ extends Computer {
         }
     }
 
-    @Override
-    public String loadAsmZipFile(InputStream is, Boolean autorun) throws IOException {
-        Assembler asm = new Assembler(getMemory());
-        String result = asm.assembleZipStream(is);
-        log.info(String.format("Start at %04x...", asm.getRunAddress()));
-        if (autorun) {
-            z80.setPC(asm.getRunAddress());
-        }
-        return result;
-    }
-
     public void saveVzFile(String name, String range, Boolean autorun) throws Exception {
         try (FileOutputStream os = new FileOutputStream(name)) {
             saveVzFile(os, range, autorun);

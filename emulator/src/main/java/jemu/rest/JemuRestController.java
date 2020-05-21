@@ -141,23 +141,6 @@ public class JemuRestController {
         return ResponseEntity.ok().build();
     }
 
-    // TODO: umstellen auf VzSource!
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/memory/asmzip",
-                    consumes = "application/octet-stream;charset=UTF-8")
-    @ApiOperation(value = "compile and write zipped assembler data to the systems memory",
-                  produces = "application/json;charset=UTF-8")
-    public String loadAsmZip(@RequestParam(defaultValue = "True") Boolean autorun, RequestEntity<InputStream> entity
-                             //        , @RequestHeader String token
-    ) {
-        // securityService.validateToken(token);
-
-        try (InputStream is = entity.getBody()) {
-            return computer().loadAsmZipFile(is, autorun);
-        } catch (IOException e) {
-            throw new JemuException("Fehler beim Einspielen des Assembler-Programms", e);
-        }
-    }
-
     // ------------ vz dir read / write
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/dir", produces = "application/json;charset=UTF-8")
