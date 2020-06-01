@@ -1,6 +1,5 @@
 package jemu.system.vz.export;
 
-import com.google.common.primitives.Chars;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 

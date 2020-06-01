@@ -1,6 +1,14 @@
 package jemu.rest;
 
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.info.Contact;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.info.License;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jemu.Jemu;
 import jemu.core.cpu.Z80;
 import jemu.core.device.memory.Memory;
@@ -19,7 +27,10 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +55,10 @@ import java.util.*;
 @RestController
 @CrossOrigin
 @RequestMapping("/api")
+@OpenAPIDefinition(info = @Info(title = "JEMU VZ200-Remake", version = "2.2",
+        description = "Rest API to controle the emulator Jemu-VZ200-Remake",
+        license = @License(name = "GPL 3.0", url = "https://fsf.org"),
+        contact = @Contact(url = "cwahlmann.github.io/vz200-remake", name = "Christian Wahlmann", email = "")))
 public class JemuRestController {
     private static final Logger log = LoggerFactory.getLogger(JemuRestController.class);
 
@@ -80,9 +95,16 @@ public class JemuRestController {
     //  return new Token().withValue(token);
     //}
 
+    @RequestMapping(path = "/swagger")
+    @Hidden
+    public void swagger(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config");
+    }
+
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/version", produces = "application/json;charset=UTF-8")
-    @ApiOperation(value = "get version of emulator", response = JemuVersion.class,
-                  produces = "application/json;charset=UTF-8")
+    @Operation(summary = "get version of emulator", responses = {@ApiResponse(description = "the version",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = JemuVersion.class)))})
     public JemuVersion getVersion(
             // @RequestHeader String token
     ) {
@@ -93,8 +115,10 @@ public class JemuRestController {
     // memory read / write
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/memory/{type}",
-                    produces = "application/json;charset=UTF-8")
-    @ApiOperation(value = "read data from systems memory", produces = "application/json;charset=UTF-8")
+            produces = "application/json;charset=UTF-8")
+    @Operation(summary = "read data from systems memory", responses = {@ApiResponse(description = "a source object",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = VzSource.class)))})
     public VzSource memoryRead(
             @PathVariable(name = "type") VzSource.SourceType type,
             @RequestParam(name = "from", defaultValue = "", required = false) String from,
@@ -119,7 +143,7 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/memory", consumes = "application/json;charset=UTF-8")
-    @ApiOperation(value = "write data to systems memory", consumes = "application/json;charset=UTF-8")
+    @Operation(summary = "write data to systems memory", responses = {@ApiResponse(responseCode = "200")})
     public ResponseEntity memoryWrite(@RequestBody VzSource source
                                       // , @RequestHeader String token
     ) {
@@ -144,8 +168,10 @@ public class JemuRestController {
     // ------------ vz dir read / write
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/dir", produces = "application/json;charset=UTF-8")
-    @ApiOperation(value = "read fileinfos of all vz-files in the vz directory",
-                  produces = "application/json;charset=UTF-8")
+    @Operation(summary = "read fileinfos of all vz-files in the vz directory", responses = {
+            @ApiResponse(description = "a set of VZ-fileinfos",
+                    content = @Content(mediaType = "application/json;charset=UTF-8",
+                            schema = @Schema(implementation = Set.class)))})
     public Set<VzFileInfo> dirGetVzFileInfos(
             // @RequestHeader String token,
             HttpServletResponse response) {
@@ -157,7 +183,7 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/vz200/dir/{id}", consumes = "application/json;charset=UTF-8")
-    @ApiOperation(value = "write data as vz-file to the vz directory", consumes = "application/json;charset=UTF-8")
+    @Operation(summary = "write data as vz-file to the vz directory", responses = {@ApiResponse(responseCode = "200")})
     public ResponseEntity dirWriteData(@PathVariable("id") int id, @RequestBody VzSource source
                                        //        , @RequestHeader String token
     ) throws IOException {
@@ -184,9 +210,11 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/dir/{type}/{id}",
-                    produces = "application/json;charset=UTF-8")
-    @ApiOperation(value = "read data from the given vz-file in the vz-directory",
-                  produces = "application/json;charset=UTF-8")
+            produces = "application/json;charset=UTF-8")
+    @Operation(summary = "read data from the given vz-file in the vz-directory", responses = {
+            @ApiResponse(description = "a source object",
+                    content = @Content(mediaType = "application/json;charset=UTF-8",
+                            schema = @Schema(implementation = VzSource.class)))})
     public VzSource dirReadData(
             @PathVariable(name = "type") VzSource.SourceType type, @PathVariable(name = "id") int id,
             // @RequestHeader String token,
@@ -221,7 +249,7 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/vz200/dir/{id}")
-    @ApiOperation(value = "delete given vz-file from the vz-directory", produces = "application/json;charset=UTF-8")
+    @Operation(summary = "delete given vz-file from the vz-directory", responses = {@ApiResponse(responseCode = "200")})
     public void deleteVzFileFromDir(@PathVariable("id") int id,
                                     // @RequestHeader String token,
                                     HttpServletResponse response) throws IOException {
@@ -238,9 +266,11 @@ public class JemuRestController {
     // ------------ data conversion
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/convert/{fromtype}/{totype}",
-                    consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
-    //@ApiOperation(value = "convert data from one type to another", consumes = "application/json;charset=UTF-8",
-    //            produces = "application/json;charset=UTF-8", response = VzSource.class)
+            consumes = "application/json;charset=UTF-8", produces = "application/json;charset=UTF-8")
+    @Operation(summary = "convert data from one type to another", responses = {
+            @ApiResponse(description = "a source object",
+                    content = @Content(mediaType = "application/json;charset=UTF-8",
+                            schema = @Schema(implementation = VzSource.class)))})
     public VzSource convertSource(@PathVariable("totype") VzSource.SourceType totype, @RequestBody VzSource source
                                   //        , @RequestHeader String token
     ) {
@@ -260,9 +290,11 @@ public class JemuRestController {
     // ------------ printer
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/printer/flush",
-                    produces = "application/json;charset=UTF-8")
-    @ApiOperation(value = "flush the buffered printer output", produces = "application/json;charset=UTF-8",
-                  response = List.class)
+            produces = "application/json;charset=UTF-8")
+    @Operation(summary = "flush the buffered printer output", responses = {
+            @ApiResponse(description = "a list containing the printed lines",
+                    content = @Content(mediaType = "application/json;charset=UTF-8",
+                            schema = @Schema(implementation = List.class)))})
     public List<String> printerFlush(
             //       @RequestHeader String token
     ) {
@@ -274,7 +306,7 @@ public class JemuRestController {
     // ------------ keyboard
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/keyboard", consumes = "application/json;charset=UTF-8")
-    @ApiOperation(value = "type some text to the systems keyboard")
+    @Operation(summary = "type some text to the systems keyboard", responses = {@ApiResponse(responseCode = "200")})
     public ResponseEntity keyboardType(@RequestBody KeyboardInput keyboardInput
                                        //        , @RequestHeader String token
     ) {
@@ -296,8 +328,10 @@ public class JemuRestController {
     // ------------ tapes
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/tape", produces = "application/json;charset=UTF-8")
-    @ApiOperation(value = "get infos about all available tapes", produces = "application/json;charset=UTF-8",
-                  response = List.class)
+    @Operation(summary = "get infos about all available tapes", responses = {
+            @ApiResponse(description = "a list of Tapeinfo",
+                    content = @Content(mediaType = "application/json;charset=UTF-8",
+                            schema = @Schema(implementation = List.class)))})
     public List<TapeInfo> tapeGetAllInfos(
             //        @RequestHeader String token
     ) {
@@ -307,8 +341,9 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/tape/{tapename}")
-    @ApiOperation(value = "get infos about the given tape", produces = "application/json;charset=UTF-8",
-                  response = TapeInfo.class)
+    @Operation(summary = "get infos about the given tape", responses = {@ApiResponse(description = "a tapeinfo",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = TapeInfo.class)))})
     public TapeInfo tapeGetInfo(@PathVariable(name = "tapename") String tapename
                                 // , @RequestHeader String token
     ) {
@@ -318,7 +353,10 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/vz200/tape/{tapename}")
-    @ApiOperation(value = "create a new tape", produces = "application/json;charset=UTF-8", response = TapeInfo.class)
+    // @ApiOperation(value = "create a new tape", produces = "application/json;charset=UTF-8", response = TapeInfo.class)
+    @Operation(summary = "create a new tape", responses = {@ApiResponse(description = "a tapeinfo",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = TapeInfo.class)))})
     public TapeInfo tapeCreate(@PathVariable(name = "tapename") String tapename
                                //        , @RequestHeader String token
     ) {
@@ -329,7 +367,7 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/vz200/tape/{tapename}")
-    @ApiOperation(value = "delete a tape")
+    @Operation(summary = "delete a tape", responses = {@ApiResponse(responseCode = "200")})
     public ResponseEntity tapeDelete(@PathVariable(name = "tapename") String tapename
                                      //        , @RequestHeader String token
     ) {
@@ -342,8 +380,9 @@ public class JemuRestController {
     // ------------ player control
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/player", produces = "application/json;charset=UTF-8")
-    @ApiOperation(value = "get info about the current tape", produces = "application/json;charset=UTF-8",
-                  response = TapeInfo.class)
+    @Operation(summary = "get info about the current tape", responses = {@ApiResponse(description = "a tapeinfo",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = TapeInfo.class)))})
     public TapeInfo playerGetInfo(
             //@RequestHeader String token
     ) {
@@ -357,8 +396,9 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/{tapename}")
-    @ApiOperation(value = "insert tape with the given name", produces = "application/json;charset=UTF-8",
-                  response = TapeInfo.class)
+    @Operation(summary = "insert tape with the given name", responses = {@ApiResponse(description = "a tapeinfo",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = TapeInfo.class)))})
     public TapeInfo playerInsertTape(@PathVariable(name = "tapename") String tapename
                                      //        , @RequestHeader String token
     ) {
@@ -369,9 +409,10 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/play",
-                    produces = "application/json;charset=UTF-8")
-    @ApiOperation(value = "start playing current tape", produces = "application/json;charset=UTF-8",
-                  response = TapeInfo.class)
+            produces = "application/json;charset=UTF-8")
+    @Operation(summary = "start playing current tape", responses = {@ApiResponse(description = "a tapeinfo",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = TapeInfo.class)))})
     public TapeInfo playerStartReading(
             // @RequestHeader String token
     ) {
@@ -382,9 +423,10 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/record",
-                    produces = "application/json;charset=UTF-8")
-    @ApiOperation(value = "start recording current tape", produces = "application/json;charset=UTF-8",
-                  response = TapeInfo.class)
+            produces = "application/json;charset=UTF-8")
+    @Operation(summary = "start recording current tape", responses = {@ApiResponse(description = "a tapeinfo",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = TapeInfo.class)))})
     public TapeInfo playerStartRecording(
             // @RequestHeader String token
     ) {
@@ -395,9 +437,10 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/reel",
-                    produces = "application/json;charset=UTF-8")
-    @ApiOperation(value = "reel current tape to given position", produces = "application/json;charset=UTF-8",
-                  response = TapeInfo.class)
+            produces = "application/json;charset=UTF-8")
+    @Operation(summary = "reel current tape to given position", responses = {@ApiResponse(description = "a tapeinfo",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = TapeInfo.class)))})
     public TapeInfo playerMoveToPosition(int position
                                          //        , @RequestHeader String token
     ) {
@@ -408,9 +451,10 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/stop",
-                    produces = "application/json;charset=UTF-8")
-    @ApiOperation(value = "stop playing current tape", produces = "application/json;charset=UTF-8",
-                  response = TapeInfo.class)
+            produces = "application/json;charset=UTF-8")
+    @Operation(summary = "stop playing current tape", responses = {@ApiResponse(description = "a tapeinfo",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = TapeInfo.class)))})
     public TapeInfo playerStop(
             //        @RequestHeader String token
     ) {
@@ -423,8 +467,9 @@ public class JemuRestController {
     // ------------ sound control
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/volume/{volume}")
-    ResponseEntity soundSetVolume(@PathVariable(name = "volume") int volume
-                                  //, @RequestHeader String token
+    @Operation(summary = "set the audio volume", responses = {@ApiResponse(responseCode = "200")})
+    public ResponseEntity soundSetVolume(@PathVariable(name = "volume") int volume
+                                         //, @RequestHeader String token
     ) {
         // securityService.validateToken(token);
 
@@ -433,18 +478,24 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/volume", produces = "application/json;charset=UTF-8")
-    int soundGetVolume(
+    @Operation(summary = "get current audio volume", responses = {@ApiResponse(description = "the volume",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = Map.class)))})
+    public Map<String, Integer> soundGetVolume(
             // @RequestHeader String token
     ) {
         // securityService.validateToken(token);
-        return computer().getVolume();
+        return Collections.singletonMap("volume", computer().getVolume());
     }
 
     // ------------ cpu control
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/cpu/registers",
-                    produces = "application/json;charset=UTF-8")
-    Map<String, Integer> cpuGetRegisters(
+            produces = "application/json;charset=UTF-8")
+    @Operation(summary = "get cpu register values", responses = {@ApiResponse(description = "the register values",
+            content = @Content(mediaType = "application/json;charset=UTF-8",
+                    schema = @Schema(implementation = Map.class)))})
+    public Map<String, Integer> cpuGetRegisters(
             // @RequestHeader String token
     ) {
         // securityService.validateToken(token);
@@ -458,8 +509,8 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/cpu/reset")
-    @ApiOperation(value = "soft reset the system")
-    ResponseEntity cpuReset(
+    @Operation(summary = "soft reset the system", responses = {@ApiResponse(responseCode = "200")})
+    public ResponseEntity cpuReset(
             // @RequestHeader String token
     ) {
         // securityService.validateToken(token);
@@ -468,8 +519,9 @@ public class JemuRestController {
         return ResponseEntity.ok().build();
     }
 
-    @RequestMapping(method=RequestMethod.GET, path="/vz200/screen")
-    @ApiOperation(value="get a screenshot", produces = MediaType.IMAGE_PNG_VALUE)
+    @RequestMapping(method = RequestMethod.GET, path = "/vz200/screen")
+    @Operation(summary = "get a screenshot", responses = {@ApiResponse(description = "a png image",
+            content = @Content(mediaType = MediaType.IMAGE_PNG_VALUE, schema = @Schema(implementation = Map.class)))})
     public ResponseEntity<byte[]> getScreenshot() throws IOException {
         byte[] data;
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {

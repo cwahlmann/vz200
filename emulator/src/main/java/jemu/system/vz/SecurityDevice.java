@@ -27,7 +27,7 @@ public class SecurityDevice extends Device {
     private final VZ vz;
 
     private static final String TYPE = "VZ Security Device";
-    public static final int PORT_MASK_DATA = 249;
+    public static final int PORT_MASK_DATA = 255;
     public static final int PORT_TEST_DATA = 249;
 
     public SecurityDevice(VZ vz, SecurityService securityService) {
