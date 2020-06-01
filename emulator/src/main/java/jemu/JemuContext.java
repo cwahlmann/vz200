@@ -2,12 +2,11 @@ package jemu;
 
 import jemu.config.Constants;
 import jemu.config.JemuConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,10 +21,10 @@ import java.nio.file.Paths;
  * @author Christian Wahlmann
  */
 
-@EnableWebMvc
 @Configuration
-@Import(SpringFoxConfig.class)
-public class JemuContext implements WebMvcConfigurer {
+@EnableWebMvc
+public class JemuContext {
+    private static final Logger log = LoggerFactory.getLogger(JemuContext.class);
 
     @Bean
     public JemuConfiguration jemuConfiguration() {
@@ -38,13 +37,4 @@ public class JemuContext implements WebMvcConfigurer {
         config.setIfMissing(Constants.ENABLE_DOS_ROM, "false");
         return config;
     }
-
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
-
-        registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
-    }
-
-
 }
