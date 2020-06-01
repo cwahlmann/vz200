@@ -18,12 +18,11 @@ repositories {
 }
 
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.5.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.3.0.RELEASE'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.6'
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.4.0'
-//    compile group: 'io.swagger.core.v3', name: 'swagger-annotations', version: '2.1.2'
     compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
     compile group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.4.0'
 
@@ -31,12 +30,6 @@ dependencies {
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.4.2'
     testCompile 'org.junit.platform:junit-platform-launcher:1.4.2'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
-
-    jar {
-        manifest {
-//            attributes 'Main-Class': 'jemu.Jemu'
-        }
-    }
 }
 
 test {
