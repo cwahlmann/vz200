@@ -29,28 +29,23 @@ public class VzFileLoader extends Loader<VzFileLoader> {
 
     @Override
     public void importData(VzSource source) {
-        ByteArrayInputStream is =
-                new ByteArrayInputStream(Base64.getDecoder().decode(source.getSource()));
+        ByteArrayInputStream is = new ByteArrayInputStream(Base64.getDecoder().decode(source.getSource()));
         try {
             byte[] header = new byte[24];
             is.read(header);
             withName(decodeName(header));
             withAutorun(decodeAutorun(header));
-            withStartAddress(decodeStartAddress(header));
-            int address = getStartAddress();
-
-            int read;
-            do {
+            int startAddress = decodeStartAddress(header);
+            int address = startAddress;
+            int read = is.read();
+            while (read != -1) {
+                memory.writeByte(address, read);
+                address = (address + 1) & 0xffff;
                 read = is.read();
-                if (read != -1) {
-                    memory.writeByte(address, read);
-                    address = (address + 1) & 0xffff;
-                }
-            } while (read != -1);
-            withEndAddress(address);
+            }
             if (!isAutorun()) {
-                memory.writeWord(BASIC_START, getStartAddress());
-                memory.writeWord(BASIC_END, getEndAddress());
+                memory.writeWord(BASIC_START, startAddress);
+                memory.writeWord(BASIC_END, address);
             }
         } catch (IOException e) {
             log.error("Unexpected error reading basic source", e);
@@ -65,8 +60,8 @@ public class VzFileLoader extends Loader<VzFileLoader> {
             int endOfBasicPointer;
             int startOfBasicPointer;
             if (getStartAddress() < 0 || getEndAddress() < 0) {
-                endOfBasicPointer = memory.readWord(BASIC_END);
                 startOfBasicPointer = memory.readWord(BASIC_START);
+                endOfBasicPointer = memory.readWord(BASIC_END);
             } else {
                 startOfBasicPointer = getStartAddress();
                 endOfBasicPointer = getEndAddress();
@@ -87,7 +82,8 @@ public class VzFileLoader extends Loader<VzFileLoader> {
                 out64.write(memory.readByte(address));
             }
             out64.flush();
-            return new VzSource().withName(getName()).withType(VzSource.SourceType.vz).withSource(out.toString(StandardCharsets.UTF_8.name()));
+            return new VzSource().withName(getName()).withType(VzSource.SourceType.vz)
+                                 .withSource(out.toString(StandardCharsets.UTF_8.name()));
         } catch (IOException e) {
             throw new JemuException("Unexpected error writing vz-file to base64 stream", e);
         }
