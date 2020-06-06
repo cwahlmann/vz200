@@ -54,39 +54,32 @@ public class VzFileLoader extends Loader<VzFileLoader> {
 
     @Override
     public VzSource exportData() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (OutputStream out64 = Base64.getEncoder().wrap(out)) {
-            int type = isAutorun() ? 0xf1 : 0xf0;
-            int endOfBasicPointer;
-            int startOfBasicPointer;
-            if (getStartAddress() < 0 || getEndAddress() < 0) {
-                startOfBasicPointer = memory.readWord(BASIC_START);
-                endOfBasicPointer = memory.readWord(BASIC_END);
-            } else {
-                startOfBasicPointer = getStartAddress();
-                endOfBasicPointer = getEndAddress();
-            }
-            byte[] header = new byte[24];
-            header[21] = (byte) type;
-            header[22] = (byte) (startOfBasicPointer & 0xff);
-            header[23] = (byte) ((startOfBasicPointer >> 8) & 0xff);
-            header[0] = 'V';
-            header[1] = 'Z';
-            header[2] = 'F';
-            header[3] = '0';
-            for (int i = 4; i < 21; i++) {
-                header[i] = (i - 4 < getName().length()) ? (byte) getName().charAt(i - 4) : 0;
-            }
-            out64.write(header);
-            for (int address = startOfBasicPointer; address < endOfBasicPointer; address++) {
-                out64.write(memory.readByte(address));
-            }
-            out64.flush();
-            return new VzSource().withName(getName()).withType(VzSource.SourceType.vz)
-                                 .withSource(out.toString(StandardCharsets.UTF_8.name()));
-        } catch (IOException e) {
-            throw new JemuException("Unexpected error writing vz-file to base64 stream", e);
+        int type = isAutorun() ? 0xf1 : 0xf0;
+        int endOfBasicPointer;
+        int startOfBasicPointer;
+        if (getStartAddress() < 0 || getEndAddress() < 0) {
+            startOfBasicPointer = memory.readWord(BASIC_START);
+            endOfBasicPointer = memory.readWord(BASIC_END);
+        } else {
+            startOfBasicPointer = getStartAddress();
+            endOfBasicPointer = getEndAddress();
         }
+        byte[] data = new byte[endOfBasicPointer - startOfBasicPointer + 24];
+        data[21] = (byte) type;
+        data[22] = (byte) (startOfBasicPointer & 0xff);
+        data[23] = (byte) ((startOfBasicPointer >> 8) & 0xff);
+        data[0] = 'V';
+        data[1] = 'Z';
+        data[2] = 'F';
+        data[3] = '0';
+        for (int i = 4; i < 21; i++) {
+            data[i] = (i - 4 < getName().length()) ? (byte) getName().charAt(i - 4) : 0;
+        }
+        for (int i = 0; i < endOfBasicPointer - startOfBasicPointer; i++) {
+            data[i + 24] = (byte) memory.readByte(startOfBasicPointer + i);
+        }
+        return new VzSource().withName(getName()).withType(VzSource.SourceType.vz)
+                             .withSource(Base64.getEncoder().encodeToString(data));
     }
 
     // utility
