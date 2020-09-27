@@ -35,6 +35,8 @@ public class JemuContext {
         config.setIfMissing(Constants.SCREEN_HEIGHT, "480");
         config.setIfMissing(Constants.SOUND_VOLUME, "100");
         config.setIfMissing(Constants.ENABLE_DOS_ROM, "false");
+        config.setIfMissing(Constants.WITH_RAM_EXPANSION, "true");
+        config.setIfMissing(Constants.WITH_AUSTRALIAN_GFX_MOD, "true");
         return config;
     }
 }

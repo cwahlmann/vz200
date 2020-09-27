@@ -1,7 +1,11 @@
 package jemu.system.vz;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,52 +25,52 @@ import jemu.core.device.DeviceMapping;
  */
 
 public class VzIpDevice extends Device {
-	private static Logger log = LoggerFactory.getLogger(VzIpDevice.class);
-	
-	private static final String TYPE = "VZ IP Device";
-	public static final int PORT_MASK_DATA = 255;
-	public static final int PORT_TEST_DATA = 250;
+    private static Logger log = LoggerFactory.getLogger(VzIpDevice.class);
 
-	public VzIpDevice() {
-		super(TYPE);
-		startIpAddressThread();
-	}
+    private static final String TYPE = "VZ IP Device";
+    public static final int PORT_MASK_DATA = 255;
+    public static final int PORT_TEST_DATA = 250;
 
-	public void register(Z80 z80) {
-		z80.addOutputDeviceMapping(new DeviceMapping(this, PORT_MASK_DATA, PORT_TEST_DATA));
-		z80.addInputDeviceMapping(new DeviceMapping(this, PORT_MASK_DATA, PORT_TEST_DATA));
-	}
+    public VzIpDevice() {
+        super(TYPE);
+        startIpAddressThread();
+    }
 
-	private int[] ipAddress = new int[] { 0, 0, 0, 0 };
-	private int index = 0;
+    public void register(Z80 z80) {
+        z80.addOutputDeviceMapping(new DeviceMapping(this, PORT_MASK_DATA, PORT_TEST_DATA));
+        z80.addInputDeviceMapping(new DeviceMapping(this, PORT_MASK_DATA, PORT_TEST_DATA));
+    }
 
-	public void startIpAddressThread() {
-		new Thread(() -> {
-			while (!Thread.currentThread().isInterrupted()) {
-				try {
-					byte[] ip = InetAddress.getLocalHost().getAddress();
-					for (int i = 0; i < 4; i++) {
-						ipAddress[i] = (int) (ip[i] & 0xff);
-					}
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-					return;
-				} catch (UnknownHostException e) {
-					log.error("error to determine ip-address of localhost");
-				}
-			}
-		}).start();
-	}
+    private int[] ipAddress = new int[]{0, 0, 0, 0};
+    private int index = 0;
 
-	@Override
-	public int readPort(int port) {
-		int result = ipAddress[index];
-		index = (index + 1) & 3;		
-		return result;
-	}
+    public void startIpAddressThread() {
+        new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    byte[] ip = InetAddress.getLocalHost().getAddress();
+                    for (int i = 0; i < 4; i++) {
+                        ipAddress[i] = (int) (ip[i] & 0xff);
+                    }
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    return;
+                } catch (UnknownHostException e) {
+                    log.error("error to determine ip-address of localhost");
+                }
+            }
+        }).start();
+    }
 
-	@Override
-	public void writePort(int port, int value) {
-		index = value & 3;		
-	}
+    @Override
+    public int readPort(int port) {
+        int result = ipAddress[index];
+        index = (index + 1) & 3;
+        return result;
+    }
+
+    @Override
+    public void writePort(int port, int value) {
+        index = value & 3;
+    }
 }
