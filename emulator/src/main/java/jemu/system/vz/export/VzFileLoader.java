@@ -35,17 +35,18 @@ public class VzFileLoader extends Loader<VzFileLoader> {
             is.read(header);
             withName(decodeName(header));
             withAutorun(decodeAutorun(header));
-            int startAddress = decodeStartAddress(header);
-            int address = startAddress;
+            withStartAddress(decodeStartAddress(header));
+            int address = getStartAddress();
             int read = is.read();
             while (read != -1) {
                 memory.writeByte(address, read);
                 address = (address + 1) & 0xffff;
                 read = is.read();
             }
+            withEndAddress(address);
             if (!isAutorun()) {
-                memory.writeWord(BASIC_START, startAddress);
-                memory.writeWord(BASIC_END, address);
+                memory.writeWord(BASIC_START, getStartAddress());
+                memory.writeWord(BASIC_END, getEndAddress());
             }
         } catch (IOException e) {
             log.error("Unexpected error reading basic source", e);
