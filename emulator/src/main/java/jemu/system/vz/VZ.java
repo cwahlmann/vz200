@@ -13,7 +13,6 @@ import jemu.rest.dto.VzSource;
 import jemu.rest.security.SecurityService;
 import jemu.system.vz.export.VzFileLoader;
 import jemu.ui.Display;
-import jemu.util.assembler.z80.Assembler;
 import jemu.util.diss.Disassembler;
 import jemu.util.diss.DissZ80;
 import jemu.util.vz.KeyboardController;
@@ -67,7 +66,7 @@ public class VZ extends Computer {
     protected int cycles = 0;
     protected int frameFlyback = 0x80;
     protected int vdcLatch = 0x00;
-    protected SimpleRenderer renderer;
+    protected FullRenderer renderer;
     protected Keyboard keyboard;
     protected Disassembler disassembler;
     protected SoundPlayer player;
@@ -97,7 +96,7 @@ public class VZ extends Computer {
 
         this.securityService = securityService;
 
-        this.memory = new VZMemory(true); // with 16k Expansion
+        this.memory = new VZMemory(config.getBoolean(Constants.WITH_RAM_EXPANSION)); // with 16k Expansion
         this.renderer = new FullRenderer(memory);
 
         keyboard = new Keyboard();
@@ -127,6 +126,11 @@ public class VZ extends Computer {
         z80.setCycleDevice(this);
         z80.setInterruptDevice(this);
 
+        if (config.getBoolean(Constants.WITH_AUSTRALIAN_GFX_MOD, false)) {
+            // enable port 32 to enable australian mod
+            this.renderer.register(z80);
+        }
+
         player.setFormat(SoundUtil.UPCM8);
         setBasePath("vz");
         this.printer = new VzPrinterDevice();
@@ -148,6 +152,10 @@ public class VZ extends Computer {
         if (config.getBoolean(Constants.ENABLE_DOS_ROM, false)) {
             memory.setMemory(0x4000, getFile(romPath + "vzdos.rom", 8192));
             new VzFloppyDevice(this).register(z80);
+        }
+        if (config.getBoolean(Constants.WITH_AUSTRALIAN_GFX_MOD, false)) {
+            // enable australian mod
+            memory.register(z80);
         }
         SimpleRenderer.setFontData(getFile(romPath + "VZ.CHR", 768));
         super.initialise();

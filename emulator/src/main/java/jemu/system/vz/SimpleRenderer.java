@@ -1,13 +1,9 @@
 package jemu.system.vz;
 
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.OutputStream;
-
 import jemu.core.renderer.Renderer;
 
-import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 /**
  * This file is part of JemuVz200, an enhanced VZ200 emulator,
@@ -19,7 +15,7 @@ import javax.imageio.ImageIO;
  * @author Christian Wahlmann
  */
 
-public class SimpleRenderer extends Renderer {
+public abstract class SimpleRenderer extends Renderer {
 
     protected static final int WIDTH = 256;
     protected static final int HEIGHT = 192;
@@ -43,14 +39,35 @@ public class SimpleRenderer extends Renderer {
     protected static final int[] GREEN_GR = {GREEN, YELLOW, BLUE, RED};
     protected static final int[] BUFF_GR = {BUFF, CYAN, ORANGE, MAGENTA};
 
+    protected static final int[] MONO_GREEN_GR = {BR_GREEN, DK_GREEN};
+    protected static final int[] MONO_BUFF_GR = {BR_ORANGE, DK_ORANGE};
+
     protected static int[] greenText = new int[0x6000];
     protected static int[] orangeText = new int[0x6000];
 
+    protected static int[] greenLowresGraphics = new int[0x400];
+    protected static int[] buffLowresGraphics = new int[0x400];
     protected static int[] greenGraphics = new int[0x800];
     protected static int[] buffGraphics = new int[0x800];
 
+    protected static int[] greenMonoGraphics = new int[0x400];
+    protected static int[] buffMonoGraphics = new int[0x400];
+    protected static int[] greenMonoHiresGraphics = new int[0x800];
+    protected static int[] buffMonoHiresGraphics = new int[0x800];
+
     static {
         int offs = 0;
+        for (int i = 0; i < 127; i++) {
+            for (int pix = 0; pix < 2; pix++) {
+                int colour = ((i << (pix << 1)) & 0x0c) >> 2;
+                greenLowresGraphics[offs] = greenLowresGraphics[offs + 1] = greenLowresGraphics[offs + 2] =
+                greenLowresGraphics[offs + 3] = GREEN_GR[colour];
+                buffLowresGraphics[offs] = buffLowresGraphics[offs + 1] = buffLowresGraphics[offs + 2] =
+                buffLowresGraphics[offs + 3] = BUFF_GR[colour];
+                offs += 4;
+            }
+        }
+        offs = 0;
         for (int i = 0; i < 256; i++) {
             for (int pix = 0; pix < 4; pix++) {
                 int colour = ((i << (pix << 1)) & 0xc0) >> 6;
@@ -59,15 +76,171 @@ public class SimpleRenderer extends Renderer {
                 offs += 2;
             }
         }
+
+        offs = 0;
+        for (int i = 0; i < 128; i++) {
+            int m = 0x08;
+            for (int pix = 0; pix < 4; pix++) {
+                int colour = (i & m) == 0 ? 0 : 1;
+                greenMonoGraphics[offs] = greenMonoGraphics[offs + 1] = MONO_GREEN_GR[colour];
+                buffMonoGraphics[offs] = buffMonoGraphics[offs + 1] = MONO_BUFF_GR[colour];
+                offs += 2;
+                m = m >> 1;
+            }
+        }
+        offs = 0;
+        for (int i = 0; i < 256; i++) {
+            int m = 0x80;
+            for (int pix = 0; pix < 8; pix++) {
+                int colour = (i & m) == 0 ? 0 : 1;
+                greenMonoHiresGraphics[offs] = MONO_GREEN_GR[colour];
+                buffMonoHiresGraphics[offs] = MONO_BUFF_GR[colour];
+                offs++;
+                m = m >> 1;
+            }
+        }
     }
 
-    ;
+    enum Mode {
+        //@formatter:off
+        TEXT_GREEN(256, 192, 1,12, GREEN, BLACK, greenText),
+        TEXT_BUFF(256, 192, 1, 12, ORANGE, BLACK, orangeText),
+        GFX_GREEN(128, 64, 2, 1, GREEN, -1, greenGraphics),
+        GFX_BUFF(128, 64, 2,1, BUFF, -1, buffGraphics),
+
+        ULTRA_0_GREEN(64, 64,2, 1, GREEN, -1, greenLowresGraphics),
+        ULTRA_1_GREEN(128, 64,1, 1, BR_GREEN, BR_GREEN, greenMonoGraphics),
+        ULTRA_2_GREEN(128, 64,2, 1, GREEN, -1, greenGraphics),
+        ULTRA_3_GREEN(128, 96,1, 1, BR_GREEN, BR_GREEN, greenMonoGraphics),
+        ULTRA_4_GREEN(128, 96,2, 1, GREEN, -1, greenGraphics),
+        ULTRA_5_GREEN(128, 192,1, 1, BR_GREEN, BR_GREEN, greenMonoGraphics),
+        ULTRA_6_GREEN(128, 192,2, 1, GREEN, -1, greenGraphics),
+        ULTRA_7_GREEN(256, 192,1, 1, BR_GREEN, BR_GREEN, greenMonoHiresGraphics),
+
+        ULTRA_0_BUFF(64, 64,2, 1, BUFF, -1, buffLowresGraphics),
+        ULTRA_1_BUFF(128, 64,1, 1, BR_ORANGE, BR_ORANGE, buffMonoGraphics),
+        ULTRA_2_BUFF(128, 64,2, 1, BUFF, -1, buffGraphics),
+        ULTRA_3_BUFF(128, 96,1, 1, BR_ORANGE, BR_ORANGE, buffMonoGraphics),
+        ULTRA_4_BUFF(128, 96,2, 1, BUFF, -1, buffGraphics),
+        ULTRA_5_BUFF(128, 192,1, 1, BR_ORANGE, BR_ORANGE, buffMonoGraphics),
+        ULTRA_6_BUFF(128, 192,2, 1, BUFF, -1, buffGraphics),
+        ULTRA_7_BUFF(256, 192,1, 1, BR_ORANGE, BR_ORANGE, buffMonoHiresGraphics)
+        ;
+        //@formatter:on
+
+        private final int width, height;
+        private final int bitsPerPixel;
+        private final int uniqueLines;
+        private final int border;
+        private final int borderMask;
+        private final int[] pixelMap;
+
+        private final int pixelWidth, pixelHeight;
+        private final int pixelPerByte;
+        private final int pixelPerScan;
+        private final int bitsPerScan;
+        private final int mapMult;
+        private final int bytesPerLine;
+
+        Mode(int width, int height, int bitsPerPixel, int uniqueLines, int border, int borderMask, int[] pixelMap) {
+            this.width = width;
+            this.height = height;
+            this.bitsPerPixel = bitsPerPixel;
+            this.uniqueLines = uniqueLines;
+            this.border = border;
+            this.borderMask = borderMask;
+            this.pixelMap = pixelMap;
+
+            this.pixelWidth = WIDTH / this.width;
+            this.pixelHeight = HEIGHT / this.height;
+            this.pixelPerByte = 8 / this.bitsPerPixel;
+            this.pixelPerScan = 8 / pixelWidth;
+            this.bitsPerScan = pixelPerScan * this.bitsPerPixel;
+            this.mapMult = 8 * this.uniqueLines;
+            this.bytesPerLine = 4 * bitsPerScan;
+        }
+
+        public int getBytesPerLine() {
+            return bytesPerLine;
+        }
+
+        public int getMapMult() {
+            return mapMult;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public int getBitsPerPixel() {
+            return bitsPerPixel;
+        }
+
+        public int getUniqueLines() {
+            return uniqueLines;
+        }
+
+        public int getBorder() {
+            return border;
+        }
+
+        public int getBorderMask() {
+            return borderMask;
+        }
+
+        public int[] getPixelMap() {
+            return pixelMap;
+        }
+
+        public int getPixelWidth() {
+            return pixelWidth;
+        }
+
+        public int getPixelHeight() {
+            return pixelHeight;
+        }
+
+        public int getPixelPerByte() {
+            return pixelPerByte;
+        }
+
+        public int getPixelPerScan() {
+            return pixelPerScan;
+        }
+
+        public int getBitsPerScan() {
+            return bitsPerScan;
+        }
+    }
+
+    //@formatter:off
+    private Mode ultraModes[] = {Mode.ULTRA_0_GREEN,
+                                 Mode.ULTRA_1_GREEN,
+                                 Mode.ULTRA_2_GREEN,
+                                 Mode.ULTRA_3_GREEN,
+                                 Mode.ULTRA_4_GREEN,
+                                 Mode.ULTRA_5_GREEN,
+                                 Mode.ULTRA_6_GREEN,
+                                 Mode.ULTRA_7_GREEN,
+
+                                 Mode.ULTRA_0_BUFF,
+                                 Mode.ULTRA_1_BUFF,
+                                 Mode.ULTRA_2_BUFF,
+                                 Mode.ULTRA_3_BUFF,
+                                 Mode.ULTRA_4_BUFF,
+                                 Mode.ULTRA_5_BUFF,
+                                 Mode.ULTRA_6_BUFF,
+                                 Mode.ULTRA_7_BUFF
+    };
+    //@formatter:on
 
     protected int vdcLatch = 0x00;
-    protected int mapMult = 96;
-    protected int[] pixelMap = greenText;
-    protected int border = GREEN;
-    protected int borderMask = BLACK;
+    protected int port32 = 8;
+    protected Mode mode = Mode.TEXT_GREEN;
 
     public SimpleRenderer() {
         super("VZ Simple Screen Renderer");
@@ -77,8 +250,7 @@ public class SimpleRenderer extends Renderer {
         super(type);
     }
 
-    public void setVerticalAdjustment(int value) {
-    }  // Does nothing here, used in FullRenderer
+    abstract public void setVerticalAdjustment(int value);
 
     public static void setFontData(byte[] data) {
         int offs = 0;
@@ -116,78 +288,35 @@ public class SimpleRenderer extends Renderer {
     }
 
     public void setVDCLatch(int value) {
-        switch (value & 0x18) {
+        this.vdcLatch = value;
+        setGfxMode();
+    }
+
+    public void setPort32(int value) {
+        port32 = value;
+        setGfxMode();
+    }
+
+    private void setGfxMode() {
+        switch (vdcLatch & 0x18) {
             case 0x00:
-                pixelMap = greenText;
-                border = GREEN;
-                borderMask = BLACK;
-                setMapMult(96);
+                mode = Mode.TEXT_GREEN;
                 break;
             case 0x08:
-                pixelMap = greenGraphics;
-                border = GREEN;
-                borderMask = -1;
-                setMapMult(8);
+                mode = ultraModes[(port32 >> 2) & 0x07]; // bits 2-4 -> bits 0-2
+                //                mode = Mode.GFX_GREEN;
                 break;
             case 0x10:
-                pixelMap = orangeText;
-                border = BUFF;
-                borderMask = BLACK;
-                setMapMult(96);
+                mode = Mode.TEXT_BUFF;
                 break;
             case 0x18:
-                pixelMap = buffGraphics;
-                border = BUFF;
-                borderMask = -1;
-                setMapMult(8);
+                mode = ultraModes[((port32 >> 2) & 0x07) + 8]; // bits 2-4 -> bits 0-2
+                //                mode = Mode.GFX_BUFF;
                 break;
         }
     }
 
-    public void setMapMult(int value) {
-        mapMult = value;
-    }
-
-    public void renderScreen(VZMemory memory) {
-        // TODO: Render Border etc.
-        int offs = 0;
-        int width = display.getImageWidth();
-        byte[] mem = memory.getMemory();
-        int addr = 0x7000;
-        if (mapMult == 8) {
-            for (int y = 0; y < 64; y++) {
-                int start = offs;
-                for (int x = 0; x < 32; x++) {
-                    int pix = (mem[addr++] & 0xff) * mapMult;
-                    int dst = offs;
-                    for (int row = 0; row < 3; row++) {
-                        //            for (int i = 0; i < 8; i++)
-                        //              pixels[dst + i] = pixelMap[pix++];
-                        System.arraycopy(pixelMap, pix, pixels, dst, 8);
-                        dst += width;
-                    }
-                    offs += 8;
-                }
-                offs = start + width * 3;
-            }
-        } else {
-            for (int y = 0; y < 16; y++) {
-                int start = offs;
-                for (int x = 0; x < 32; x++) {
-                    int ch = (mem[addr++] & 0xff) * mapMult;  // 12 * 8
-                    int dst = offs;
-                    for (int row = 0; row < 12; row++) {
-                        System.arraycopy(pixelMap, ch, pixels, dst, 8);
-                        ch += 8;
-                        dst += width;
-                    }
-                    offs += 8;
-                }
-                offs = start + width * 12;
-            }
-        }
-        display.updateImage(true);
-    }
+    public abstract void renderScreen(VZMemory memory);
 
     public Dimension getDisplaySize() {
         return new Dimension(WIDTH, HEIGHT);
