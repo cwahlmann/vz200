@@ -81,31 +81,7 @@ public class AssemblerView extends View<AssemblerPresenter> {
         removeLibButton = ComponentFactory
                 .withTooltip(new Button(VaadinIcon.CLOSE_SMALL.create()), "remove lib or clear main");
 
-        sourceEditor = new AceEditor();
-        sourceEditor.setTheme(AceTheme.ambiance);
-        sourceEditor.setMode(AceMode.python);
-        sourceEditor.setFontSize(15);
-        sourceEditor.setHeight("100%");
-        sourceEditor.setWidth("100%");
-        sourceEditor.setReadOnly(false);
-        sourceEditor.setShowInvisibles(false);
-        sourceEditor.setShowGutter(false);
-        sourceEditor.setShowPrintMargin(false);
-        sourceEditor.setDisplayIndentGuides(false);
-        sourceEditor.setUseWorker(false);
-        sourceEditor.setSofttabs(true);
-        sourceEditor.setTabSize(4);
-        sourceEditor.setWrap(true);
-        sourceEditor.setMinlines(16);
-        sourceEditor.setMaxlines(25);
-        sourceEditor.setPlaceholder("enter your basic program here");
-        sourceEditor.setAutoComplete(true);
-        sourceEditor.setHighlightActiveLine(false);
-        sourceEditor.setHighlightSelectedWord(false);
-        sourceEditor.setWidth("100%");
-        sourceEditor.setHeight("100%");
-        sourceEditor.setMaxWidth("44em");
-        sourceEditor.setInitialFocus(true);
+        sourceEditor = ComponentFactory.aceEditor("enter your assembler code here", AceTheme.ambiance, 16, 25, 44);
 
         HorizontalLayout bar = new HorizontalLayout(saveButton, changedCheckbox);
         bar.setAlignItems(Alignment.BASELINE);

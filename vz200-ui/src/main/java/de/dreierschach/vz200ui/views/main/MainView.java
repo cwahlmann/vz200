@@ -2,6 +2,7 @@ package de.dreierschach.vz200ui.views.main;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -11,6 +12,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
@@ -32,6 +34,7 @@ import java.util.Optional;
 /**
  * The main view is a top-level placeholder for other views.
  */
+@Push
 @CssImport("./styles/views/main/main-view.css")
 @PWA(name = "VZ200 UI", shortName = "VZ200 UI", enableInstallPrompt = false)
 @JsModule("./styles/shared-styles.js")

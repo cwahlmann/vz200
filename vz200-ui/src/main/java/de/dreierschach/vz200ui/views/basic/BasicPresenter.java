@@ -1,8 +1,10 @@
 package de.dreierschach.vz200ui.views.basic;
 
+import com.hilerio.ace.AceTheme;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.VaadinSessionScope;
+import de.dreierschach.vz200ui.config.Config;
 import de.dreierschach.vz200ui.service.Vz200Service;
 import de.dreierschach.vz200ui.service.VzSource;
 import de.dreierschach.vz200ui.util.ComponentFactory;
@@ -18,16 +20,26 @@ import java.util.stream.Collectors;
 public class BasicPresenter extends Presenter<BasicView> {
 
     private final Vz200Service vz200Service;
+    private final Config config;
+
     private boolean changed = false;
+    private String source = "";
 
     @Autowired
-    public BasicPresenter(Vz200Service vz200Service) {
+    public BasicPresenter(Vz200Service vz200Service, Config config) {
         this.vz200Service = vz200Service;
+        this.config = config;
     }
 
     @Override
     protected void doBind() {
-        view.sourceEditor.addValueChangeListener(event -> setChanged(true));
+        view.sourceEditor.setValue(source);
+        view.sourceEditor.addValueChangeListener(event -> {
+            this.source = event.getValue();
+            setChanged(true);
+        });
+        view.sourceEditor.setTheme(AceTheme.valueOf(config.getOrDefault(Config.ACE_THEME, AceTheme.ambiance.name())));
+
         view.installButton.addClickListener(event -> installToMemory(false));
         view.runButton.addClickListener(event -> installToMemory(true));
         view.downloadButton.addClickListener(event -> {
@@ -52,7 +64,7 @@ public class BasicPresenter extends Presenter<BasicView> {
         try {
             VzSource vzSource = new VzSource();
             vzSource.setType(VzSource.SourceType.basic);
-            vzSource.setSource(view.sourceEditor.getValue());
+            vzSource.setSource(source);
             vzSource.setName(view.nameField.getValue());
             vz200Service.saveBasicToMemory(vzSource);
             if (run) {

@@ -3,10 +3,21 @@ package de.dreierschach.vz200ui.service;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import de.dreierschach.vz200ui.config.Config;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
+
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @SpringComponent
 @VaadinSessionScope
@@ -57,5 +68,44 @@ public class Vz200Service {
     private final String getBaseUrl() {
         return "http://" + config.getOrDefault(Config.HOSTNAME, "localhost") + ":" +
                config.getOrDefault(Config.PORT, "8080") + "/api/vz200/";
+    }
+
+    private Thread scanDevicesThread = null;
+
+    public void scanForDevices(String baseAdress, int port, Consumer<String> onDeviceFound, Consumer<String> onProgress) {
+        if (scanDevicesThread != null) {
+            scanDevicesThread.interrupt();
+        }
+        scanDevicesThread = new Thread(
+                () -> IntStream.rangeClosed(1, 254).parallel().mapToObj(num -> baseAdress + "." + num).forEach(adr -> {
+                    if (ping(adr)) {
+                        String url = "http://" + adr + ":" + port + "/api/vz200/version";
+                        if (isHttpOk(url)) {
+                            onDeviceFound.accept(adr);
+                        }
+                    }
+                    onProgress.accept(adr);
+                }));
+        scanDevicesThread.start();
+    }
+
+    private boolean ping(String address) {
+        try {
+            return InetAddress.getByName(address).isReachable(100);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isHttpOk(String url) {
+        try {
+            URL myURL = new URL(url);
+            HttpURLConnection myConnection = (HttpURLConnection) myURL.openConnection();
+            myConnection.setConnectTimeout(2000);
+            myConnection.setReadTimeout(2000);
+            return myConnection.getResponseCode() == HttpStatus.OK.value();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

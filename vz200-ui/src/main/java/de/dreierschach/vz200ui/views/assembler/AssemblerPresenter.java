@@ -1,9 +1,11 @@
 package de.dreierschach.vz200ui.views.assembler;
 
+import com.hilerio.ace.AceTheme;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.VaadinSessionScope;
+import de.dreierschach.vz200ui.config.Config;
 import de.dreierschach.vz200ui.service.Vz200Service;
 import de.dreierschach.vz200ui.service.VzSource;
 import de.dreierschach.vz200ui.util.ComponentFactory;
@@ -21,14 +23,18 @@ import java.util.stream.Collectors;
 public class AssemblerPresenter extends Presenter<AssemblerView> {
 
     private final Vz200Service vz200Service;
+    private final Config config;
+
     private boolean changed = false;
     private final VzSource vzSource;
     private String currentLib;
     public static final String MAIN_FILE = "main";
 
     @Autowired
-    public AssemblerPresenter(Vz200Service vz200Service) {
+    public AssemblerPresenter(Vz200Service vz200Service, Config config) {
         this.vz200Service = vz200Service;
+        this.config = config;
+
         vzSource = new VzSource();
         vzSource.setType(VzSource.SourceType.asm);
         vzSource.setName("UNKNOWN");
@@ -45,6 +51,8 @@ public class AssemblerPresenter extends Presenter<AssemblerView> {
         binder.bind(view.sourceEditor, this::getSource, this::setSource);
         binder.bind(view.nameField, VzSource::getName, VzSource::setName);
         view.sourceEditor.addValueChangeListener(event -> setChanged(true));
+        view.sourceEditor.setTheme(AceTheme.valueOf(config.getOrDefault(Config.ACE_THEME, AceTheme.ambiance.name())));
+
         view.installButton.addClickListener(event -> installToMemory(false));
         view.runButton.addClickListener(event -> installToMemory(true));
         view.downloadButton.addClickListener(event -> {

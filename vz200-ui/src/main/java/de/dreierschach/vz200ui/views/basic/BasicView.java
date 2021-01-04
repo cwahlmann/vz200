@@ -1,17 +1,16 @@
 package de.dreierschach.vz200ui.views.basic;
 
 import com.hilerio.ace.AceEditor;
-import com.hilerio.ace.AceMode;
 import com.hilerio.ace.AceTheme;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.VaadinSessionScope;
+import de.dreierschach.vz200ui.util.ComponentFactory;
 import de.dreierschach.vz200ui.util.ConfirmedUpload;
 import de.dreierschach.vz200ui.views.View;
 import de.dreierschach.vz200ui.views.main.MainView;
@@ -30,7 +29,6 @@ public class BasicView extends View<BasicPresenter> {
     static final String UPLOAD_ID = "UPLOAD_ID";
 
     AceEditor sourceEditor;
-    ComboBox<AceTheme> aceThemeComboBox;
 
     Button installButton;
     Button runButton;
@@ -51,37 +49,7 @@ public class BasicView extends View<BasicPresenter> {
     }
 
     protected void createContent() {
-        //        setAlignItems(Alignment.BASELINE);
-
-        sourceEditor = new AceEditor();
-        sourceEditor.setTheme(AceTheme.ambiance);
-        sourceEditor.setMode(AceMode.python);
-        sourceEditor.setFontSize(15);
-        sourceEditor.setHeight("100%");
-        sourceEditor.setWidth("100%");
-        sourceEditor.setReadOnly(false);
-        sourceEditor.setShowInvisibles(false);
-        sourceEditor.setShowGutter(false);
-        sourceEditor.setShowPrintMargin(false);
-        sourceEditor.setDisplayIndentGuides(false);
-        sourceEditor.setUseWorker(false);
-        sourceEditor.setSofttabs(true);
-        sourceEditor.setTabSize(4);
-        sourceEditor.setWrap(true);
-        sourceEditor.setMinlines(16);
-        sourceEditor.setMaxlines(25);
-        sourceEditor.setPlaceholder("enter your basic program here");
-        sourceEditor.setAutoComplete(true);
-        sourceEditor.setHighlightActiveLine(false);
-        sourceEditor.setHighlightSelectedWord(false);
-        sourceEditor.setWidth("100%");
-        sourceEditor.setHeight("100%");
-        sourceEditor.setMaxWidth("44em");
-        sourceEditor.setInitialFocus(true);
-
-        aceThemeComboBox = new ComboBox<>();
-        aceThemeComboBox.setItems(AceTheme.values());
-        aceThemeComboBox.setValue(AceTheme.ambiance);
+        sourceEditor = ComponentFactory.aceEditor("enter your basic code here", AceTheme.ambiance, 16, 25, 44);
 
         nameField = new TextField("", "", "Name");
 
@@ -95,19 +63,16 @@ public class BasicView extends View<BasicPresenter> {
         changedCheckbox = new Checkbox("Changed", false);
         changedCheckbox.setReadOnly(true);
 
-        add(aceThemeComboBox, nameField, installButton, runButton, downloadButton, resetButton, saveButton,
-            changedCheckbox);
+        add(nameField, installButton, runButton, downloadButton, resetButton, saveButton, changedCheckbox);
         addAndExpand(sourceEditor);
 
-        setVerticalComponentAlignment(Alignment.END, aceThemeComboBox, nameField, installButton, runButton,
-                                      downloadButton, resetButton, saveButton, changedCheckbox, sourceEditor);
+        setVerticalComponentAlignment(Alignment.END, nameField, installButton, runButton, downloadButton, resetButton,
+                                      saveButton, changedCheckbox, sourceEditor);
 
         confirmedUpload = new ConfirmedUpload().withMessage("Overwrite recent changes?").withConfirmCaption("Overwrite")
                                                .withDeclineCaption("Cancel").withButtonCaption("Load")
                                                .withDropCaption("Drop file").withIcon(VaadinIcon.FILE);
         addUpload(UPLOAD_ID, this, 8, confirmedUpload);
-
-        aceThemeComboBox.addValueChangeListener(event -> sourceEditor.setTheme(event.getValue()));
     }
 
     public void setDownloadSupplier(Supplier<String> filenameSupplier, Supplier<InputStream> inputStreamSupplier, Runnable onDownload) {
