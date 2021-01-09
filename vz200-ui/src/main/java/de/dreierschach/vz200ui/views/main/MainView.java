@@ -36,7 +36,7 @@ import java.util.Optional;
  */
 @Push
 @CssImport("./styles/views/main/main-view.css")
-@PWA(name = "VZ200 UI", shortName = "VZ200 UI", enableInstallPrompt = false)
+@PWA(name = "VZ200-UI", shortName = "VZ200-UI", enableInstallPrompt = false)
 @JsModule("./styles/shared-styles.js")
 @Theme(value = Lumo.class, variant = Lumo.DARK)
 public class MainView extends AppLayout {
@@ -76,7 +76,7 @@ public class MainView extends AppLayout {
         logoLayout.setId("logo");
         logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         logoLayout.add(new Image("images/vz-ui-logo.png", "VZ200 UI logo"));
-        logoLayout.add(new H1("VZ200 UI"));
+        logoLayout.add(new H1("VZ200-UI"));
         layout.add(logoLayout, menu);
         return layout;
     }

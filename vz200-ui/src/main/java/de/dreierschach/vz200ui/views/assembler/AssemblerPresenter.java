@@ -11,6 +11,8 @@ import de.dreierschach.vz200ui.service.VzSource;
 import de.dreierschach.vz200ui.util.ComponentFactory;
 import de.dreierschach.vz200ui.views.Presenter;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.*;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 @SpringComponent
 @VaadinSessionScope
 public class AssemblerPresenter extends Presenter<AssemblerView> {
+    public static final Logger log = LoggerFactory.getLogger(AssemblerPresenter.class);
 
     private final Vz200Service vz200Service;
     private final Config config;

@@ -3,3 +3,9 @@ tapedeck-view,
   display: block;
   padding: 1em;
 }
+.record-style {
+    color: #ff0000;
+}
+.play-style {
+    color: #00ff00;
+}

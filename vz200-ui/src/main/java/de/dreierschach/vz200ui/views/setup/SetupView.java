@@ -57,8 +57,8 @@ public class SetupView extends View<SetupPresenter> {
         portField = new TextField("", "8080", "port");
         portField.setMaxLength(5);
         portField.setWidth("4em");
-        scanButton = new Button("Scan");
-        testConnectionButton = new Button("Test", VaadinIcon.CONNECT.create());
+        scanButton = ComponentFactory.withTooltip(new Button(VaadinIcon.SEARCH.create()), "Scan for emulators...");
+        testConnectionButton = ComponentFactory.withTooltip(new Button(VaadinIcon.CONNECT.create()), "Check connection");
 
         applyButton = new Button("Apply", VaadinIcon.CHECK.create());
         undoButton = new Button("Undo", VaadinIcon.CLOSE.create());

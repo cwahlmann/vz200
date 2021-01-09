@@ -3,3 +3,9 @@ printer-view,
   display: block;
   padding: 1em;
 }
+
+.print-style {
+    font-family: monospace;
+    color: #202020;
+    background-color: #ffffff;
+}

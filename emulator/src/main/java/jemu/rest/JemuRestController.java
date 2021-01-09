@@ -143,7 +143,8 @@ public class JemuRestController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/vz200/memory", consumes = "application/json;charset=UTF-8")
-    @Operation(summary = "write data to systems memory", responses = {@ApiResponse(responseCode = "200")})
+    @Operation(summary = "write data to systems memory",
+            responses = {@ApiResponse(responseCode = "200"), @ApiResponse(responseCode = "500")})
     public ResponseEntity memoryWrite(@RequestBody VzSource source
                                       // , @RequestHeader String token
     ) {
@@ -154,7 +155,16 @@ public class JemuRestController {
             throw new JemuException(String.format("no loader found for source type [%s]", source.getType().name()));
         }
         loader.withName(source.getName()).withAutorun(source.isAutorun());
-        loader.importData(source);
+        try {
+            loader.importData(source);
+        } catch (Exception e) {
+            log.error("Error importing data", e);
+            String message = e.getMessage();
+            if (e.getCause() != null) {
+                message += ": " + e.getCause().getMessage();
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+        }
         if (loader.isAutorun() && source.getType() != VzSource.SourceType.basic) {
             ((Z80) computer().getProcessor()).jp(loader.getStartAddress());
         } else {
@@ -436,12 +446,12 @@ public class JemuRestController {
         return playerGetInfo();
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/reel",
+    @RequestMapping(method = RequestMethod.POST, path = "/vz200/player/reel/{position}",
             produces = "application/json;charset=UTF-8")
     @Operation(summary = "reel current tape to given position", responses = {@ApiResponse(description = "a tapeinfo",
             content = @Content(mediaType = "application/json;charset=UTF-8",
                     schema = @Schema(implementation = TapeInfo.class)))})
-    public TapeInfo playerMoveToPosition(int position
+    public TapeInfo playerMoveToPosition(@PathVariable(name = "position") int position
                                          //        , @RequestHeader String token
     ) {
         // securityService.validateToken(token);

@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -63,7 +64,10 @@ public class BasicView extends View<BasicPresenter> {
         changedCheckbox = new Checkbox("Changed", false);
         changedCheckbox.setReadOnly(true);
 
-        add(nameField, installButton, runButton, downloadButton, resetButton, saveButton, changedCheckbox);
+        HorizontalLayout bar = new HorizontalLayout(saveButton, changedCheckbox);
+        bar.setAlignItems(Alignment.BASELINE);
+
+        add(nameField, installButton, runButton, downloadButton, resetButton, bar);
         addAndExpand(sourceEditor);
 
         setVerticalComponentAlignment(Alignment.END, nameField, installButton, runButton, downloadButton, resetButton,
@@ -72,7 +76,7 @@ public class BasicView extends View<BasicPresenter> {
         confirmedUpload = new ConfirmedUpload().withMessage("Overwrite recent changes?").withConfirmCaption("Overwrite")
                                                .withDeclineCaption("Cancel").withButtonCaption("Load")
                                                .withDropCaption("Drop file").withIcon(VaadinIcon.FILE);
-        addUpload(UPLOAD_ID, this, 8, confirmedUpload);
+        addUpload(UPLOAD_ID, bar, 0, confirmedUpload);
     }
 
     public void setDownloadSupplier(Supplier<String> filenameSupplier, Supplier<InputStream> inputStreamSupplier, Runnable onDownload) {
