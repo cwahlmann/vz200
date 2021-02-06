@@ -1,0 +1,17 @@
+setup-view,
+#setup-view {
+  display: block;
+  padding: 1em;
+}
+
+.info {
+    color: #c0c0c0;
+}
+
+.warning {
+    color: #ff8000;
+}
+
+.danger {
+    color: #ff0000;
+}

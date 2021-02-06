@@ -1,0 +1,11 @@
+assembler-view,
+#assembler-view {
+  display: block;
+  padding: 1em;
+}
+
+.source-style {
+    font-family: monospace;
+    color: #80ff80;
+    background-color: #006000;
+}
