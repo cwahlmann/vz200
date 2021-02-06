@@ -29,7 +29,7 @@ public class AssemblerPresenter extends Presenter<AssemblerView> {
     private final Config config;
 
     private boolean changed = false;
-    private final VzSource vzSource;
+    private VzSource vzSource;
     private String currentLib;
     public static final String MAIN_FILE = "main";
 
@@ -51,9 +51,12 @@ public class AssemblerPresenter extends Presenter<AssemblerView> {
         Binder<VzSource> binder = new Binder<>();
         binder.setBean(vzSource);
 
-        binder.bind(view.sourceEditor, this::getSource, this::setSource);
+//        binder.bind(view.sourceEditor, this::getSource, this::setSource);
         binder.bind(view.nameField, VzSource::getName, VzSource::setName);
-        view.sourceEditor.addValueChangeListener(event -> setChanged(true));
+        view.sourceEditor.addValueChangeListener(event -> {
+            setChanged(true);
+            this.setSource(vzSource, event.getValue());
+        });
         view.sourceEditor.setTheme(AceTheme.valueOf(config.getOrDefault(Config.ACE_THEME, AceTheme.ambiance.name())));
 
         view.installButton.addClickListener(event -> installToMemory(false));
@@ -104,7 +107,7 @@ public class AssemblerPresenter extends Presenter<AssemblerView> {
                 currentLib = newName;
                 setLibSelectItems();
                 view.libSelectComboBox.setValue(currentLib);
-                binder.readBean(vzSource);
+                view.sourceEditor.setValue(getSource(vzSource));
                 ComponentFactory.info("New lib created.");
                 return;
             }
@@ -124,7 +127,7 @@ public class AssemblerPresenter extends Presenter<AssemblerView> {
                     currentLib = newName;
                     setLibSelectItems();
                     view.libSelectComboBox.setValue(currentLib);
-                    binder.readBean(vzSource);
+                    view.sourceEditor.setValue(getSource(vzSource));
                     ComponentFactory.info("New lib created.");
                 });
             }
@@ -133,7 +136,7 @@ public class AssemblerPresenter extends Presenter<AssemblerView> {
         view.libSelectComboBox.addValueChangeListener(event -> {
             if (event.isFromClient()) {
                 currentLib = view.libSelectComboBox.getValue();
-                binder.readBean(vzSource);
+                view.sourceEditor.setValue(getSource(vzSource));
             }
         });
 
@@ -142,7 +145,7 @@ public class AssemblerPresenter extends Presenter<AssemblerView> {
                 if (MAIN_FILE.equals(currentLib)) {
                     vzSource.setSource("");
                     ComponentFactory.info(MAIN_FILE + " cleared.");
-                    binder.readBean(vzSource);
+                    view.sourceEditor.setValue(getSource(vzSource));
                 } else {
                     VzSource.Lib lib = getLib(currentLib);
                     if (lib != null) {
@@ -151,7 +154,7 @@ public class AssemblerPresenter extends Presenter<AssemblerView> {
                         setLibSelectItems();
                         currentLib = MAIN_FILE;
                         view.libSelectComboBox.setValue(currentLib);
-                        binder.readBean(vzSource);
+                        view.sourceEditor.setValue(getSource(vzSource));
                     }
                 }
             }, () -> {

@@ -79,6 +79,7 @@ abstract public class View<T extends Presenter<?>> extends HorizontalLayout {
     public View() {
         setId(getViewId());
         createContent();
+        setSizeFull();
     }
 
     abstract protected String getViewId();

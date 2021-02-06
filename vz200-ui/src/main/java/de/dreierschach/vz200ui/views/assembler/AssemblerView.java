@@ -3,12 +3,17 @@ package de.dreierschach.vz200ui.views.assembler;
 import com.hilerio.ace.AceEditor;
 import com.hilerio.ace.AceMode;
 import com.hilerio.ace.AceTheme;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -100,6 +105,8 @@ public class AssemblerView extends View<AssemblerPresenter> {
 
 
         addUpload(UPLOAD_ID, bar, 0, confirmedUpload);
+
+        new Button().addClickShortcut(Key.ENTER);
     }
 
     public void setDownloadSupplier(Supplier<String> filenameSupplier, Supplier<InputStream> inputStreamSupplier, Runnable onDownload) {

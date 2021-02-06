@@ -117,9 +117,9 @@ public class SetupPresenter extends Presenter<SetupView> {
         ui.access(() -> {
             testDevicesProgress++;
             if (testDevicesProgress < 254) {
-                view.scanButton.setText(String.format("Scan %3d%%", 100 * testDevicesProgress / 254));
+                view.scanButton.setText(String.format("%3d%%", 100 * testDevicesProgress / 254));
             } else {
-                view.scanButton.setText("Scan");
+                view.scanButton.setText("");
             }
             ui.push();
         });

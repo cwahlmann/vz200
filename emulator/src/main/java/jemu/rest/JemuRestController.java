@@ -55,23 +55,25 @@ import java.util.*;
 @RestController
 @CrossOrigin
 @RequestMapping("/api")
-@OpenAPIDefinition(info = @Info(title = "JEMU VZ200-Remake", version = "2.2",
+@OpenAPIDefinition(info = @Info(title = "JEMU VZ200-Remake", version = "2.5",
         description = "Rest API to controle the emulator Jemu-VZ200-Remake",
         license = @License(name = "GPL 3.0", url = "https://fsf.org"),
         contact = @Contact(url = "cwahlmann.github.io/vz200-remake", name = "Christian Wahlmann", email = "")))
 public class JemuRestController {
     private static final Logger log = LoggerFactory.getLogger(JemuRestController.class);
 
-    private JemuUi jemuUi;
-    private VzDirectory vzDirectory;
-    private SecurityService securityService;
-    private KeyboardController keyboardController;
+    private final JemuUi jemuUi;
+    private final VzDirectory vzDirectory;
+    //    private final SecurityService securityService;
+    private final KeyboardController keyboardController;
 
     @Autowired
-    public JemuRestController(JemuUi jemuUi, VzDirectory vzDirectory, SecurityService securityService, KeyboardController keyboardController) {
+    public JemuRestController(JemuUi jemuUi, VzDirectory vzDirectory,
+            //                              SecurityService securityService,
+                              KeyboardController keyboardController) {
         this.jemuUi = jemuUi;
         this.vzDirectory = vzDirectory;
-        this.securityService = securityService;
+        //        this.securityService = securityService;
         this.keyboardController = keyboardController;
     }
 
@@ -166,11 +168,9 @@ public class JemuRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
         if (loader.isAutorun() && source.getType() != VzSource.SourceType.basic) {
-            ((Z80) computer().getProcessor()).jp(loader.getStartAddress());
+            ((Z80) computer().getProcessor()).setPC(loader.getStartAddress());
         } else {
-            this.keyboardType(KeyboardInput.of("run\n")
-                              // , token
-            );
+            this.keyboardType(KeyboardInput.of("run\n"));
         }
         return ResponseEntity.ok().build();
     }
@@ -240,7 +240,7 @@ public class JemuRestController {
         }
 
         VzSource source = new VzSource()
-                .withSource(Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(file)))
+                .withSource(Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(file))).withName("unknown")
                 .withType(VzSource.SourceType.vz);
 
         Memory memory = new VZMemory(true);
@@ -253,7 +253,7 @@ public class JemuRestController {
             throw new JemuException(String.format("no loader found for source type [%s]", type));
         }
 
-        loaderTo.withName(source.getName()).withAutorun(source.isAutorun())
+        loaderTo.withName(loaderFrom.getName()).withAutorun(loaderFrom.isAutorun())
                 .withStartAddress(loaderFrom.getStartAddress()).withEndAddress(loaderFrom.getEndAddress());
         return loaderTo.exportData();
     }

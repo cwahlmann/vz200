@@ -17,7 +17,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @SpringBootApplication
 public class Jemu {
 
-    public static final String VERSION = "jemu-vz200-remake-2.3";
+    public static final String VERSION = "jemu-vz200-remake-2.5";
 
     public static void main(String[] args) {
         SpringApplicationBuilder builder = new SpringApplicationBuilder(Jemu.class);

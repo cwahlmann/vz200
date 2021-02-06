@@ -2,7 +2,6 @@ package de.dreierschach.vz200ui.views.main;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -21,14 +20,18 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
+import de.dreierschach.vz200ui.config.Config;
+import de.dreierschach.vz200ui.util.ComponentFactory;
 import de.dreierschach.vz200ui.views.about.AboutView;
 import de.dreierschach.vz200ui.views.assembler.AssemblerView;
 import de.dreierschach.vz200ui.views.basic.BasicView;
 import de.dreierschach.vz200ui.views.printer.PrinterView;
 import de.dreierschach.vz200ui.views.setup.SetupView;
 import de.dreierschach.vz200ui.views.tapedeck.TapedeckView;
-import de.dreierschach.vz200ui.views.vzfiles.VZFilesView;
+import de.dreierschach.vz200ui.views.vzfiles.VzFilesView;
+import org.springframework.web.context.annotation.SessionScope;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -39,16 +42,25 @@ import java.util.Optional;
 @PWA(name = "VZ200-UI", shortName = "VZ200-UI", enableInstallPrompt = false)
 @JsModule("./styles/shared-styles.js")
 @Theme(value = Lumo.class, variant = Lumo.DARK)
+@SessionScope
 public class MainView extends AppLayout {
+
+    private final Config config;
 
     private final Tabs menu;
     private H1 viewTitle;
 
-    public MainView() {
+    public MainView(Config config) {
+        this.config = config;
         setPrimarySection(Section.DRAWER);
         addToNavbar(true, createHeaderContent());
         menu = createMenu();
         addToDrawer(createDrawerContent(menu));
+        try {
+            config.load();
+        } catch (IOException e) {
+            ComponentFactory.danger("Unable to load configuration: " + e.getMessage());
+        }
     }
 
     private Component createHeaderContent() {
@@ -93,7 +105,7 @@ public class MainView extends AppLayout {
     private Component[] createMenuItems() {
         return new Tab[]{createTab("Setup", SetupView.class), createTab("Basic", BasicView.class),
                          createTab("Assembler", AssemblerView.class), createTab("Printer", PrinterView.class),
-                         createTab("Tapedeck", TapedeckView.class), createTab("VZ-Files", VZFilesView.class),
+                         createTab("Tapedeck", TapedeckView.class), createTab("VZ-Files", VzFilesView.class),
                          createTab("About", AboutView.class)};
     }
 

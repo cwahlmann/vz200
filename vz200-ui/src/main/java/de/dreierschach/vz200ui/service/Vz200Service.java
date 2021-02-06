@@ -156,4 +156,31 @@ public class Vz200Service {
     public void reelTape(int position) {
         restTemplate.postForLocation(getBaseUrl() + "player/reel/" + position, null);
     }
+
+    // VZ-Files
+
+    public List<VzFileInfo> getVzFileInfos() {
+        ResponseEntity<VzFileInfo[]> result = restTemplate.getForEntity(getBaseUrl() + "dir", VzFileInfo[].class);
+        if (result.getBody() == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(result.getBody());
+    }
+
+    public void putVzFile(int id, VzSource source) {
+        restTemplate.put(getBaseUrl() + "dir/" + id, source);
+    }
+
+    public VzSource getVzFile(int id, VzSource.SourceType type) {
+        return restTemplate.getForObject(getBaseUrl() + "dir/" + type.name() + "/" + id, VzSource.class);
+    }
+
+    public void deleteVzFile(int id) {
+        restTemplate.delete(getBaseUrl() + "dir/" + id);
+    }
+
+    public void installVzFileFromDir(int id, boolean autorun) {
+        VzSource source = restTemplate.getForObject(getBaseUrl() + "dir/vz/" + id, VzSource.class);
+        restTemplate.postForLocation(getBaseUrl() + "memory", source);
+    }
 }
