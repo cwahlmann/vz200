@@ -84,7 +84,7 @@ public class Assembler {
             parseFile(mainAsm);
             resolveOpenTokens();
         } catch (IOException e) {
-            throw new JemuException("Error assembling source", e);
+            throw new JemuException("Error assembling source: " + e.getMessage(), e);
         } finally {
             if (tempPath != null) {
                 deleteTempDir(tempPath);
@@ -92,7 +92,7 @@ public class Assembler {
         }
     }
 
-    private void writeToTemp(Path tempPath, String name, String  source) throws IOException {
+    private void writeToTemp(Path tempPath, String name, String source) throws IOException {
         Path dir = tempPath.resolve(name).getParent();
         Files.createDirectories(dir);
         try (FileWriter writer = new FileWriter(tempPath.resolve(name).toFile())) {

@@ -19,7 +19,7 @@
         LD (0x78de), A
         EI
     	// and then: do nothing ;-)
-wait:   
+wait:
 		JR wait:
 
 x:      defb 64
@@ -57,19 +57,16 @@ init:	LD A, 0x08
 
 // main loop
 main: 	DI
-        PUSH HL
-        PUSH DE
-        PUSH BC
-        PUSH AF
 
         CALL undraw:
         CALL move:
         CALL draw:
 
-exit:   POP AF
-        POP BC
-        POP DE
+exit:   POP HL
         POP HL
+        POP DE
+        POP BC
+        POP AF
         EI
         RETI
 
