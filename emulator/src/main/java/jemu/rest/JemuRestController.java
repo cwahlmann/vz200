@@ -165,7 +165,7 @@ public class JemuRestController {
             if (e.getCause() != null) {
                 message += ": " + e.getCause().getMessage();
             }
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+            return ResponseEntity.status(HttpStatus.OK).body(message);
         }
         if (loader.isAutorun() && source.getType() != VzSource.SourceType.basic) {
             ((Z80) computer().getProcessor()).setPC(loader.getStartAddress());
@@ -291,7 +291,7 @@ public class JemuRestController {
         Loader<?> to = StaticLoaderFactory.create(totype, memory).orElse(null);
         from.importData(source);
         to.withName(from.getName());
-        to.withAutorun(from.isAutorun());
+        to.withAutorun(source.isAutorun());
         to.withStartAddress(from.getStartAddress());
         to.withEndAddress(from.getEndAddress());
         return to.exportData();

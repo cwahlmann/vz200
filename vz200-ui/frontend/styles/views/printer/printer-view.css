@@ -4,6 +4,11 @@ printer-view,
   padding: 1em;
 }
 
+@font-face {
+  font-family: vz200;
+  src: url(./fonts/UbuntuMono-R-modified.ttf);
+}
+
 .print-style {
-    font-family: monospace;
+    font-family: vz200;
 }

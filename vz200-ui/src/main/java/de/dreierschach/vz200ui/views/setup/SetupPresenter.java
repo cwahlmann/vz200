@@ -1,6 +1,5 @@
 package de.dreierschach.vz200ui.views.setup;
 
-import com.hilerio.ace.AceTheme;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -10,6 +9,7 @@ import de.dreierschach.vz200ui.config.Config;
 import de.dreierschach.vz200ui.service.Vz200Service;
 import de.dreierschach.vz200ui.util.ComponentFactory;
 import de.dreierschach.vz200ui.views.Presenter;
+import de.f0rce.ace.enums.AceTheme;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,17 +64,17 @@ public class SetupPresenter extends Presenter<SetupView> {
         view.scanButton.addClickListener(event -> {
             String hostname = getBaseNet(view.selectHostComboBox.getValue());
             int port = StringUtils.isNumeric(view.portField.getValue()) ? Integer.parseInt(view.portField.getValue())
-                                                                        : 8080;
+                    : 8080;
             log.info("Scanning for emulator on http://" + hostname + ".*:" + port + "...");
             this.testDevicesProgress = 0;
             vz200Service.scanForDevices(hostname, port, this::onDeviceFound, this::onTestDevicesProgress);
         });
 
         binder.withValidator(c -> {
-            String port = c.getOrDefault(Config.PORT, "8080");
-            return StringUtils.isNotEmpty(port) && StringUtils.isNumeric(port);
-        }, "port must be numeric")
-              .bind(view.portField, c -> c.getOrDefault(Config.PORT, "8080"), (c, v) -> c.set(Config.PORT, v));
+                    String port = c.getOrDefault(Config.PORT, "8080");
+                    return StringUtils.isNotEmpty(port) && StringUtils.isNumeric(port);
+                }, "port must be numeric")
+                .bind(view.portField, c -> c.getOrDefault(Config.PORT, "8080"), (c, v) -> c.set(Config.PORT, v));
 
         view.applyButton.addClickListener(event -> saveConfig());
         view.undoButton.addClickListener(event -> loadConfig());
@@ -90,8 +90,8 @@ public class SetupPresenter extends Presenter<SetupView> {
         view.sourceEditor.setValue(SetupConstants.SOURCE_EXAMPLE);
         view.themeComboBox.addValueChangeListener(event -> view.sourceEditor.setTheme(event.getValue()));
         binder.bind(view.themeComboBox,
-                    c -> AceTheme.valueOf(c.getOrDefault(Config.ACE_THEME, AceTheme.ambiance.toString())),
-                    (c, v) -> c.set(Config.ACE_THEME, v.name()));
+                c -> AceTheme.valueOf(c.getOrDefault(Config.ACE_THEME, AceTheme.ambiance.toString())),
+                (c, v) -> c.set(Config.ACE_THEME, v.name()));
         loadConfig();
     }
 

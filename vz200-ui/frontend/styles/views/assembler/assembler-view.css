@@ -4,8 +4,12 @@ assembler-view,
   padding: 1em;
 }
 
+@font-face {
+  font-family: Monaco;
+  src: url(./fonts/UbuntuMono-R-modified.ttf);
+}
+
 .source-style {
-    font-family: monospace;
     color: #80ff80;
     background-color: #006000;
 }

@@ -1,5 +1,6 @@
 package jemu;
 
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -20,6 +21,7 @@ public class Jemu {
     public static final String VERSION = "jemu-vz200-remake-2.5";
 
     public static void main(String[] args) {
+//        SpringApplication.run(Jemu.class, args);
         SpringApplicationBuilder builder = new SpringApplicationBuilder(Jemu.class);
         builder.headless(false).run(args);
     }

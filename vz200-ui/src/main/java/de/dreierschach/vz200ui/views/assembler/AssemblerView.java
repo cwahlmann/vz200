@@ -1,25 +1,19 @@
 package de.dreierschach.vz200ui.views.assembler;
 
-import com.hilerio.ace.AceEditor;
-import com.hilerio.ace.AceMode;
-import com.hilerio.ace.AceTheme;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import de.dreierschach.vz200ui.util.ComponentFactory;
 import de.dreierschach.vz200ui.util.ConfirmedUpload;
+import de.dreierschach.vz200ui.views.SourceEditor;
 import de.dreierschach.vz200ui.views.View;
 import de.dreierschach.vz200ui.views.main.MainView;
 import org.vaadin.stefan.LazyDownloadButton;
@@ -35,20 +29,29 @@ import java.util.function.Supplier;
 public class AssemblerView extends View<AssemblerPresenter> {
     static final String UPLOAD_ID = "UPLOAD_ID";
 
-    AceEditor sourceEditor;
+    SourceEditor sourceEditor;
+
     Button installButton;
     Button runButton;
     TextField downloadFrom;
     TextField downloadTo;
     Button downloadButton;
     Button resetButton;
-    LazyDownloadButton saveButton;
     Checkbox changedCheckbox;
     TextField nameField;
+
+    LazyDownloadButton saveButton;
     Supplier<String> filenameSupplier = () -> "source.asm";
     Supplier<InputStream> inputStreamSupplier = () -> null;
     Runnable onDownload = () -> {
     };
+
+    LazyDownloadButton convertToVzButton;
+    Supplier<String> convertFilenameSupplier = () -> "default.vz";
+    Supplier<InputStream> convertInputStreamSupplier = () -> null;
+    Runnable onDownloadVz = () -> {
+    };
+
     ConfirmedUpload confirmedUpload;
 
     // libs
@@ -75,33 +78,35 @@ public class AssemblerView extends View<AssemblerPresenter> {
         downloadButton = new Button("Download", VaadinIcon.LAPTOP.create());
         resetButton = new Button("Reset", VaadinIcon.LAPTOP.create());
         saveButton = new LazyDownloadButton("Save", VaadinIcon.DOWNLOAD.create(), () -> filenameSupplier.get(),
-                                            () -> inputStreamSupplier.get());
+                () -> inputStreamSupplier.get());
         saveButton.addDownloadStartsListener(event -> this.onDownload.run());
+        convertToVzButton = new LazyDownloadButton("Save as VZ", VaadinIcon.DOWNLOAD.create(),
+                () -> convertFilenameSupplier.get(), () -> convertInputStreamSupplier.get());
+        convertToVzButton.addDownloadStartsListener(event -> this.onDownloadVz.run());
         changedCheckbox = new Checkbox("Changed", false);
         changedCheckbox.setReadOnly(true);
 
         libSelectComboBox = ComponentFactory.withTooltip(new ComboBox<>(), "select source to edit");
         libSelectComboBox.setAllowCustomValue(true);
 
-        removeLibButton = ComponentFactory
-                .withTooltip(new Button(VaadinIcon.CLOSE_SMALL.create()), "remove lib or clear main");
-
-        sourceEditor = ComponentFactory.aceEditor("enter your assembler code here", AceTheme.ambiance, 16, 25, 44);
+        removeLibButton = ComponentFactory.withTooltip(new Button(VaadinIcon.CLOSE_SMALL.create()),
+                "remove lib or clear main");
 
         HorizontalLayout bar = new HorizontalLayout(saveButton, changedCheckbox);
-        bar.setAlignItems(Alignment.BASELINE);
+        bar.setVerticalComponentAlignment(Alignment.CENTER, saveButton, changedCheckbox);
 
         add(nameField, libSelectComboBox, removeLibButton, installButton, runButton, downloadFrom, downloadTo,
-            downloadButton, resetButton, bar);
+                downloadButton, resetButton, convertToVzButton, bar);
+
+        sourceEditor = new SourceEditor();
         addAndExpand(sourceEditor);
 
         setVerticalComponentAlignment(Alignment.END, nameField, installButton, runButton, downloadFrom, downloadTo,
-                                      downloadButton, resetButton, libSelectComboBox, removeLibButton, saveButton,
-                                      changedCheckbox);
+                downloadButton, resetButton, libSelectComboBox, removeLibButton);
 
         confirmedUpload = new ConfirmedUpload().withMessage("Overwrite recent changes?").withConfirmCaption("Overwrite")
-                                               .withDeclineCaption("Cancel").withButtonCaption("Load")
-                                               .withDropCaption("Drop file").withIcon(VaadinIcon.FILE);
+                .withDeclineCaption("Cancel").withButtonCaption("Load").withDropCaption("Drop file")
+                .withIcon(VaadinIcon.FILE);
 
 
         addUpload(UPLOAD_ID, bar, 0, confirmedUpload);
@@ -113,5 +118,11 @@ public class AssemblerView extends View<AssemblerPresenter> {
         this.filenameSupplier = filenameSupplier;
         this.inputStreamSupplier = inputStreamSupplier;
         this.onDownload = onDownload;
+    }
+
+    public void setConvertSupplier(Supplier<String> filenameSupplier, Supplier<InputStream> inputStreamSupplier, Runnable onDownload) {
+        this.convertFilenameSupplier = filenameSupplier;
+        this.convertInputStreamSupplier = inputStreamSupplier;
+        this.onDownloadVz = onDownload;
     }
 }

@@ -61,8 +61,13 @@ public class Emulator {
         frame.setTitle("JEMU");
         frame.enableWindowEvents();
         frame.getContentPane().add(jemuUi, BorderLayout.CENTER);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setUndecorated(true);
+        var fullscreen = config.getBoolean(Constants.FULLSCREEN, true);
+        if (fullscreen) {
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            frame.setUndecorated(true);
+        } else {
+            frame.setSize(config.getInt(Constants.SCREEN_WIDTH), config.getInt(Constants.SCREEN_HEIGHT));
+        }
         frame.setCursor(java.awt.Toolkit.getDefaultToolkit()
                                         .createCustomCursor(new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR),
                                                             new java.awt.Point(0, 0), "NOCURSOR"));

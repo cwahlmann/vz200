@@ -26,6 +26,7 @@ import java.util.function.Supplier;
 @CssImport("./styles/views/vzfiles/vz-files-view.css")
 @VaadinSessionScope
 public class VzFilesView extends View<VzFilesPresenter> {
+    static final String UPLOAD_ID = "UPLOAD_ID";
 
     Button refreshButton;
     Button deleteButton;
@@ -87,6 +88,6 @@ public class VzFilesView extends View<VzFilesPresenter> {
         setVerticalComponentAlignment(Alignment.END, refreshButton, deleteButton, openAsBasicButton,
                                       openAsAssemblerButton, installButton, runButton, resetButton, downloadButton,
                                       grid);
-        addUpload("Save", this, 8, confirmedUpload);
+        addUpload(UPLOAD_ID, this, 8, confirmedUpload);
     }
 }

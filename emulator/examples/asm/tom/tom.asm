@@ -1,8 +1,20 @@
-.org 0x8800
-.run 0x8800
+.org 0xa000
+.include sprite_data_bg.asm
+
+.org 0xa800
+.include sprite_data_bg_anim.asm
+
+.org 0xb000
+.include sprite_data_char.asm
+
+.org 0xc000
+.include level_data.asm
+
+.org 0x9800
+.run 0x9800
 
 .def screen: 0x7000
-.def buffer: 0x8000
+.def buffer: 0x9000
 .def latch:  0x6800
 
 		JP start_program:
@@ -412,15 +424,3 @@ draw_level_next_1:
 		DEC B
 		JR NZ, draw_level_loop_1:
 		RET  		
-				
-.org 0x9000
-.include sprite_data_bg.asm
-
-.org 0x9800
-.include sprite_data_bg_anim.asm
-
-.org 0xa000
-.include sprite_data_char.asm
-
-.org 0xb000
-.include level_data.asm

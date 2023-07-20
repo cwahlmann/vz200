@@ -4,8 +4,21 @@ basic-view,
   padding: 1em;
 }
 
+@font-face {
+  font-family: Monaco;
+  src: url(./fonts/UbuntuMono-R-modified.ttf);
+}
+
+.graphic-button-style {
+    font-family: vz200;
+    margin: 1px;
+    padding: 1px;
+    min-width: 2em;
+    max-width: 2em;
+}
+
 .source-style {
-    font-family: monospace;
+    font-family: vz200;
     color: #80ff80;
     background-color: #006000;
 }

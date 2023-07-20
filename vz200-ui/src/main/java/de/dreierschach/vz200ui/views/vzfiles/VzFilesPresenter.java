@@ -9,10 +9,13 @@ import de.dreierschach.vz200ui.util.ComponentFactory;
 import de.dreierschach.vz200ui.views.Presenter;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @SpringComponent
 @VaadinSessionScope
@@ -34,10 +37,51 @@ public class VzFilesPresenter extends Presenter<VzFilesView> {
                                                   .map(this::getVzInputStream).orElse(null);
         view.filenameSupplier = () -> view.grid.getSelectedItems().stream().findAny().map(VzFileInfo::getName)
                                                .map(n -> n + ".vz").orElse("unknown.vz");
+        view.confirmedUpload.withOnConfirmed(this::onUpload);
+
         view.installButton.addClickListener(event -> install(false));
         view.runButton.addClickListener(event -> install(true));
+        view.deleteButton.addClickListener(event -> remove());
         view.resetButton.addClickListener(event -> reset());
         refreshGrid();
+    }
+
+    private void onUpload() {
+        int id = 0;
+        Set<Integer> ids = fileInfos.stream().map(VzFileInfo::getId).collect(Collectors.toSet());
+        while (id < 256 && ids.contains(id)) {
+            id++;
+        }
+        if (id > 255) {
+            ComponentFactory.warning("There are no free slot anymore. Please remove a file to get space.");
+            return;
+        }
+        try (InputStream in = view.getUploadStream(VzFilesView.UPLOAD_ID)) {
+            String base64 = Base64.getEncoder().encodeToString(in.readAllBytes());
+            VzSource vzSource = new VzSource();
+            vzSource.setSource(base64);
+            vzSource.setName(cutFilenameEnding(view.getUploadFilename(VzFilesView.UPLOAD_ID)));
+            vzSource.setType(VzSource.SourceType.vz);
+            vz200Service.putVzFile(id, vzSource);
+            ComponentFactory.info("File successfull loaded on slot " + id + ".");
+            refreshGrid();
+        } catch (IOException e) {
+            ComponentFactory.warning("Error loading file to emulator on slot " + id + ": " + e.getMessage());
+        }
+    }
+
+    private String cutFilenameEnding(String filename) {
+        if (filename == null) {
+            return "";
+        }
+        int index = filename.lastIndexOf(".");
+        if (index < 0) {
+            return filename;
+        }
+        if (index == 0) {
+            return "";
+        }
+        return filename.substring(0, index);
     }
 
     private InputStream getVzInputStream(int id) {
@@ -71,6 +115,26 @@ public class VzFilesPresenter extends Presenter<VzFilesView> {
             } catch (Exception e) {
                 ComponentFactory.warning("Unable to install / run vz-file '" + id + "': " + e.getMessage());
             }
+        });
+    }
+
+    private void remove() {
+        view.grid.getSelectedItems().stream().findAny().ifPresent(info -> {
+            ComponentFactory
+                    .confirm("Do you really want to remove '" + info.getName() + "' on slot " + info.getId() + "?",
+                             "Remove", "Cancel", () -> {
+                                try {
+                                    vz200Service.deleteVzFile(info.getId());
+                                    ComponentFactory.info("File '" + info.getName() + "' on slot " + info.getId() +
+                                                          " successfull removed.");
+                                    refreshGrid();
+                                } catch (Exception e) {
+                                    ComponentFactory.warning(
+                                            "Unable to remove '" + info.getName() + "' on slot " + info.getId() + ": " +
+                                            e.getMessage());
+                                }
+                            }, () -> {
+                            });
         });
     }
 

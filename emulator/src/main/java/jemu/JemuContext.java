@@ -31,6 +31,7 @@ public class JemuContext {
         Path propertiesPath = Paths.get(System.getProperty("user.home") + "/.jemu");
         JemuConfiguration config = new JemuConfiguration(propertiesPath).updateImmediatliy();
         config.setIfMissing(Constants.LAST_WORKING_DIR, System.getProperty("user.home"));
+        config.setIfMissing(Constants.FULLSCREEN, "true");
         config.setIfMissing(Constants.SCREEN_WIDTH, "800");
         config.setIfMissing(Constants.SCREEN_HEIGHT, "480");
         config.setIfMissing(Constants.SOUND_VOLUME, "100");

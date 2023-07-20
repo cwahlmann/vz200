@@ -1,7 +1,5 @@
 package de.dreierschach.vz200ui.views.setup;
 
-import com.hilerio.ace.AceEditor;
-import com.hilerio.ace.AceTheme;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -18,6 +16,8 @@ import com.vaadin.flow.theme.lumo.Lumo;
 import de.dreierschach.vz200ui.util.ComponentFactory;
 import de.dreierschach.vz200ui.views.View;
 import de.dreierschach.vz200ui.views.main.MainView;
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceTheme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,12 +58,14 @@ public class SetupView extends View<SetupPresenter> {
         portField.setMaxLength(5);
         portField.setWidth("4em");
         scanButton = ComponentFactory.withTooltip(new Button(VaadinIcon.SEARCH.create()), "Scan for emulators...");
-        testConnectionButton = ComponentFactory.withTooltip(new Button(VaadinIcon.CONNECT.create()), "Check connection");
+        testConnectionButton = ComponentFactory.withTooltip(new Button(VaadinIcon.CONNECT.create()),
+                "Check connection");
 
         applyButton = new Button("Apply", VaadinIcon.CHECK.create());
         undoButton = new Button("Undo", VaadinIcon.CLOSE.create());
 
-        sourceEditor = ComponentFactory.aceEditor("enter your assembler code here", AceTheme.ambiance, 10, 10, 16);
+        sourceEditor = ComponentFactory.aceEditor("enter your assembler code here", AceTheme.ambiance,
+                16, 10);
         sourceEditor.setReadOnly(true);
         themeComboBox = new ComboBox<>();
         themeComboBox.setItems(AceTheme.values());
@@ -81,6 +83,7 @@ public class SetupView extends View<SetupPresenter> {
         VerticalLayout col = new VerticalLayout(new Label("Editor-Theme:"), themeComboBox);
         col.setPadding(false);
         col.setWidth("12em");
+        sourceEditor.setHeight("25em");
         HorizontalLayout row2 = new HorizontalLayout(col, sourceEditor);
 
         HorizontalLayout row3 = new HorizontalLayout(applyButton, undoButton);

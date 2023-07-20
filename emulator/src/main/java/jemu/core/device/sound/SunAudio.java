@@ -2,8 +2,6 @@ package jemu.core.device.sound;
 
 import java.io.*;
 import jemu.core.*;
-import jemu.core.device.*;
-import sun.audio.*;
 
 /**
  * This file is part of JemuVz200, an enhanced VZ200 emulator,

@@ -57,6 +57,12 @@ public class Vz200Service {
         restTemplate.postForLocation(getBaseUrl() + "keyboard", new KeyboardInput().withValue(s));
     }
 
+    public VzSource convertTo(VzSource source, VzSource.SourceType newType) {
+        return restTemplate
+                .postForObject(getBaseUrl() + "convert/" + source.getType().name() + "/" + newType.name(), source,
+                               VzSource.class);
+    }
+
     public void reset() {
         restTemplate.postForLocation(getBaseUrl() + "cpu/reset", "none");
     }

@@ -1,9 +1,6 @@
 package de.dreierschach.vz200ui.util;
 
 
-import com.hilerio.ace.AceEditor;
-import com.hilerio.ace.AceMode;
-import com.hilerio.ace.AceTheme;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -16,6 +13,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+import de.f0rce.ace.enums.AceTheme;
 
 import java.util.function.Consumer;
 
@@ -79,11 +79,16 @@ public class ComponentFactory {
     }
 
     public static void singleInput(String message, String placeholder, Consumer<String> onOk, Runnable onCancel) {
+        singleInput(message, "", placeholder, onOk, onCancel);
+    }
+
+    public static void singleInput(String message, String value, String placeholder, Consumer<String> onOk, Runnable onCancel) {
         Dialog dialog = new Dialog();
         dialog.setCloseOnEsc(false);
         dialog.setCloseOnOutsideClick(false);
 
         TextField inputField = new TextField("", placeholder);
+        inputField.setValue(value);
         inputField.focus();
 
         Button okButton = new Button("ok", VaadinIcon.CHECK.create(), event -> {
@@ -139,20 +144,18 @@ public class ComponentFactory {
         return hasElement;
     }
 
-    public static AceEditor aceEditor(String placeholder, AceTheme theme, int minLines, int maxlines, int maxWidth) {
+    public static AceEditor aceEditor(String placeholder, AceTheme theme, int cols, int rows) {
         AceEditor editor = new AceEditor();
         editor.setPlaceholder(placeholder);
         editor.setTheme(theme);
-        editor.setMinlines(minLines);
-        editor.setMaxlines(maxlines);
-        editor.setMaxWidth(maxWidth + "em");
-
+        editor.setHeight(rows + "em");
+        editor.setWidth(cols + "em");
         editor.setWrap(false);
         editor.setMode(AceMode.python);
         editor.setFontSize(15);
         editor.setShowInvisibles(false);
         editor.setShowGutter(false);
-        editor.setShowPrintMargin(false);
+        editor.setShowPrintMargin(true);
         editor.setDisplayIndentGuides(false);
         editor.setUseWorker(false);
         editor.setSofttabs(true);
@@ -160,8 +163,6 @@ public class ComponentFactory {
         editor.setAutoComplete(true);
         editor.setHighlightActiveLine(false);
         editor.setHighlightSelectedWord(false);
-        editor.setWidth("100%");
-        editor.setHeight("100%");
         editor.setInitialFocus(true);
         editor.setReadOnly(false);
         return editor;
