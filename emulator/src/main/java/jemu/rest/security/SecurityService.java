@@ -7,15 +7,14 @@ import jemu.config.Constants;
 import jemu.config.JemuConfiguration;
 import jemu.exception.JemuException;
 import jemu.exception.JemuForbiddenException;
-import org.apache.tomcat.util.bcel.Const;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import javax.security.auth.login.Configuration;
-import javax.xml.bind.ValidationException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,13 +41,18 @@ public class SecurityService {
 
     private final JemuConfiguration config;
 
-    private AuthorizationRequest[] authorizationRequests = new AuthorizationRequest[256];
-    private AtomicInteger nextAuthorizationRequestIndex = new AtomicInteger(0);
+    private final AuthorizationRequest[] authorizationRequests = new AuthorizationRequest[256];
+    private final AtomicInteger nextAuthorizationRequestIndex = new AtomicInteger(0);
+
+    private SecretKey key;
+    private static final long EXPIRATION_TIME = 86400000; // 24 hours
 
     public SecurityService(JemuConfiguration config) {
+        String secretString = UUID.randomUUID().toString(); // Ensure this is securely managed
+        this.key = new SecretKeySpec(secretString.getBytes(StandardCharsets.UTF_8), SignatureAlgorithm.HS256.getJcaName());
         this.config = config;
-        this.config.setIfMissing(Constants.JWT_SECRET, UUID.randomUUID().toString());
-        this.config.setIfMissing(Constants.JWT_EXPIRE_MIN, Constants.JWT_DEFAULT_EXPIRE_MIN);
+        this.config.setIfMissing(Constants.JWT_SECRET, secretString);
+        this.config.setIfMissing(Constants.JWT_EXPIRE_MIN, EXPIRATION_TIME);
     }
 
     public String createToken(UUID id) {
@@ -56,17 +60,23 @@ public class SecurityService {
         String secret = this.config.get(Constants.JWT_SECRET);
         Map<String, Object> claims = new HashMap<>();
         //claims.put("ID", id.toString());
-        return Jwts.builder().addClaims(claims).setId(id.toString())
-                   .signWith(SignatureAlgorithm.HS256, secret.getBytes())
-                   .setIssuedAt(new Date(System.currentTimeMillis()))
-                   .setExpiration(new Date(System.currentTimeMillis() + 60000 * expire)).compact();
+        return Jwts.builder()
+                .setSubject(id.toString())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(key)
+                .compact();
     }
 
+
     public void validateToken(String token) {
-        String secret = this.config.get(Constants.JWT_SECRET);
         try {
-            Claims claims = Jwts.parser().setSigningKey(secret.getBytes()).parseClaimsJws(token).getBody();
-            if (!validateId((String) claims.getId()) && validateExpiration(claims.getExpiration())) {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            if (!validateId(claims.getId()) && validateExpiration(claims.getExpiration())) {
                 throw new JemuForbiddenException("NOT AUTHORIZED");
             }
         } catch (Exception e) {
@@ -147,11 +157,11 @@ public class SecurityService {
                         Files.delete(path);
                     }
                 } catch (IOException e) {
-                    throw new JemuException(String.format("unable to access file in %d", dir.toString()), e);
+                    throw new JemuException(String.format("unable to access file in %d", dir), e);
                 }
             });
         } catch (IOException e) {
-            throw new JemuException(String.format("unable to read content of %d", dir.toString()), e);
+            throw new JemuException(String.format("unable to read content of %d", dir), e);
         }
     }
 }

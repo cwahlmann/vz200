@@ -1,9 +1,9 @@
 package jemu.core.device.keyboard;
 
-import java.util.Hashtable;
-
 import jemu.core.Util;
 import jemu.core.device.Device;
+
+import java.util.Hashtable;
 
 /**
  * This file is part of JemuVz200, an enhanced VZ200 emulator,
@@ -99,7 +99,7 @@ public class MatrixKeyboard extends Device {
     int mask = 0x01 << (key & 0x1f);
     int offs = key / 32;
     if (step != 1 || (pressMap[offs] & mask) == 0) {
-      KeyMapping mapping = (KeyMapping)mappings.get(new Integer(key));
+      KeyMapping mapping = (KeyMapping)mappings.get(key);
       if (mapping != null)
         mapping.keyChange(step);
       if (step == 1)

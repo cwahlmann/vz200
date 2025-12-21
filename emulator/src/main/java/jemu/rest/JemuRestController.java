@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import jemu.Jemu;
 import jemu.core.cpu.Z80;
 import jemu.core.device.memory.Memory;
@@ -17,7 +18,6 @@ import jemu.rest.dto.JemuVersion;
 import jemu.rest.dto.KeyboardInput;
 import jemu.rest.dto.TapeInfo;
 import jemu.rest.dto.VzSource;
-import jemu.rest.security.SecurityService;
 import jemu.system.vz.*;
 import jemu.system.vz.export.Loader;
 import jemu.system.vz.export.StaticLoaderFactory;
@@ -34,7 +34,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -69,7 +68,7 @@ public class JemuRestController {
 
     @Autowired
     public JemuRestController(JemuUi jemuUi, VzDirectory vzDirectory,
-            //                              SecurityService securityService,
+                              //                              SecurityService securityService,
                               KeyboardController keyboardController) {
         this.jemuUi = jemuUi;
         this.vzDirectory = vzDirectory;
@@ -79,10 +78,6 @@ public class JemuRestController {
 
     private VZ computer() {
         return (VZ) jemuUi.getComputer();
-    }
-
-    private VZTapeDevice tape() {
-        return computer().getTapeDevice();
     }
 
     // disable security methods for now
@@ -100,7 +95,7 @@ public class JemuRestController {
     @RequestMapping(path = "/swagger")
     @Hidden
     public void swagger(HttpServletResponse response) throws IOException {
-        response.sendRedirect("/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config");
+        response.sendRedirect("/swagger-ui/index.html");
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/vz200/version", produces = "application/json;charset=UTF-8")
@@ -208,9 +203,9 @@ public class JemuRestController {
         loaderFrom.importData(source);
 
         Loader<?> loaderTo = StaticLoaderFactory.create(VzSource.SourceType.vz, memory).orElse(null)
-                                                .withName(source.getName()).withAutorun(source.isAutorun())
-                                                .withStartAddress(loaderFrom.getStartAddress())
-                                                .withEndAddress(loaderFrom.getEndAddress());
+                .withName(source.getName()).withAutorun(source.isAutorun())
+                .withStartAddress(loaderFrom.getStartAddress())
+                .withEndAddress(loaderFrom.getEndAddress());
         VzSource vz = loaderTo.exportData();
 
         try (InputStream is = new ByteArrayInputStream(Base64.getDecoder().decode(vz.getSource()))) {
@@ -327,7 +322,7 @@ public class JemuRestController {
                 keyboardController.type(keyboardInput.getValue());
             } catch (InterruptedException e) {
                 log.warn("Warnung: Thread-Wartezeit wurde unterbrochen beim Übermitteln an den Keyboard-Controller:",
-                         e);
+                        e);
             } catch (Exception e) {
                 log.error("Fehler beim Übermitteln an den Keyboard-Controller", e);
             }

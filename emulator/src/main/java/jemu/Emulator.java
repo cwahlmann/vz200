@@ -1,21 +1,16 @@
 package jemu;
 
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
-
-import javax.annotation.PostConstruct;
-import javax.swing.JFrame;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
+import jakarta.annotation.PostConstruct;
 import jemu.config.Constants;
 import jemu.config.JemuConfiguration;
 import jemu.ui.JemuUi;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 
 /**
  * This file is part of JemuVz200, an enhanced VZ200 emulator,

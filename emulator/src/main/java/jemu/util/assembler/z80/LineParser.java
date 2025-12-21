@@ -116,7 +116,7 @@ public class LineParser {
 		if (arg.isPresent()) {
 			return arg;
 		}
-		return Optional.of(new Integer(0));
+		return Optional.of(0);
 	}
 
 	private static AsciiMapper asciiMapper = new AsciiMapper();
@@ -143,6 +143,6 @@ public class LineParser {
 		if (arg.isPresent()) {
 			return arg;
 		}
-		return Optional.of(new Integer(0));
+		return Optional.of(0);
 	}
 }

@@ -1,9 +1,7 @@
 package jemu;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 /**
  * This file is part of JemuVz200, an enhanced VZ200 emulator,
@@ -18,7 +16,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @SpringBootApplication
 public class Jemu {
 
-    public static final String VERSION = "jemu-vz200-remake-2.5";
+    public static final String VERSION = "jemu-vz200-remake-3.0";
 
     public static void main(String[] args) {
 //        SpringApplication.run(Jemu.class, args);
